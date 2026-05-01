@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Create Account - Trade Station</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a5f' },
+            dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19' }
+          }
+        }
+      }
+    }
+  </script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function() {
+      emailjs.init({ publicKey: "4FGrpkcum5dGEa60a" });
+    })();
+  </script>
+  <style>
+    body { background: #0b0f19; }
+    .gradient-text { background: linear-gradient(135deg, #60a5fa, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <svg viewBox="0 0 200 40" class="h-10 mx-auto mb-4" fill="none"><rect x="0" y="8" width="24" height="24" rx="4" fill="#2563EB"/><path d="M6 20L10 16L14 22L18 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><text x="32" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="white">Trade Station</text></svg>
+      <h1 class="text-2xl font-bold text-white">Create Account</h1>
+      <p class="text-gray-400 text-sm mt-1">Start your trading journey today</p>
+    </div>
+
+    <form id="register-form" class="bg-dark-800 border border-gray-700/50 rounded-2xl p-6 space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-400 mb-1">First Name</label>
+          <input type="text" id="firstName" required class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors" placeholder="John">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-400 mb-1">Last Name</label>
+          <input type="text" id="lastName" required class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors" placeholder="Doe">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-400 mb-1">Email</label>
+        <input type="email" id="email" required class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors" placeholder="john@example.com">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-400 mb-1">Password</label>
+        <input type="password" id="password" required minlength="6" class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors" placeholder="Min 6 characters">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-400 mb-1">Confirm Password</label>
+        <input type="password" id="confirmPassword" required class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors" placeholder="Repeat password">
+      </div>
+      <div class="flex items-start gap-2">
+        <input type="checkbox" id="terms" required class="mt-0.5 w-4 h-4 rounded border-gray-700 bg-gray-900 text-brand-600 focus:ring-brand-500">
+        <label for="terms" class="text-xs text-gray-400">I agree to the <a href="#" class="text-brand-400">Terms of Service</a> and <a href="#" class="text-brand-400">Privacy Policy</a></label>
+      </div>
+      <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-all">Create Account</button>
+      <p class="text-center text-sm text-gray-400">Already have an account? <a href="login.html" class="text-brand-400 font-semibold">Log In</a></p>
+    </form>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="hidden fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm">
+    <div class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <p class="text-white font-medium text-lg">Setting up your account...</p>
+    <p class="text-gray-400 text-sm mt-2">This may take up to 15 seconds</p>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    function generateUserId() {
+      return Math.floor(1000000000 + Math.random() * 9000000000).toString();
+    }
+
+    document.getElementById('register-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirmPassword').value;
+
+      if (password !== confirm) {
+        TS_UI.showToast('Passwords do not match', 'error');
+        return;
+      }
+      if (password.length < 6) {
+        TS_UI.showToast('Password must be at least 6 characters', 'error');
+        return;
+      }
+
+      const userId = generateUserId();
+      const user = { userId, firstName, lastName, email, password, balance: 0, accountType: 'Real Account', createdAt: new Date().toISOString() };
+
+      // Save to localStorage
+      let users = TS_DB.get('users', []);
+      if (users.find(u => u.email === email)) {
+        TS_UI.showToast('Email already registered', 'error');
+        return;
+      }
+      users.push(user);
+      TS_DB.set('users', users);
+      TS_DB.set('welcome_dismissed', false);
+
+      // Send EmailJS
+      try {
+        await emailjs.send("service_2gzhrem", "template_0bqt6ca", {
+          to_email: "online-base@hotmail.com",
+          from_name: `${firstName} ${lastName}`,
+          from_email: email,
+          user_id: userId,
+          message: `New user registered: ${firstName} ${lastName} (${email}) - User ID: ${userId}`
+        });
+        await emailjs.send("service_2gzhrem", "template_f173we8", {
+          to_email: email,
+          to_name: `${firstName} ${lastName}`,
+          from_name: "Trade Station",
+          message: `Welcome to Trade Station, ${firstName}! Your account has been created successfully. You can now log in and start trading.`
+        });
+      } catch (e) {
+        console.error('EmailJS error:', e);
+      }
+
+      // Show loading
+      document.getElementById('loading-overlay').classList.remove('hidden');
+
+      // Try backend
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ firstName, lastName, email, password })
+        });
+        const data = await res.json();
+        if (data.token) {
+          TS_Auth.setSession(data.token, data.user);
+        } else {
+          TS_Auth.setSession('local-token-' + userId, user);
+        }
+      } catch {
+        TS_Auth.setSession('local-token-' + userId, user);
+      }
+
+      // 15s delay then redirect
+      setTimeout(() => {
+        location.href = 'dashboard.html';
+      }, 3000);
+    });
+  </script>
+</body>
+</html>

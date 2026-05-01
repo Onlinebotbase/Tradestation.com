@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Charts - Trade Station</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class', theme: { extend: { colors: { brand: { 600: '#2563eb' }, dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19' } } } } }</script>
+  <style>body { background: #0b0f19; } .tv-container { height: 60vh; min-height: 400px; }</style>
+</head>
+<body class="text-white">
+  <div id="ts-global-header"></div>
+  <main class="pb-24 pt-2">
+    <!-- Top bar -->
+    <div class="px-4 py-3 bg-dark-800 border-b border-gray-700 flex items-center justify-between">
+      <div>
+        <div class="text-sm font-bold text-white" id="chart-symbol-name">BTC/USD</div>
+        <div class="text-xs text-green-400 font-mono" id="chart-symbol-price">--</div>
+      </div>
+      <button onclick="location.href='charts-symbol.html'" class="p-2 rounded-lg hover:bg-gray-700">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+      </button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="flex overflow-x-auto px-2 py-2 bg-dark-900 border-b border-gray-800 gap-2 text-xs">
+      <button class="px-3 py-1.5 rounded bg-gray-800 text-gray-300 whitespace-nowrap">Advanced Chart</button>
+      <button class="px-3 py-1.5 rounded bg-gray-800 text-gray-300 whitespace-nowrap">Market Chart</button>
+      <button class="px-3 py-1.5 rounded bg-gray-800 text-gray-300 whitespace-nowrap">Economic Calendar</button>
+      <button class="px-3 py-1.5 rounded bg-gray-800 text-gray-300 whitespace-nowrap">Technical Analysis</button>
+      <button class="px-3 py-1.5 rounded bg-gray-800 text-gray-300 whitespace-nowrap">Stock Screener</button>
+    </div>
+
+    <!-- Timeframes -->
+    <div class="flex overflow-x-auto px-2 py-2 bg-dark-900 border-b border-gray-800 gap-1 text-xs">
+      <button class="tf-btn px-2 py-1 rounded text-gray-400 hover:text-white" data-tf="1">M1</button>
+      <button class="tf-btn px-2 py-1 rounded text-gray-400 hover:text-white" data-tf="5">M5</button>
+      <button class="tf-btn px-2 py-1 rounded text-gray-400 hover:text-white" data-tf="15">M15</button>
+      <button class="tf-btn px-2 py-1 rounded text-gray-400 hover:text-white" data-tf="30">M30</button>
+      <button class="tf-btn px-2 py-1 rounded bg-brand-600 text-white" data-tf="60">H1</button>
+      <button class="tf-btn px-2 py-1 rounded text-gray-400 hover:text-white" data-tf="240">H4</button>
+      <button class="tf-btn px-2 py-1 rounded text-gray-400 hover:text-white" data-tf="D">D1</button>
+      <button class="tf-btn px-2 py-1 rounded text-gray-400 hover:text-white" data-tf="W">W1</button>
+      <button class="tf-btn px-2 py-1 rounded text-gray-400 hover:text-white" data-tf="M">MN</button>
+    </div>
+
+    <!-- TradingView Widget -->
+    <div class="tv-container bg-dark-950" id="tv-chart"></div>
+
+    <!-- Bottom Actions -->
+    <div class="px-4 py-3 bg-dark-800 border-t border-gray-700 flex items-center gap-3">
+      <button onclick="location.href='order-ticket.html?direction=buy'" class="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg text-sm">Buy</button>
+      <button onclick="location.href='order-ticket.html?direction=sell'" class="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-sm">Sell</button>
+      <button onclick="location.href='trade.html'" class="px-4 py-2.5 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-lg text-sm">Order</button>
+    </div>
+  </main>
+  <div id="ts-global-footer"></div>
+  <script src="https://s3.tradingview.com/tv.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
+
+    let symbol = TS_DB.get('chart_symbol', 'BTC') || 'BTC';
+    let timeframe = '60';
+
+    function loadChart() {
+      document.getElementById('chart-symbol-name').textContent = symbol.toUpperCase() + '/USD';
+      document.getElementById('tv-chart').innerHTML = '';
+      new TradingView.widget({
+        container_id: 'tv-chart',
+        symbol: `COINBASE:${symbol.toUpperCase()}USD`,
+        interval: timeframe,
+        timezone: 'Etc/UTC',
+        theme: 'dark',
+        style: '1',
+        locale: 'en',
+        toolbar_bg: '#111827',
+        hide_top_toolbar: false,
+        hide_side_toolbar: false,
+        allow_symbol_change: false,
+        save_image: false,
+        studies: ['RSI@tv-basicstudies', 'MACD@tv-basicstudies'],
+        show_popup_button: true,
+        popup_width: '1000',
+        popup_height: '650',
+        no_referral_id: true,
+        backgroundColor: '#0b0f19',
+        gridColor: '#1f2937',
+        overrides: { "paneProperties.background": "#0b0f19", "paneProperties.vertGridProperties.color": "#1f2937", "paneProperties.horzGridProperties.color": "#1f2937" }
+      });
+    }
+
+    // Update price
+    async function updatePrice() {
+      const coins = await TS_Market.getCoins();
+      const coin = coins.find(c => c.symbol.toLowerCase() === symbol.toLowerCase());
+      if (coin) document.getElementById('chart-symbol-price').textContent = '$' + coin.current_price.toLocaleString();
+    }
+
+    document.querySelectorAll('.tf-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.tf-btn').forEach(b => { b.classList.remove('bg-brand-600', 'text-white'); b.classList.add('text-gray-400'); });
+        this.classList.add('bg-brand-600', 'text-white');
+        this.classList.remove('text-gray-400');
+        timeframe = this.dataset.tf;
+        loadChart();
+      });
+    });
+
+    loadChart();
+    updatePrice();
+    setInterval(updatePrice, 30000);
+  </script>
+</body>
+</html>

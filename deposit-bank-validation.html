@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Validate Deposit - Trade Station</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{600:'#2563eb'},dark:{800:'#1f2937',900:'#111827',950:'#0b0f19'}}}}}</script>
+  <style>body{background:#0b0f19;}</style>
+</head>
+<body class="text-white">
+  <div id="ts-global-header"></div>
+  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
+    <h1 class="text-lg font-bold mb-4">Deposit Validation</h1>
+    <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 mb-4 text-center">
+      <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-brand-600/10 flex items-center justify-center">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-brand-400"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      </div>
+      <p class="text-sm text-gray-300 mb-1">Enter the 6-digit code provided by support</p>
+      <p class="text-xs text-gray-500">One-time use code</p>
+    </div>
+    <form id="validation-form" class="space-y-4">
+      <div>
+        <label class="block text-xs font-medium text-gray-400 mb-1">6-Digit Validation Code</label>
+        <input type="text" id="code" required maxlength="6" pattern="\d{6}" class="w-full px-3 py-2.5 bg-dark-800 border border-gray-700 rounded-lg text-white text-sm text-center text-2xl font-mono tracking-widest focus:outline-none focus:border-brand-600" placeholder="000000">
+      </div>
+      <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all">Validate & Process</button>
+    </form>
+  </main>
+  <div id="ts-global-footer"></div>
+  <div id="loading-overlay" class="hidden fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm">
+    <div class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <p class="text-white font-medium">Processing deposit...</p>
+  </div>
+  <script src="app.js"></script>
+  <script>
+    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
+    document.getElementById('validation-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const code = document.getElementById('code').value.trim();
+      if (code.length !== 6 || !/^\d{6}$/.test(code)) { TS_UI.showToast('Enter a valid 6-digit code', 'warning'); return; }
+      if (!TS_Deposit.validateCode(code)) { TS_UI.showToast('Invalid or already used code', 'error'); return; }
+      
+      document.getElementById('loading-overlay').classList.remove('hidden');
+      const pending = TS_DB.get('pending_deposit', { amount: 0 });
+      
+      setTimeout(() => {
+        TS_Balance.add(pending.amount);
+        const txs = TS_DB.get('transactions', []);
+        txs.unshift({ type: 'deposit', amount: pending.amount, method: 'bank', status: 'completed', createdAt: new Date().toISOString() });
+        TS_DB.set('transactions', txs);
+        TS_DB.remove('pending_deposit');
+        TS_UI.showToast('Deposit successful!', 'success');
+        location.href = 'dashboard.html';
+      }, 3000);
+    });
+  </script>
+</body>
+</html>

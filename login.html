@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Login - Trade Station</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a5f' },
+            dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #0b0f19; }
+    .gradient-text { background: linear-gradient(135deg, #60a5fa, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <svg viewBox="0 0 200 40" class="h-10 mx-auto mb-4" fill="none"><rect x="0" y="8" width="24" height="24" rx="4" fill="#2563EB"/><path d="M6 20L10 16L14 22L18 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><text x="32" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="white">Trade Station</text></svg>
+      <h1 class="text-2xl font-bold text-white">Welcome Back</h1>
+      <p class="text-gray-400 text-sm mt-1">Log in to your trading account</p>
+    </div>
+
+    <form id="login-form" class="bg-dark-800 border border-gray-700/50 rounded-2xl p-6 space-y-4">
+      <div>
+        <label class="block text-xs font-medium text-gray-400 mb-1">Saved Accounts</label>
+        <select id="savedAccounts" class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors">
+          <option value="">-- Select or enter manually --</option>
+        </select>
+      </div>
+      <div class="relative">
+        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-700"></div></div>
+        <div class="relative flex justify-center text-xs"><span class="px-2 bg-dark-800 text-gray-500">or</span></div>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-400 mb-1">Email</label>
+        <input type="email" id="email" required class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors" placeholder="john@example.com">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-400 mb-1">Password</label>
+        <input type="password" id="password" required class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors" placeholder="Your password">
+      </div>
+      <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-all">Log In</button>
+      <p class="text-center text-sm text-gray-400">Don't have an account? <a href="register.html" class="text-brand-400 font-semibold">Create Account</a></p>
+    </form>
+  </div>
+
+  <div id="loading-overlay" class="hidden fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm">
+    <div class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <p class="text-white font-medium text-lg">Authenticating...</p>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // Populate saved accounts
+    const users = TS_DB.get('users', []);
+    const select = document.getElementById('savedAccounts');
+    users.forEach((u, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${u.firstName} ${u.lastName} (${u.email})`;
+      select.appendChild(opt);
+    });
+
+    select.addEventListener('change', function() {
+      if (this.value !== '') {
+        const u = users[this.value];
+        document.getElementById('email').value = u.email;
+      }
+    });
+
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      document.getElementById('loading-overlay').classList.remove('hidden');
+
+      // Try backend first
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (data.token) {
+          TS_Auth.setSession(data.token, data.user);
+          setTimeout(() => location.href = 'dashboard.html', 2000);
+          return;
+        }
+      } catch {}
+
+      // Fallback to localStorage
+      const localUsers = TS_DB.get('users', []);
+      const user = localUsers.find(u => u.email === email && u.password === password);
+      if (user) {
+        TS_Auth.setSession('local-token-' + user.userId, user);
+        setTimeout(() => location.href = 'dashboard.html', 2000);
+      } else {
+        document.getElementById('loading-overlay').classList.add('hidden');
+        TS_UI.showToast('Invalid email or password', 'error');
+      }
+    });
+  </script>
+</body>
+</html>

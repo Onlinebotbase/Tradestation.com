@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>History - Trade Station</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class', theme: { extend: { colors: { brand: { 600: '#2563eb' }, dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19' } } } } }</script>
+  <style>body { background: #0b0f19; }</style>
+</head>
+<body class="text-white">
+  <div id="ts-global-header"></div>
+  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
+    <h1 class="text-lg font-bold mb-4">Transaction History</h1>
+    <div class="flex gap-2 mb-4 overflow-x-auto text-xs">
+      <button onclick="filterHistory('all')" class="filter-btn px-3 py-1.5 rounded-full bg-brand-600 text-white font-medium whitespace-nowrap" data-filter="all">All</button>
+      <button onclick="filterHistory('deposit')" class="filter-btn px-3 py-1.5 rounded-full bg-gray-800 text-gray-300 whitespace-nowrap" data-filter="deposit">Deposits</button>
+      <button onclick="filterHistory('withdraw')" class="filter-btn px-3 py-1.5 rounded-full bg-gray-800 text-gray-300 whitespace-nowrap" data-filter="withdraw">Withdrawals</button>
+      <button onclick="filterHistory('trade')" class="filter-btn px-3 py-1.5 rounded-full bg-gray-800 text-gray-300 whitespace-nowrap" data-filter="trade">Trades</button>
+      <button onclick="filterHistory('holding')" class="filter-btn px-3 py-1.5 rounded-full bg-gray-800 text-gray-300 whitespace-nowrap" data-filter="holding">Holdings</button>
+    </div>
+    <div id="history-list" class="space-y-2"></div>
+    <div id="no-history" class="hidden text-center py-12 text-gray-500 text-sm">
+      <p>No transactions found.</p>
+    </div>
+  </main>
+  <div id="ts-global-footer"></div>
+  <script src="app.js"></script>
+  <script>
+    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
+    let currentFilter = 'all';
+
+    function getHistory() {
+      const transactions = TS_DB.get('transactions', []);
+      const trades = TS_Invest.getTrades().map(t => ({ ...t, txType: 'trade', date: t.createdAt }));
+      const holdings = TS_Invest.getHoldings().map(h => ({ ...h, txType: 'holding', date: h.createdAt }));
+      return [...transactions, ...trades, ...holdings].sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
+    }
+
+    function renderHistory() {
+      let items = getHistory();
+      if (currentFilter !== 'all') {
+        items = items.filter(i => (i.type || i.txType) === currentFilter);
+      }
+      const container = document.getElementById('history-list');
+      const noHistory = document.getElementById('no-history');
+      if (items.length === 0) { container.innerHTML = ''; noHistory.classList.remove('hidden'); return; }
+      noHistory.classList.add('hidden');
+
+      container.innerHTML = items.map(item => {
+        const type = item.type || item.txType;
+        let icon, color, title, amount;
+        if (type === 'deposit') { icon = '↓'; color = 'text-green-400'; title = 'Deposit'; amount = '+$' + item.amount.toFixed(2); }
+        else if (type === 'withdraw') { icon = '↑'; color = 'text-red-400'; title = 'Withdrawal'; amount = '-$' + item.amount.toFixed(2); }
+        else if (type === 'trade') { icon = '◈'; color = item.profit >= 0 ? 'text-green-400' : 'text-red-400'; title = `Trade ${item.symbol.toUpperCase()} ${item.direction}`; amount = (item.profit >= 0 ? '+' : '') + '$' + (item.profit || 0).toFixed(2); }
+        else if (type === 'holding') { icon = '◉'; color = 'text-blue-400'; title = `Holding ${item.symbol.toUpperCase()}`; amount = '+$' + (item.profit || 0).toFixed(2); }
+        else { icon = '•'; color = 'text-gray-400'; title = 'Transaction'; amount = '$' + (item.amount || 0).toFixed(2); }
+
+        return `
+          <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center ${color} font-bold text-lg">${icon}</div>
+              <div>
+                <div class="text-sm font-bold text-white">${title}</div>
+                <div class="text-xs text-gray-400">${new Date(item.date || item.createdAt).toLocaleDateString()}</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-sm font-bold ${color}">${amount}</div>
+              <div class="text-xs text-gray-500">${item.status || 'completed'}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterHistory(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        if (btn.dataset.filter === filter) { btn.classList.add('bg-brand-600', 'text-white'); btn.classList.remove('bg-gray-800', 'text-gray-300'); }
+        else { btn.classList.remove('bg-brand-600', 'text-white'); btn.classList.add('bg-gray-800', 'text-gray-300'); }
+      });
+      renderHistory();
+    }
+
+    renderHistory();
+  </script>
+</body>
+</html>

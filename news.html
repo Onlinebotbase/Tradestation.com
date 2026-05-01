@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>News - Trade Station</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{600:'#2563eb'},dark:{800:'#1f2937',900:'#111827',950:'#0b0f19'}}}}}</script>
+  <style>body{background:#0b0f19;}</style>
+</head>
+<body class="text-white">
+  <div id="ts-global-header"></div>
+  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
+    <h1 class="text-lg font-bold mb-4">Market News</h1>
+    <div id="news-list" class="space-y-3">
+      <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 shimmer h-24"></div>
+      <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 shimmer h-24"></div>
+      <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 shimmer h-24"></div>
+    </div>
+  </main>
+  <div id="ts-global-footer"></div>
+  <script src="app.js"></script>
+  <script>
+    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
+    async function loadNews() {
+      try {
+        const res = await fetch('https://finnhub.io/api/v1/news?category=general&token=d7cq1t9r01qv03eta4rgd7cq1t9r01qv03eta4s0');
+        const news = await res.json();
+        document.getElementById('news-list').innerHTML = news.slice(0, 15).map(item => `
+          <a href="${item.url}" target="_blank" class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 block hover:border-brand-500/50 transition-colors">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs px-2 py-0.5 rounded bg-brand-600/20 text-brand-400 font-semibold">${item.source || 'News'}</span>
+              <span class="text-xs text-gray-500">${new Date(item.datetime * 1000).toLocaleDateString()}</span>
+            </div>
+            <h3 class="text-sm font-bold text-white mb-1">${item.headline}</h3>
+            <p class="text-xs text-gray-400 line-clamp-2">${item.summary || ''}</p>
+          </a>
+        `).join('');
+      } catch(e) {
+        document.getElementById('news-list').innerHTML = '<div class="text-center text-gray-500 text-sm py-8">Unable to load news. Please try again later.</div>';
+      }
+    }
+    loadNews();
+    setInterval(loadNews, 60000);
+  </script>
+</body>
+</html>

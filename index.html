@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Trade Station - Multi-Asset Investment & Trading Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a5f' },
+            dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .gradient-text { background: linear-gradient(135deg, #60a5fa, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .glass { background: rgba(17,24,39,0.7); backdrop-filter: blur(12px); }
+    .ticker-wrap { overflow: hidden; white-space: nowrap; }
+    .ticker { display: inline-block; animation: ticker 30s linear infinite; }
+    @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .shimmer { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); background-size: 200% 100%; animation: shimmer 2s infinite; }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    .hero-bg { background: radial-gradient(ellipse at top, #1e3a5f 0%, #0b0f19 50%, #000 100%); }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+    .feature-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+    .feature-scroll::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body class="bg-dark-950 text-white antialiased">
+
+  <!-- Header -->
+  <header id="landing-header" class="fixed top-0 w-full z-50 transition-all duration-300 border-b border-gray-800/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 lg:h-20">
+        <a href="index.html" class="flex items-center gap-2">
+          <svg viewBox="0 0 200 40" class="h-7 w-auto" fill="none"><rect x="0" y="8" width="24" height="24" rx="4" fill="#2563EB"/><path d="M6 20L10 16L14 22L18 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><text x="32" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="white">Trade Station</text></svg>
+        </a>
+        <nav class="hidden lg:flex items-center gap-8 text-sm font-medium text-gray-300">
+          <a href="index.html" class="hover:text-white transition-colors">Home</a>
+          <a href="market.html" class="hover:text-white transition-colors">Markets</a>
+          <a href="charts.html" class="hover:text-white transition-colors">Platforms</a>
+          <a href="symbol.html" class="hover:text-white transition-colors">Tools</a>
+          <a href="news.html" class="hover:text-white transition-colors">News</a>
+          <a href="mailbox.html" class="hover:text-white transition-colors">Support</a>
+        </nav>
+        <div class="flex items-center gap-3">
+          <button onclick="location.href='login.html'" class="hidden sm:block text-sm font-medium text-gray-300 hover:text-white transition-colors">Log In</button>
+          <button onclick="location.href='register.html'" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-lg transition-all">Create Account</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero-bg pt-32 pb-20 lg:pt-44 lg:pb-32 relative overflow-hidden">
+    <div class="absolute inset-0 opacity-30">
+      <div class="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-semibold mb-6">
+          <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span> Live Markets Active
+        </div>
+        <h1 class="text-4xl lg:text-6xl font-extrabold tracking-tight mb-6">
+          Trade the Future with <span class="gradient-text">AI-Powered</span> Precision
+        </h1>
+        <p class="text-lg lg:text-xl text-gray-400 mb-8 max-w-2xl">
+          Multi-asset trading platform combining institutional-grade execution, real-time analytics, and intelligent automation across crypto, forex, stocks, and commodities.
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <button onclick="location.href='register.html'" class="px-8 py-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-lg shadow-brand-600/25 transition-all hover:scale-[1.02]">Create Real Account</button>
+          <button onclick="location.href='login.html'" class="px-8 py-4 bg-gray-800 hover:bg-gray-700 text-white font-bold rounded-xl border border-gray-700 transition-all">Login to Account</button>
+        </div>
+      </div>
+      <!-- Live Ticker -->
+      <div class="mt-12 lg:mt-16 bg-gray-900/50 rounded-xl border border-gray-800 p-4 overflow-hidden">
+        <div class="ticker-wrap">
+          <div id="hero-ticker" class="ticker text-sm font-mono text-gray-300 flex gap-8">
+            <span class="flex items-center gap-2"><span class="text-green-400">BTC/USD</span> <span id="t-btc">--</span></span>
+            <span class="flex items-center gap-2"><span class="text-green-400">ETH/USD</span> <span id="t-eth">--</span></span>
+            <span class="flex items-center gap-2"><span class="text-green-400">EUR/USD</span> <span>1.0842</span></span>
+            <span class="flex items-center gap-2"><span class="text-red-400">GBP/USD</span> <span>1.2631</span></span>
+            <span class="flex items-center gap-2"><span class="text-green-400">AAPL</span> <span>189.42</span></span>
+            <span class="flex items-center gap-2"><span class="text-red-400">TSLA</span> <span>242.18</span></span>
+            <span class="flex items-center gap-2"><span class="text-green-400">XAU/USD</span> <span>2045.30</span></span>
+            <span class="flex items-center gap-2"><span class="text-green-400">SOL/USD</span> <span id="t-sol">--</span></span>
+            <span class="flex items-center gap-2"><span class="text-red-400">BNB/USD</span> <span id="t-bnb">--</span></span>
+            <span class="flex items-center gap-2"><span class="text-green-400">DOGE/USD</span> <span id="t-doge">--</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust Grid -->
+  <section class="py-16 lg:py-24 bg-dark-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="card-hover bg-dark-800 border border-gray-700/50 rounded-xl p-6 text-center">
+          <div class="w-12 h-12 mx-auto mb-4 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-400">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          </div>
+          <h3 class="font-bold text-white mb-1">Execution Speed</h3>
+          <p class="text-sm text-gray-400">Sub-millisecond order routing</p>
+        </div>
+        <div class="card-hover bg-dark-800 border border-gray-700/50 rounded-xl p-6 text-center">
+          <div class="w-12 h-12 mx-auto mb-4 rounded-lg bg-green-500/10 flex items-center justify-center text-green-400">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          </div>
+          <h3 class="font-bold text-white mb-1">Bank-Grade Security</h3>
+          <p class="text-sm text-gray-400">256-bit encryption & cold storage</p>
+        </div>
+        <div class="card-hover bg-dark-800 border border-gray-700/50 rounded-xl p-6 text-center">
+          <div class="w-12 h-12 mx-auto mb-4 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          </div>
+          <h3 class="font-bold text-white mb-1">Global Markets</h3>
+          <p class="text-sm text-gray-400">150+ countries, 24/7 access</p>
+        </div>
+        <div class="card-hover bg-dark-800 border border-gray-700/50 rounded-xl p-6 text-center">
+          <div class="w-12 h-12 mx-auto mb-4 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-400">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+          </div>
+          <h3 class="font-bold text-white mb-1">AI Trading Engine</h3>
+          <p class="text-sm text-gray-400">Smart signals & risk management</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature Carousel -->
+  <section class="py-16 lg:py-24 bg-dark-950">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-2xl lg:text-3xl font-bold mb-8">Platform Features</h2>
+      <div class="flex gap-4 overflow-x-auto feature-scroll pb-4 snap-x snap-mandatory">
+        <div class="snap-start min-w-[280px] lg:min-w-[320px] bg-dark-800 border border-gray-700/50 rounded-xl p-6 card-hover">
+          <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 mb-4">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 16v-4m0-4h.01"></path></svg>
+          </div>
+          <h3 class="font-bold text-white mb-2">AI Trading Tools</h3>
+          <p class="text-sm text-gray-400">Machine learning algorithms analyze market patterns in real-time to generate actionable trading signals.</p>
+        </div>
+        <div class="snap-start min-w-[280px] lg:min-w-[320px] bg-dark-800 border border-gray-700/50 rounded-xl p-6 card-hover">
+          <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 mb-4">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          </div>
+          <h3 class="font-bold text-white mb-2">MT5 Integration</h3>
+          <p class="text-sm text-gray-400">Full MetaTrader 5 bridge with advanced charting, indicators, and automated trading capabilities.</p>
+        </div>
+        <div class="snap-start min-w-[280px] lg:min-w-[320px] bg-dark-800 border border-gray-700/50 rounded-xl p-6 card-hover">
+          <div class="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center text-green-400 mb-4">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          </div>
+          <h3 class="font-bold text-white mb-2">Crypto Markets</h3>
+          <p class="text-sm text-gray-400">Trade 100+ cryptocurrencies with deep liquidity, tight spreads, and instant execution.</p>
+        </div>
+        <div class="snap-start min-w-[280px] lg:min-w-[320px] bg-dark-800 border border-gray-700/50 rounded-xl p-6 card-hover">
+          <div class="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-400 mb-4">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          </div>
+          <h3 class="font-bold text-white mb-2">Forex Engine</h3>
+          <p class="text-sm text-gray-400">Access 80+ currency pairs with raw spreads from 0.0 pips and institutional-grade pricing.</p>
+        </div>
+        <div class="snap-start min-w-[280px] lg:min-w-[320px] bg-dark-800 border border-gray-700/50 rounded-xl p-6 card-hover">
+          <div class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 mb-4">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
+          <h3 class="font-bold text-white mb-2">Institutional Liquidity</h3>
+          <p class="text-sm text-gray-400">Direct market access to tier-1 liquidity providers for seamless large-volume execution.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Awards -->
+  <section class="py-12 bg-dark-900 border-y border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <p class="text-sm text-gray-400 uppercase tracking-wider mb-6">Recognized Global Broker</p>
+      <div class="flex flex-wrap justify-center gap-8 lg:gap-16 items-center opacity-60">
+        <div class="flex items-center gap-2"><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span class="font-bold">Best Broker 2024</span></div>
+        <div class="flex items-center gap-2"><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span class="font-bold">Top Execution</span></div>
+        <div class="flex items-center gap-2"><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span class="font-bold">Most Trusted</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- User Segments -->
+  <section class="py-16 lg:py-24 bg-dark-950">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-2xl lg:text-3xl font-bold mb-8 text-center">Built for Every Trader</h2>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 card-hover">
+          <h3 class="text-lg font-bold text-white mb-2">Retail Traders</h3>
+          <p class="text-sm text-gray-400 mb-4">Intuitive interface, educational resources, and low minimum deposits to get started.</p>
+          <button onclick="location.href='register.html'" class="text-brand-400 text-sm font-semibold flex items-center gap-1">Get Started <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+        </div>
+        <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 card-hover">
+          <h3 class="text-lg font-bold text-white mb-2">Professional Traders</h3>
+          <p class="text-sm text-gray-400 mb-4">Advanced order types, API access, and custom indicators for sophisticated strategies.</p>
+          <button onclick="location.href='register.html'" class="text-brand-400 text-sm font-semibold flex items-center gap-1">Open Pro Account <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+        </div>
+        <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 card-hover">
+          <h3 class="text-lg font-bold text-white mb-2">Institutions</h3>
+          <p class="text-sm text-gray-400 mb-4">Prime brokerage, white-label solutions, and dedicated relationship management.</p>
+          <button onclick="location.href='mailbox.html'" class="text-brand-400 text-sm font-semibold flex items-center gap-1">Contact Sales <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Product Grid -->
+  <section class="py-16 lg:py-24 bg-dark-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-2xl lg:text-3xl font-bold mb-8">Trading Products</h2>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 card-hover">
+          <h3 class="font-bold text-white mb-2">Web Trader</h3>
+          <p class="text-sm text-gray-400 mb-3">Browser-based platform with full functionality. No downloads required.</p>
+          <a href="dashboard.html" class="text-brand-400 text-sm font-semibold">Launch Web Trader</a>
+        </div>
+        <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 card-hover">
+          <h3 class="font-bold text-white mb-2">Mobile App</h3>
+          <p class="text-sm text-gray-400 mb-3">Trade on the go with native iOS and Android applications.</p>
+          <span class="text-gray-500 text-sm">Coming Soon</span>
+        </div>
+        <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 card-hover">
+          <h3 class="font-bold text-white mb-2">AI Signals Engine</h3>
+          <p class="text-sm text-gray-400 mb-3">Real-time buy/sell signals powered by machine learning models.</p>
+          <a href="market.html" class="text-brand-400 text-sm font-semibold">View Signals</a>
+        </div>
+        <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 card-hover">
+          <h3 class="font-bold text-white mb-2">MT5 Bridge System</h3>
+          <p class="text-sm text-gray-400 mb-3">Seamless integration with MetaTrader 5 for automated trading.</p>
+          <a href="charts.html" class="text-brand-400 text-sm font-semibold">Open Charts</a>
+        </div>
+        <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 card-hover">
+          <h3 class="font-bold text-white mb-2">API Trading</h3>
+          <p class="text-sm text-gray-400 mb-3">RESTful API for algorithmic trading and custom integrations.</p>
+          <span class="text-gray-500 text-sm">Documentation</span>
+        </div>
+        <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 card-hover">
+          <h3 class="font-bold text-white mb-2">Copy Trading</h3>
+          <p class="text-sm text-gray-400 mb-3">Follow and replicate top-performing traders automatically.</p>
+          <span class="text-gray-500 text-sm">Coming Soon</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Market News -->
+  <section class="py-16 lg:py-24 bg-dark-950">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl lg:text-3xl font-bold">Market News</h2>
+        <a href="news.html" class="text-brand-400 text-sm font-semibold">View All</a>
+      </div>
+      <div id="news-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 shimmer h-32"></div>
+        <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 shimmer h-32"></div>
+        <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 shimmer h-32"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Platform CTA -->
+  <section class="py-16 lg:py-24 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-brand-900 via-brand-600 to-purple-900"></div>
+    <div class="absolute inset-0 opacity-30 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+      <h2 class="text-3xl lg:text-4xl font-extrabold mb-4">Start Trading Today</h2>
+      <p class="text-lg text-white/80 mb-8">Join 500,000+ traders worldwide. Free account setup in under 2 minutes.</p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <button onclick="location.href='register.html'" class="px-8 py-4 bg-white text-brand-700 font-bold rounded-xl shadow-lg hover:bg-gray-100 transition-all">Create Real Account</button>
+        <button onclick="location.href='login.html'" class="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl border border-white/30 transition-all">Login Existing Account</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-dark-900 border-t border-gray-800 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
+        <div class="lg:col-span-2">
+          <svg viewBox="0 0 200 40" class="h-7 w-auto mb-4" fill="none"><rect x="0" y="8" width="24" height="24" rx="4" fill="#2563EB"/><path d="M6 20L10 16L14 22L18 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><text x="32" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="white">Trade Station</text></svg>
+          <p class="text-sm text-gray-400">Multi-asset trading platform providing institutional-grade execution across global markets.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold text-white mb-3">Company</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><a href="#" class="hover:text-white">About</a></li>
+            <li><a href="#" class="hover:text-white">Careers</a></li>
+            <li><a href="#" class="hover:text-white">Press</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold text-white mb-3">Markets</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><a href="market.html" class="hover:text-white">Crypto</a></li>
+            <li><a href="market.html" class="hover:text-white">Forex</a></li>
+            <li><a href="market.html" class="hover:text-white">Stocks</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold text-white mb-3">Support</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><a href="mailbox.html" class="hover:text-white">Help Center</a></li>
+            <li><a href="mailbox.html" class="hover:text-white">Contact</a></li>
+            <li><a href="#" class="hover:text-white">Status</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 pt-8 text-sm text-gray-500 text-center">
+        <p>Trade Station. All rights reserved. Trading involves risk. Trade responsibly.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    // Header scroll effect
+    const header = document.getElementById('landing-header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        header.classList.add('bg-gray-900/90', 'backdrop-blur-lg');
+      } else {
+        header.classList.remove('bg-gray-900/90', 'backdrop-blur-lg');
+      }
+    });
+
+    // Fetch live crypto prices for hero ticker
+    async function updateTicker() {
+      try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,dogecoin&vs_currencies=usd');
+        const data = await res.json();
+        if (data.bitcoin) document.getElementById('t-btc').textContent = '$' + data.bitcoin.usd.toLocaleString();
+        if (data.ethereum) document.getElementById('t-eth').textContent = '$' + data.ethereum.usd.toLocaleString();
+        if (data.solana) document.getElementById('t-sol').textContent = '$' + data.solana.usd.toLocaleString();
+        if (data.binancecoin) document.getElementById('t-bnb').textContent = '$' + data.binancecoin.usd.toLocaleString();
+        if (data.dogecoin) document.getElementById('t-doge').textContent = '$' + data.dogecoin.usd.toFixed(4);
+      } catch(e) {}
+    }
+    updateTicker();
+    setInterval(updateTicker, 30000);
+
+    // Fetch news
+    async function loadNews() {
+      try {
+        const res = await fetch('https://finnhub.io/api/v1/news?category=general&token=d7cq1t9r01qv03eta4rgd7cq1t9r01qv03eta4s0');
+        const news = await res.json();
+        const container = document.getElementById('news-grid');
+        container.innerHTML = news.slice(0, 6).map(item => `
+          <a href="${item.url}" target="_blank" class="bg-dark-800 border border-gray-700/50 rounded-xl p-5 card-hover block">
+            <p class="text-xs text-brand-400 font-semibold mb-2">${item.source || 'News'}</p>
+            <h3 class="font-bold text-white text-sm mb-2 line-clamp-2">${item.headline}</h3>
+            <p class="text-xs text-gray-500">${new Date(item.datetime * 1000).toLocaleDateString()}</p>
+          </a>
+        `).join('');
+      } catch(e) {
+        document.getElementById('news-grid').innerHTML = '<p class="text-gray-400 text-sm col-span-3">Unable to load news. Please try again later.</p>';
+      }
+    }
+    loadNews();
+    setInterval(loadNews, 60000);
+  </script>
+</body>
+</html>

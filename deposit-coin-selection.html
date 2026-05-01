@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Select Coin - Trade Station</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{600:'#2563eb'},dark:{800:'#1f2937',900:'#111827',950:'#0b0f19'}}}}}</script>
+  <style>body{background:#0b0f19;}</style>
+</head>
+<body class="text-white">
+  <div id="ts-global-header"></div>
+  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
+    <h1 class="text-lg font-bold mb-4">Select Coin</h1>
+    <input type="text" id="search" placeholder="Search coins..." class="w-full px-3 py-2 bg-dark-800 border border-gray-700 rounded-lg text-white text-sm mb-4 focus:outline-none focus:border-brand-600">
+    <div class="space-y-2 mb-4">
+      <div onclick="selectCoin('USDT', 'Tether')" class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:border-brand-500/50">
+        <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 font-bold text-xs">USDT</div>
+        <div class="flex-1"><div class="text-sm font-bold text-white">USDT</div><div class="text-xs text-gray-400">Tether USD</div></div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+      <div onclick="selectCoin('ETH', 'Ethereum')" class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:border-brand-500/50">
+        <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs">ETH</div>
+        <div class="flex-1"><div class="text-sm font-bold text-white">ETH</div><div class="text-xs text-gray-400">Ethereum</div></div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+      <div onclick="selectCoin('BNB', 'BNB')" class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:border-brand-500/50">
+        <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 font-bold text-xs">BNB</div>
+        <div class="flex-1"><div class="text-sm font-bold text-white">BNB</div><div class="text-xs text-gray-400">BNB Smart Chain</div></div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+      <div onclick="selectCoin('TRX', 'Tron')" class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:border-brand-500/50">
+        <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 font-bold text-xs">TRX</div>
+        <div class="flex-1"><div class="text-sm font-bold text-white">TRX</div><div class="text-xs text-gray-400">Tron</div></div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+    </div>
+    <div id="more-coins" class="space-y-2"></div>
+  </main>
+  <div id="ts-global-footer"></div>
+  <script src="app.js"></script>
+  <script>
+    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
+    function selectCoin(symbol, name) { TS_DB.set('deposit_coin', { symbol, name }); location.href = 'deposit-network.html'; }
+    async function loadMoreCoins() {
+      const coins = await TS_Market.getCoins();
+      const container = document.getElementById('more-coins');
+      const search = document.getElementById('search');
+      function render(filter='') {
+        const filtered = coins.filter(c => c.symbol.toLowerCase().includes(filter.toLowerCase()) || c.name.toLowerCase().includes(filter.toLowerCase()));
+        container.innerHTML = filtered.slice(0, 20).map(c => `
+          <div onclick="selectCoin('${c.symbol.toUpperCase()}', '${c.name.replace(/'/g, "\\'")}')" class="bg-dark-800 border border-gray-700/50 rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-brand-500/50">
+            <img src="${c.image}" class="w-8 h-8 rounded-full" onerror="this.style.display='none'">
+            <div class="flex-1"><div class="text-sm font-bold text-white">${c.symbol.toUpperCase()}</div><div class="text-xs text-gray-400">${c.name}</div></div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </div>
+        `).join('');
+      }
+      search.addEventListener('input', e => render(e.target.value));
+      render();
+    }
+    loadMoreCoins();
+  </script>
+</body>
+</html>

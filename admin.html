@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Admin Panel - Trade Station</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{600:'#2563eb'},dark:{800:'#1f2937',900:'#111827',950:'#0b0f19'}}}}}</script>
+  <style>body{background:#0b0f19;}</style>
+</head>
+<body class="text-white">
+  <div id="ts-global-header"></div>
+  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
+    <h1 class="text-lg font-bold mb-4">Admin Panel</h1>
+    
+    <!-- Stats -->
+    <div class="grid grid-cols-3 gap-3 mb-4">
+      <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-3 text-center">
+        <div class="text-xs text-gray-400">Users</div>
+        <div class="text-lg font-bold text-white" id="stat-users">0</div>
+      </div>
+      <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-3 text-center">
+        <div class="text-xs text-gray-400">Deposits</div>
+        <div class="text-lg font-bold text-white" id="stat-deposits">0</div>
+      </div>
+      <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-3 text-center">
+        <div class="text-xs text-gray-400">Withdrawals</div>
+        <div class="text-lg font-bold text-white" id="stat-withdrawals">0</div>
+      </div>
+    </div>
+
+    <!-- Validation Codes -->
+    <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 mb-4">
+      <h2 class="text-sm font-bold text-gray-300 mb-3">Deposit Validation Codes</h2>
+      <div class="bg-gray-900 rounded-lg p-3 mb-3">
+        <code class="text-xs text-gray-300 font-mono block whitespace-pre-wrap" id="deposit-codes">
+482915, 930472, 158203, 764981, 502319, 847261, 319586, 672450, 248391, 905836,
+731258, 629047, 580124, 417902, 896351, 264098, 152983, 309472, 741826, 589320,
+620583, 958210, 203874, 742985, 894621, 510293, 673420, 248765, 901632, 437892
+        </code>
+      </div>
+      <button onclick="generateDepositCodes()" class="w-full py-2 bg-brand-600 text-white text-sm font-bold rounded-lg">Generate New Deposit Codes</button>
+    </div>
+
+    <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 mb-4">
+      <h2 class="text-sm font-bold text-gray-300 mb-3">Withdrawal Validation Codes</h2>
+      <div class="bg-gray-900 rounded-lg p-3 mb-3">
+        <code class="text-xs text-gray-300 font-mono block whitespace-pre-wrap" id="withdraw-codes">
+483921, 175064, 902718, 634285, 217509, 856430, 490127, 731694,
+562803, 308417, 941256, 128374, 675820, 203519, 487960, 819432,
+356701, 740528
+        </code>
+      </div>
+      <button onclick="generateWithdrawCodes()" class="w-full py-2 bg-red-600 text-white text-sm font-bold rounded-lg">Generate New Withdrawal Codes</button>
+    </div>
+
+    <!-- User List -->
+    <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 mb-4">
+      <h2 class="text-sm font-bold text-gray-300 mb-3">Registered Users</h2>
+      <div id="user-list" class="space-y-2 max-h-64 overflow-y-auto"></div>
+    </div>
+
+    <!-- Transaction List -->
+    <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4">
+      <h2 class="text-sm font-bold text-gray-300 mb-3">All Transactions</h2>
+      <div id="tx-list" class="space-y-2 max-h-64 overflow-y-auto"></div>
+    </div>
+  </main>
+  <div id="ts-global-footer"></div>
+  <script src="app.js"></script>
+  <script>
+    const users = TS_DB.get('users', []);
+    const txs = TS_DB.get('transactions', []);
+    document.getElementById('stat-users').textContent = users.length;
+    document.getElementById('stat-deposits').textContent = txs.filter(t => t.type === 'deposit').length;
+    document.getElementById('stat-withdrawals').textContent = txs.filter(t => t.type === 'withdraw').length;
+
+    document.getElementById('user-list').innerHTML = users.length === 0 ? '<div class="text-xs text-gray-500">No users registered.</div>' : users.map(u => `
+      <div class="bg-gray-900 rounded-lg p-3">
+        <div class="text-xs font-bold text-white">${u.firstName} ${u.lastName}</div>
+        <div class="text-xs text-gray-400">ID: ${u.userId}</div>
+        <div class="text-xs text-gray-400">${u.email}</div>
+        <div class="text-xs text-gray-400">Balance: $${(u.balance || 0).toFixed(2)}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('tx-list').innerHTML = txs.length === 0 ? '<div class="text-xs text-gray-500">No transactions.</div>' : txs.slice(0, 50).map(t => `
+      <div class="bg-gray-900 rounded-lg p-3 flex items-center justify-between">
+        <div>
+          <div class="text-xs font-bold text-white">${t.type.toUpperCase()}</div>
+          <div class="text-xs text-gray-400">${new Date(t.createdAt).toLocaleDateString()}</div>
+        </div>
+        <div class="text-xs font-bold ${t.type === 'deposit' ? 'text-green-400' : t.type === 'withdraw' ? 'text-red-400' : 'text-white'}">$${t.amount.toFixed(2)}</div>
+      </div>
+    `).join('');
+
+    function generateDepositCodes() {
+      const codes = Array.from({length: 30}, () => String(Math.floor(100000 + Math.random() * 900000)));
+      document.getElementById('deposit-codes').textContent = codes.join(', ');
+      TS_DB.set('admin_deposit_codes', codes);
+      TS_UI.showToast('New deposit codes generated', 'success');
+    }
+    function generateWithdrawCodes() {
+      const codes = Array.from({length: 18}, () => String(Math.floor(100000 + Math.random() * 900000)));
+      document.getElementById('withdraw-codes').textContent = codes.join(', ');
+      TS_DB.set('admin_withdraw_codes', codes);
+      TS_UI.showToast('New withdrawal codes generated', 'success');
+    }
+  </script>
+</body>
+</html>

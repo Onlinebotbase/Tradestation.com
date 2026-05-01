@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Confirm Bank Deposit - Trade Station</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{600:'#2563eb'},dark:{800:'#1f2937',900:'#111827',950:'#0b0f19'}}}}}</script>
+  <style>body{background:#0b0f19;}</style>
+</head>
+<body class="text-white">
+  <div id="ts-global-header"></div>
+  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
+    <h1 class="text-lg font-bold mb-4">Confirm Deposit</h1>
+    <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 mb-4 space-y-3">
+      <div class="flex justify-between"><span class="text-sm text-gray-400">Amount</span><span class="text-sm font-bold text-white" id="dep-amount">--</span></div>
+      <div class="flex justify-between"><span class="text-sm text-gray-400">Method</span><span class="text-sm font-bold text-white">Bank Transfer</span></div>
+      <div class="flex justify-between"><span class="text-sm text-gray-400">Bank</span><span class="text-sm font-bold text-white" id="dep-bank">--</span></div>
+      <div class="flex justify-between"><span class="text-sm text-gray-400">Status</span><span class="text-sm font-bold text-yellow-400">Pending</span></div>
+    </div>
+    <div class="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 mb-4">
+      <p class="text-xs text-yellow-400">After confirming, please contact support via live chat to complete your bank deposit. A 6-digit validation code will be required.</p>
+    </div>
+    <button onclick="confirmDeposit()" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl mb-3">Confirm Bank Deposit</button>
+    <button onclick="location.href='deposit-bank.html'" class="w-full py-3 bg-gray-800 text-gray-300 font-bold rounded-xl">Edit Details</button>
+  </main>
+  <div id="ts-global-footer"></div>
+  <script src="app.js"></script>
+  <script>
+    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
+    const pending = TS_DB.get('pending_deposit', {});
+    document.getElementById('dep-amount').textContent = '$' + (pending.amount || 0).toFixed(2);
+    document.getElementById('dep-bank').textContent = pending.bankName || '--';
+    function confirmDeposit() {
+      // Open Smartsupp in new tab
+      window.open('https://www.smartsupp.com/widget/0aca269b6fb7319bc6e3d94fecac02732bdbdb3a', '_blank');
+      // Navigate to validation page
+      location.href = 'deposit-bank-validation.html';
+    }
+  </script>
+</body>
+</html>

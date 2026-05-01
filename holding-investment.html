@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>New Holding - Trade Station</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{600:'#2563eb'},dark:{800:'#1f2937',900:'#111827',950:'#0b0f19'}}}}}</script>
+  <style>body{background:#0b0f19;}</style>
+</head>
+<body class="text-white">
+  <div id="ts-global-header"></div>
+  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
+    <h1 class="text-lg font-bold mb-4">Start New Holding</h1>
+
+    <!-- Symbol -->
+    <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 mb-4" onclick="location.href='holding-symbol.html'">
+      <div class="flex items-center justify-between cursor-pointer">
+        <div>
+          <div class="text-xs text-gray-400">Symbol</div>
+          <div class="text-lg font-bold text-white" id="selected-symbol">Select Symbol</div>
+        </div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+    </div>
+
+    <form id="holding-form" class="space-y-4">
+      <!-- Amount -->
+      <div>
+        <label class="block text-xs font-medium text-gray-400 mb-1">Investment Amount ($)</label>
+        <input type="number" id="amount" required min="10" class="w-full px-3 py-2.5 bg-dark-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-600" placeholder="Enter amount">
+        <div id="plan-info" class="mt-2 text-xs text-brand-400 font-medium"></div>
+      </div>
+
+      <!-- Duration -->
+      <div>
+        <label class="block text-xs font-medium text-gray-400 mb-1">Holding Duration</label>
+        <select id="duration" class="w-full px-3 py-2.5 bg-dark-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-600">
+          <option>1 week</option>
+          <option>2 weeks</option>
+          <option>1 month</option>
+          <option>2 months</option>
+          <option>3 months</option>
+          <option>6 months</option>
+          <option>9 months</option>
+          <option>1 year</option>
+          <option>18 months</option>
+          <option>2 years</option>
+        </select>
+      </div>
+
+      <!-- Summary -->
+      <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4">
+        <div class="flex justify-between text-sm mb-1"><span class="text-gray-400">Selected Plan</span><span class="text-white font-bold" id="plan-name">--</span></div>
+        <div class="flex justify-between text-sm mb-1"><span class="text-gray-400">Daily Return Rate</span><span class="text-green-400 font-bold" id="plan-rate">--</span></div>
+        <div class="flex justify-between text-sm"><span class="text-gray-400">Available Balance</span><span class="text-white font-bold" id="avail-balance">$0.00</span></div>
+      </div>
+
+      <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all">Invest Now</button>
+    </form>
+  </main>
+  <div id="ts-global-footer"></div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="hidden fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm">
+    <div class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <p class="text-white font-medium">Processing your investment...</p>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
+
+    const selected = TS_DB.get('holding_selected_symbol', null);
+    let currentSymbol = selected || { symbol: 'BTC', name: 'Bitcoin' };
+    document.getElementById('selected-symbol').textContent = currentSymbol.symbol.toUpperCase();
+
+    function updatePlan() {
+      const amount = parseFloat(document.getElementById('amount').value) || 0;
+      const plan = TS_Invest.getPlanForAmount(amount);
+      document.getElementById('plan-info').textContent = amount >= 10 ? `${plan.name}: ${plan.rate}% daily return` : '';
+      document.getElementById('plan-name').textContent = amount >= 10 ? plan.name : '--';
+      document.getElementById('plan-rate').textContent = amount >= 10 ? plan.rate + '%' : '--';
+      document.getElementById('avail-balance').textContent = '$' + TS_Balance.get().toFixed(2);
+    }
+
+    document.getElementById('amount').addEventListener('input', updatePlan);
+    updatePlan();
+
+    document.getElementById('holding-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const amount = parseFloat(document.getElementById('amount').value);
+      if (!amount || amount < 10) { TS_UI.showToast('Minimum investment is $10', 'warning'); return; }
+      if (amount > TS_Balance.get()) { TS_UI.showToast('Insufficient balance', 'error'); return; }
+
+      const plan = TS_Invest.getPlanForAmount(amount);
+      const holding = {
+        symbol: currentSymbol.symbol,
+        symbolName: currentSymbol.name,
+        amount: amount,
+        duration: document.getElementById('duration').value,
+        dailyReturnRate: plan.rate,
+        planName: plan.name
+      };
+
+      document.getElementById('loading-overlay').classList.remove('hidden');
+
+      setTimeout(() => {
+        TS_Invest.addHolding(holding);
+        TS_Balance.subtract(amount);
+
+        const txs = TS_DB.get('transactions', []);
+        txs.unshift({ type: 'holding', amount, symbol: currentSymbol.symbol, status: 'active', createdAt: new Date().toISOString() });
+        TS_DB.set('transactions', txs);
+
+        location.href = 'holding.html';
+      }, 3000);
+    });
+  </script>
+</body>
+</html>

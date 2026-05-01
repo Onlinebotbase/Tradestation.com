@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Deposit Address - Trade Station</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{600:'#2563eb'},dark:{800:'#1f2937',900:'#111827',950:'#0b0f19'}}}}}</script>
+  <style>body{background:#0b0f19;}</style>
+</head>
+<body class="text-white">
+  <div id="ts-global-header"></div>
+  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
+    <h1 class="text-lg font-bold mb-4">Deposit Address</h1>
+    <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 text-center mb-4">
+      <div id="qrcode" class="flex justify-center mb-4"></div>
+      <div class="text-sm text-gray-400 mb-1">Send only <span class="text-white font-bold" id="coin-label">--</span> to this address</div>
+      <div class="text-xs text-gray-500 mb-3">Network: <span id="network-label">--</span></div>
+      <div class="bg-gray-900 rounded-lg p-3 flex items-center gap-2 mb-3">
+        <code id="address-text" class="text-xs text-white font-mono flex-1 break-all">--</code>
+        <button onclick="copyAddress()" class="p-2 bg-gray-700 rounded-lg hover:bg-gray-600">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        </button>
+      </div>
+    </div>
+    <form id="amount-form" class="space-y-4">
+      <div>
+        <label class="block text-xs font-medium text-gray-400 mb-1">Deposit Amount ($)</label>
+        <input type="number" id="amount" required min="10" class="w-full px-3 py-2.5 bg-dark-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-600" placeholder="Enter USD equivalent amount">
+      </div>
+      <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl">Proceed to Confirmation</button>
+    </form>
+  </main>
+  <div id="ts-global-footer"></div>
+  <script src="app.js"></script>
+  <script>
+    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
+    const coin = TS_DB.get('deposit_coin', { symbol: 'USDT' });
+    const network = TS_DB.get('deposit_network', { name: 'Ethereum', address: '0xAB98294614C46008cBF82Fa3e25285FBC2A6F257' });
+    document.getElementById('coin-label').textContent = coin.symbol;
+    document.getElementById('network-label').textContent = network.name;
+    document.getElementById('address-text').textContent = network.address;
+    
+    new QRCode(document.getElementById('qrcode'), {
+      text: network.address,
+      width: 160,
+      height: 160,
+      colorDark: '#ffffff',
+      colorLight: '#1f2937',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    function copyAddress() {
+      navigator.clipboard.writeText(network.address).then(() => TS_UI.showToast('Address copied!', 'success'));
+    }
+
+    document.getElementById('amount-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const amount = parseFloat(document.getElementById('amount').value);
+      if (!amount || amount < 10) { TS_UI.showToast('Minimum $10', 'warning'); return; }
+      TS_DB.set('pending_crypto_deposit', { amount, coin: coin.symbol, network: network.name, address: network.address });
+      location.href = 'deposit-confirmation.html';
+    });
+  </script>
+</body>
+</html>
