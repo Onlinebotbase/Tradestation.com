@@ -800,7 +800,7 @@
 
 <div id="ts-global-header"></div>
 
-<<main class="mt5-container">
+<main class="mt5-container">
     <!-- Top Status Bar -->
     <div class="mt5-topbar">
         <div class="flex items-center gap-4">
@@ -1177,7 +1177,7 @@
             <span id="statusPing">0ms</span>
         </div>
     </div>
-</main>
+
 
 <!-- Mobile Toggle -->
 <button class="mt5-mobile-toggle" id="mobileToggle" onclick="toggleMarketWatch()">
@@ -1188,6 +1188,7 @@
 
 <!-- Toast Notifications -->
 <div class="mt5-toast" id="toast"></div>
+</main>
 
 <div id="ts-global-footer"></div>
     
@@ -1983,6 +1984,28 @@ window.addEventListener('resize', function() {
     }, 300);
 });
 </script>
+    <script>
+        // Update price
+    async function updatePrice() {
+      const coins = await TS_Market.getCoins();
+      const coin = coins.find(c => c.symbol.toLowerCase() === symbol.toLowerCase());
+      if (coin) document.getElementById('chart-symbol-price').textContent = '$' + coin.current_price.toLocaleString();
+    }
+
+    document.querySelectorAll('.tf-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.tf-btn').forEach(b => { b.classList.remove('bg-brand-600', 'text-white'); b.classList.add('text-gray-400'); });
+        this.classList.add('bg-brand-600', 'text-white');
+        this.classList.remove('text-gray-400');
+        timeframe = this.dataset.tf;
+        loadChart();
+      });
+    });
+
+    loadChart();
+    updatePrice();
+    setInterval(updatePrice, 30000);
+    </script>
 
 </body>
 </html>
