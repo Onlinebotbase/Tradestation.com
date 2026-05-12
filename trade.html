@@ -5,35 +5,600 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Trades - Trade Station</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config = { darkMode: 'class', theme: { extend: { colors: { brand: { 600: '#2563eb' }, dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19' } } } } }</script>
-  <style>body { background: #0b0f19; }</style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 600: '#2563eb', 700: '#1d4ed8' },
+            dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19' },
+            mt5: {
+              bg: '#0b0f19',
+              panel: '#131722',
+              border: '#2a2e39',
+              text: '#d1d4dc',
+              muted: '#868993',
+              buy: '#089981',
+              sell: '#f23645',
+              accent: '#2962ff',
+              hover: '#1e2230'
+            }
+          },
+          fontFamily: {
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: #0b0f19;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .mt5-panel {
+      background: #131722;
+      border: 1px solid #2a2e39;
+      border-radius: 6px;
+    }
+    .mt5-panel-header {
+      background: #1a1f2e;
+      border-bottom: 1px solid #2a2e39;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #d1d4dc;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .mt5-stat-card {
+      background: #131722;
+      border: 1px solid #2a2e39;
+      border-radius: 6px;
+      padding: 16px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+    .mt5-stat-card:hover {
+      border-color: #3a3e4b;
+    }
+    .mt5-stat-label {
+      font-size: 11px;
+      color: #868993;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+    .mt5-stat-value {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: #d1d4dc;
+    }
+    .mt5-table-row {
+      display: grid;
+      grid-template-columns: 40px 80px 60px 1fr 80px 80px;
+      gap: 8px;
+      padding: 10px 16px;
+      border-bottom: 1px solid #1e2230;
+      align-items: center;
+      font-size: 12px;
+      transition: background 0.15s;
+    }
+    .mt5-table-row:hover {
+      background: #1a1f2e;
+    }
+    .mt5-table-header {
+      display: grid;
+      grid-template-columns: 40px 80px 60px 1fr 80px 80px;
+      gap: 8px;
+      padding: 8px 16px;
+      background: #1a1f2e;
+      border-bottom: 1px solid #2a2e39;
+      font-size: 11px;
+      font-weight: 600;
+      color: #868993;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .mt5-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .mt5-badge-buy {
+      background: rgba(8, 153, 129, 0.15);
+      color: #089981;
+    }
+    .mt5-badge-sell {
+      background: rgba(242, 54, 69, 0.15);
+      color: #f23645;
+    }
+    .mt5-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+      outline: none;
+    }
+    .mt5-btn-secondary {
+      background: #2a2e39;
+      color: #d1d4dc;
+      border: 1px solid #3a3e4b;
+    }
+    .mt5-btn-secondary:hover {
+      background: #363a45;
+      border-color: #4a4e5b;
+    }
+    .mt5-btn-danger {
+      background: rgba(242, 54, 69, 0.15);
+      color: #f23645;
+      border: 1px solid rgba(242, 54, 69, 0.3);
+    }
+    .mt5-btn-danger:hover {
+      background: rgba(242, 54, 69, 0.25);
+    }
+    .mt5-btn-primary {
+      background: #2962ff;
+      color: white;
+    }
+    .mt5-btn-primary:hover {
+      background: #1e52e0;
+    }
+    .mt5-profit {
+      color: #089981;
+    }
+    .mt5-loss {
+      color: #f23645;
+    }
+    .mt5-empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 16px;
+      color: #868993;
+    }
+    .mt5-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .mt5-scrollbar::-webkit-scrollbar-track {
+      background: #131722;
+    }
+    .mt5-scrollbar::-webkit-scrollbar-thumb {
+      background: #2a2e39;
+      border-radius: 3px;
+    }
+    .mt5-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #3a3e4b;
+    }
+    .mt5-symbol-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    @media (max-width: 768px) {
+      .mt5-table-header,
+      .mt5-table-row {
+        grid-template-columns: 40px 1fr 80px 80px;
+      }
+      .mt5-table-header > :nth-child(3),
+      .mt5-table-row > :nth-child(4) {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body class="text-white">
+
   <div id="ts-global-header"></div>
-  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
-    <div class="flex items-center justify-between mb-4">
-      <h1 class="text-lg font-bold">Active Trades</h1>
-      <button onclick="location.href='order-ticket.html'" class="px-3 py-1.5 bg-brand-600 text-white text-xs font-bold rounded-lg">+ New Trade</button>
-    </div>
-    <div id="trades-container" class="space-y-3"></div>
-    <div id="no-trades" class="hidden text-center py-12">
-      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-800 flex items-center justify-center">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+
+  <!-- Trade Page -->
+  <div id="tradePage" class="page-container min-h-screen">
+    <div class="max-w-6xl mx-auto p-4">
+
+      <!-- Page Header -->
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-lg font-bold flex items-center gap-3 text-gray-100">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-mt5-accent">
+            <path d="M3 3v18h18"/>
+            <path d="M7 16l4-4 4 4 6-6"/>
+          </svg>
+          Trades
+        </h2>
+        <button onclick="location.href='order-ticket.html'" class="mt5-btn mt5-btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          New Order
+        </button>
       </div>
-      <p class="text-gray-500 text-sm mb-2">No active trades</p>
-      <button onclick="location.href='order-ticket.html'" class="text-brand-400 text-sm font-semibold">Place your first trade</button>
+
+      <!-- Account Stats -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+        <div class="mt5-stat-card">
+          <div class="mt5-stat-label">Balance</div>
+          <div class="mt5-stat-value" id="tradeBalanceDetail">$0.00</div>
+        </div>
+        <div class="mt5-stat-card">
+          <div class="mt5-stat-label">Equity</div>
+          <div class="mt5-stat-value text-mt5-buy" id="equityDetail">$0.00</div>
+        </div>
+        <div class="mt5-stat-card">
+          <div class="mt5-stat-label">Margin</div>
+          <div class="mt5-stat-value" id="marginDetail">$0.00</div>
+        </div>
+        <div class="mt5-stat-card">
+          <div class="mt5-stat-label">Free Margin</div>
+          <div class="mt5-stat-value" id="freeMarginDetail">$0.00</div>
+        </div>
+        <div class="mt5-stat-card col-span-2 md:col-span-1">
+          <div class="mt5-stat-label">Margin Level</div>
+          <div class="mt5-stat-value text-mt5-accent" id="marginLevel">0%</div>
+        </div>
+      </div>
+
+      <!-- Open Positions -->
+      <div class="mt5-panel mb-6">
+        <div class="mt5-panel-header">
+          <div class="flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-mt5-accent">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            Open Positions
+          </div>
+          <div class="flex gap-2">
+            <button onclick="closeAllPositions()" class="mt5-btn mt5-btn-danger">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              Close All
+            </button>
+            <button onclick="closeOngoingPosition()" class="mt5-btn mt5-btn-secondary">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              Close Selected
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto mt5-scrollbar">
+          <div class="mt5-table-header">
+            <div></div>
+            <div>Symbol</div>
+            <div>Type</div>
+            <div class="text-right">Volume</div>
+            <div class="text-right">Price</div>
+            <div class="text-right">Profit</div>
+          </div>
+          <div id="openPositionsList">
+            <div class="mt5-empty-state">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-3 opacity-40">
+                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+              </svg>
+              <p class="text-sm">No open positions</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order History -->
+      <div class="mt5-panel">
+        <div class="mt5-panel-header">
+          <div class="flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-mt5-muted">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Order History
+          </div>
+        </div>
+
+        <div class="overflow-x-auto mt5-scrollbar">
+          <div class="mt5-table-header">
+            <div></div>
+            <div>Symbol</div>
+            <div>Type</div>
+            <div class="text-right">Volume</div>
+            <div class="text-right">Price</div>
+            <div class="text-right">Result</div>
+          </div>
+          <div id="orderHistoryList">
+            <div class="mt5-empty-state">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-3 opacity-40">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <p class="text-sm">No order history</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
-  </main>
+  </div>
+
   <div id="ts-global-footer"></div>
+
   <script src="app.js"></script>
   <script>
     if (!TS_Auth.requireAuth()) throw new Error('Auth required');
 
-    function renderTrades() {
+    // Account stats computation
+    function updateAccountStats() {
       const trades = TS_Invest.getTrades();
       const active = trades.filter(t => t.status === 'active');
-      const container = document.getElementById('trades-container');
-      const noTrades = document.getElementById('no-trades');
+      const balance = TS_Balance ? TS_Balance.get() : 0;
+      
+      let totalInvested = 0;
+      let totalCurrent = 0;
+      let totalMargin = 0;
+      
+      active.forEach(t => {
+        const liveVal = TS_Invest.calculateLiveValue(t);
+        totalInvested += t.amount;
+        totalCurrent += liveVal;
+        totalMargin += t.amount * 0.1; // Simulated margin at 10%
+      });
+      
+      const equity = balance + totalCurrent;
+      const freeMargin = equity - totalMargin;
+      const marginLevel = totalMargin > 0 ? ((equity / totalMargin) * 100).toFixed(2) : '0.00';
+      
+      document.getElementById('tradeBalanceDetail').textContent = '$' + balance.toFixed(2);
+      document.getElementById('equityDetail').textContent = '$' + equity.toFixed(2);
+      document.getElementById('marginDetail').textContent = '$' + totalMargin.toFixed(2);
+      document.getElementById('freeMarginDetail').textContent = '$' + Math.max(0, freeMargin).toFixed(2);
+      document.getElementById('marginLevel').textContent = marginLevel + '%';
+    }
+
+    // Render active positions in MT5 table format
+    function renderOpenPositions() {
+      const trades = TS_Invest.getTrades();
+      const active = trades.filter(t => t.status === 'active');
+      const container = document.getElementById('openPositionsList');
+      
+      if (active.length === 0) {
+        container.innerHTML = `
+          <div class="mt5-empty-state">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-3 opacity-40">
+              <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+              <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+            </svg>
+            <p class="text-sm">No open positions</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = active.map(t => {
+        const liveVal = TS_Invest.calculateLiveValue(t);
+        const profit = liveVal - t.amount;
+        const profitClass = profit >= 0 ? 'mt5-profit' : 'mt5-loss';
+        const sign = profit >= 0 ? '+' : '';
+        const badgeClass = t.direction === 'buy' ? 'mt5-badge-buy' : 'mt5-badge-sell';
+        const arrow = t.direction === 'buy' 
+          ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>'
+          : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>';
+        
+        return `
+          <div class="mt5-table-row cursor-pointer" onclick="selectPosition('${t.id}')" id="position-${t.id}">
+            <div>
+              <div class="mt5-symbol-icon" style="background: ${t.direction === 'buy' ? 'rgba(8,153,129,0.2)' : 'rgba(242,54,69,0.2)'}; color: ${t.direction === 'buy' ? '#089981' : '#f23645'};">
+                ${t.symbol.slice(0, 2).toUpperCase()}
+              </div>
+            </div>
+            <div class="font-bold text-gray-200">${t.symbol.toUpperCase()}</div>
+            <div>
+              <span class="mt5-badge ${badgeClass}">
+                ${arrow}
+                ${t.direction.toUpperCase()}
+              </span>
+            </div>
+            <div class="text-right font-mono text-gray-300">${t.amount.toFixed(2)}</div>
+            <div class="text-right font-mono text-gray-300">${liveVal.toFixed(2)}</div>
+            <div class="text-right font-mono font-bold ${profitClass}">
+              ${sign}${profit.toFixed(2)}
+            </div>
+          </div>
+          <div class="px-4 py-2 bg-[#0f131f] border-b border-[#1e2230] flex items-center justify-between" id="position-actions-${t.id}" style="display:none;">
+            <span class="text-xs text-mt5-muted font-mono">ID: ${t.id.slice(-8).toUpperCase()}</span>
+            <div class="flex gap-2">
+              <button onclick="location.href='charts.html'" class="mt5-btn mt5-btn-secondary text-xs py-1 px-3">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 3v18h18"/>
+                  <path d="M7 16l4-4 4 4 6-6"/>
+                </svg>
+                Chart
+              </button>
+              <button onclick="closeTrade('${t.id}')" class="mt5-btn mt5-btn-danger text-xs py-1 px-3">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                Close
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render order history
+    function renderOrderHistory() {
+      const trades = TS_Invest.getTrades();
+      const completed = trades.filter(t => t.status === 'completed' || t.status === 'closed');
+      const container = document.getElementById('orderHistoryList');
+      
+      if (completed.length === 0) {
+        container.innerHTML = `
+          <div class="mt5-empty-state">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-3 opacity-40">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <p class="text-sm">No order history</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = completed.slice().reverse().map(t => {
+        const profit = t.profit || 0;
+        const profitClass = profit >= 0 ? 'mt5-profit' : 'mt5-loss';
+        const sign = profit >= 0 ? '+' : '';
+        const badgeClass = t.direction === 'buy' ? 'mt5-badge-buy' : 'mt5-badge-sell';
+        const arrow = t.direction === 'buy'
+          ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>'
+          : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>';
+        
+        return `
+          <div class="mt5-table-row opacity-75">
+            <div>
+              <div class="mt5-symbol-icon" style="background: #2a2e39; color: #868993;">
+                ${t.symbol.slice(0, 2).toUpperCase()}
+              </div>
+            </div>
+            <div class="font-bold text-gray-400">${t.symbol.toUpperCase()}</div>
+            <div>
+              <span class="mt5-badge ${badgeClass} opacity-70">
+                ${arrow}
+                ${t.direction.toUpperCase()}
+              </span>
+            </div>
+            <div class="text-right font-mono text-gray-400">${t.amount.toFixed(2)}</div>
+            <div class="text-right font-mono text-gray-400">${(t.amount + profit).toFixed(2)}</div>
+            <div class="text-right font-mono font-bold ${profitClass}">
+              ${sign}${profit.toFixed(2)}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    let selectedPositionId = null;
+
+    function selectPosition(id) {
+      const prevActions = document.getElementById('position-actions-' + selectedPositionId);
+      if (prevActions) prevActions.style.display = 'none';
+      const prevRow = document.getElementById('position-' + selectedPositionId);
+      if (prevRow) prevRow.style.background = '';
+      
+      if (selectedPositionId === id) {
+        selectedPositionId = null;
+        return;
+      }
+      
+      selectedPositionId = id;
+      const row = document.getElementById('position-' + id);
+      const actions = document.getElementById('position-actions-' + id);
+      if (row) row.style.background = '#1e2a3a';
+      if (actions) actions.style.display = 'flex';
+    }
+
+    function closeTrade(id) {
+      TS_UI.showModal('Close Position', 'Are you sure you want to close this position?', [
+        { text: 'Cancel', onClick: () => {} },
+        { text: 'Close', primary: true, onClick: () => {
+          let trades = TS_Invest.getTrades();
+          const idx = trades.findIndex(t => t.id === id);
+          if (idx >= 0) {
+            trades[idx].status = 'completed';
+            trades[idx].profit = TS_Invest.calculateLiveValue(trades[idx]) - trades[idx].amount;
+            TS_Invest.saveTrades(trades);
+            const total = trades[idx].amount + trades[idx].profit;
+            TS_Balance.add(total);
+            TS_UI.showToast('Position closed. P/L added to balance.', 'success');
+            selectedPositionId = null;
+            renderOpenPositions();
+            renderOrderHistory();
+            updateAccountStats();
+          }
+        }}
+      ]);
+    }
+
+    function closeAllPositions() {
+      const trades = TS_Invest.getTrades();
+      const active = trades.filter(t => t.status === 'active');
+      if (active.length === 0) {
+        TS_UI.showToast('No open positions to close', 'info');
+        return;
+      }
+      TS_UI.showModal('Close All Positions', `Close all ${active.length} open positions?`, [
+        { text: 'Cancel', onClick: () => {} },
+        { text: 'Close All', primary: true, onClick: () => {
+          let allTrades = TS_Invest.getTrades();
+          let totalAdded = 0;
+          allTrades.forEach(t => {
+            if (t.status === 'active') {
+              t.status = 'completed';
+              t.profit = TS_Invest.calculateLiveValue(t) - t.amount;
+              totalAdded += t.amount + t.profit;
+            }
+          });
+          TS_Invest.saveTrades(allTrades);
+          TS_Balance.add(totalAdded);
+          TS_UI.showToast('All positions closed', 'success');
+          selectedPositionId = null;
+          renderOpenPositions();
+          renderOrderHistory();
+          updateAccountStats();
+        }}
+      ]);
+    }
+
+    function closeOngoingPosition() {
+      if (!selectedPositionId) {
+        TS_UI.showToast('Please select a position first', 'warning');
+        return;
+      }
+      closeTrade(selectedPositionId);
+    }
+
+    // Legacy render function mapped to new structure
+    function renderTrades() {
+      updateAccountStats();
+      renderOpenPositions();
+      renderOrderHistory();
+    }
+
+    // Initialize
+    renderTrades();
+    setInterval(renderTrades, 1000);
+  </script>
+</body>
+</html>
 
       if (active.length === 0) { container.innerHTML = ''; noTrades.classList.remove('hidden'); return; }
       noTrades.classList.add('hidden');
