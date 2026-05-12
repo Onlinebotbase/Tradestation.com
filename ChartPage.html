@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Charts - MetaTrader 5 Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <style>
+        :root {
+            --mt5-bg: #0d0d0d;
+            --mt5-panel: #1a1a1a;
+            --mt5-border: #2a2a2a;
+            --mt5-text: #d1d4dc;
+            --mt5-text-dim: #6b7280;
+            --mt5-accent: #2962ff;
+            --mt5-buy: #089981;
+            --mt5-sell: #f23645;
+            --mt5-hover: #2a2e39;
+            --mt5-toolbar: #131722;
+            --mt5-input-bg: #0d0d0d;
+        }
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html, body {
+            background: var(--mt5-bg);
+            color: var(--mt5-text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: var(--mt5-bg); }
+        ::-webkit-scrollbar-thumb { background: #404040; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #505050; }
+        
+        /* MT5 Layout */
+        .mt5-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            background: var(--mt5-bg);
+        }
+        
+        /* Top Bar - Account/Status */
+        .mt5-topbar {
+            height: 28px;
+            background: var(--mt5-toolbar);
+            border-bottom: 1px solid var(--mt5-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            font-size: 11px;
+            color: var(--mt5-text-dim);
+            flex-shrink: 0;
+            z-index: 100;
+        }
+        
+        /* Toolbar */
+        .mt5-toolbar {
+            height: 36px;
+            background: var(--mt5-toolbar);
+            border-bottom: 1px solid var(--mt5-border);
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            padding: 0 4px;
+            flex-shrink: 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        
+        .mt5-toolbar::-webkit-scrollbar { display: none; }
+        
+        .mt5-tool-btn {
+            height: 28px;
+            padding: 0 10px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 3px;
+            color: var(--mt5-text);
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+        
+        .mt5-tool-btn:hover {
+            background: var(--mt5-hover);
+            border-color: var(--mt5-border);
+        }
+        
+        .mt5-tool-btn.active {
+            background: var(--mt5-accent);
+            color: #fff;
+            border-color: var(--mt5-accent);
+        }
+        
+        .mt5-tool-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+        
+        /* Main Workspace */
+        .mt5-workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Market Watch Panel */
+        .mt5-marketwatch {
+            width: 280px;
+            min-width: 240px;
+            max-width: 340px;
+            background: var(--mt5-panel);
+            border-right: 1px solid var(--mt5-border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 60;
+        }
+        
+        .mt5-panel-header {
+            height: 32px;
+            background: var(--mt5-toolbar);
+            border-bottom: 1px solid var(--mt5-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--mt5-text-dim);
+            flex-shrink: 0;
+        }
+        
+        .mt5-symbol-search {
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--mt5-border);
+            flex-shrink: 0;
+        }
+        
+        .mt5-symbol-search input {
+            width: 100%;
+            height: 26px;
+            background: var(--mt5-input-bg);
+            border: 1px solid var(--mt5-border);
+            border-radius: 3px;
+            padding: 0 8px;
+            color: var(--mt5-text);
+            font-size: 11px;
+            outline: none;
+        }
+        
+        .mt5-symbol-search input:focus {
+            border-color: var(--mt5-accent);
+        }
+        
+        .mt5-symbol-list {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        .mt5-alpha-section {
+            padding: 4px 10px;
+            background: rgba(41, 98, 255, 0.08);
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--mt5-accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--mt5-border);
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        
+        .mt5-symbol-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 7px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            cursor: pointer;
+            transition: background 0.1s;
+            font-size: 11px;
+        }
+        
+        .mt5-symbol-item:hover {
+            background: var(--mt5-hover);
+        }
+        
+        .mt5-symbol-item.active {
+            background: rgba(41, 98, 255, 0.12);
+            border-left: 2px solid var(--mt5-accent);
+        }
+        
+        .mt5-symbol-name {
+            font-weight: 600;
+            color: var(--mt5-text);
+            font-size: 11px;
+        }
+        
+        .mt5-symbol-type {
+            font-size: 9px;
+            color: var(--mt5-text-dim);
+            text-transform: uppercase;
+            margin-top: 1px;
+        }
+        
+        .mt5-symbol-price {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .mt5-price-up { color: var(--mt5-buy); }
+        .mt5-price-down { color: var(--mt5-sell); }
+        
+        .mt5-symbol-spread {
+            font-size: 9px;
+            color: var(--mt5-text-dim);
+            text-align: right;
+            margin-top: 1px;
+        }
+        
+        /* Chart Area - FULL SIZE */
+        .mt5-chart-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--mt5-bg);
+            position: relative;
+            min-width: 0;
+            height: 100%;
+        }
+        
+        /* Chart Header */
+        .mt5-chart-header {
+            height: 36px;
+            background: var(--mt5-toolbar);
+            border-bottom: 1px solid var(--mt5-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px;
+            flex-shrink: 0;
+            gap: 8px;
+        }
+        
+        .mt5-chart-tabs {
+            display: flex;
+            gap: 1px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            flex: 1;
+        }
+        
+        .mt5-chart-tabs::-webkit-scrollbar { display: none; }
+        
+        .mt5-chart-tab {
+            height: 28px;
+            padding: 0 12px;
+            background: transparent;
+            border: none;
+            border-radius: 3px;
+            color: var(--mt5-text-dim);
+            font-size: 11px;
+            cursor: pointer;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.15s;
+        }
+        
+        .mt5-chart-tab:hover { 
+            color: var(--mt5-text); 
+            background: var(--mt5-hover); 
+        }
+        
+        .mt5-chart-tab.active {
+            background: var(--mt5-accent);
+            color: #fff;
+        }
+        
+        .mt5-chart-tab svg {
+            width: 12px;
+            height: 12px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+        
+        /* Timeframe Bar */
+        .mt5-timeframe-bar {
+            height: 32px;
+            background: var(--mt5-panel);
+            border-bottom: 1px solid var(--mt5-border);
+            display: flex;
+            align-items: center;
+            gap: 1px;
+            padding: 0 6px;
+            flex-shrink: 0;
+            overflow-x: auto;
+        }
+        
+        .mt5-timeframe-bar::-webkit-scrollbar { display: none; }
+        
+        .mt5-tf-btn {
+            height: 22px;
+            min-width: 32px;
+            padding: 0 6px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 3px;
+            color: var(--mt5-text-dim);
+            font-size: 10px;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        
+        .mt5-tf-btn:hover {
+            background: var(--mt5-hover);
+            color: var(--mt5-text);
+        }
+        
+        .mt5-tf-btn.active {
+            background: var(--mt5-accent);
+            color: #fff;
+            border-color: var(--mt5-accent);
+        }
+        
+        /* Chart Widget Container - FULL HEIGHT */
+        .mt5-chart-widget {
+            flex: 1;
+            position: relative;
+            background: var(--mt5-bg);
+            min-height: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        /* Widget Panels */
+        .mt5-widget-panel {
+            display: none;
+            width: 100%;
+            height: 100%;
+            background: var(--mt5-bg);
+        }
+        
+        .mt5-widget-panel.active { 
+            display: block; 
+        }
+        
+        #tradingview_chart {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* One-Click Trading Panel */
+        .mt5-oct-panel {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 190px;
+            background: rgba(19, 23, 34, 0.96);
+            border: 1px solid var(--mt5-border);
+            border-radius: 4px;
+            padding: 12px;
+            backdrop-filter: blur(10px);
+            z-index: 50;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+            display: none;
+        }
+        
+        .mt5-oct-panel.visible {
+            display: block;
+        }
+        
+        .mt5-oct-title {
+            font-size: 10px;
+            color: var(--mt5-text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            text-align: center;
+            border-bottom: 1px solid var(--mt5-border);
+            padding-bottom: 6px;
+            font-weight: 600;
+        }
+        
+        .mt5-oct-price {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 8px;
+        }
+        
+        .mt5-oct-spread {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--mt5-text-dim);
+            margin-bottom: 10px;
+            padding: 4px 0;
+            border-top: 1px solid var(--mt5-border);
+            border-bottom: 1px solid var(--mt5-border);
+        }
+        
+        .mt5-volume-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        
+        .mt5-vol-btn {
+            width: 28px;
+            height: 28px;
+            background: var(--mt5-hover);
+            border: 1px solid var(--mt5-border);
+            border-radius: 3px;
+            color: var(--mt5-text);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: all 0.15s;
+        }
+        
+        .mt5-vol-btn:hover { 
+            background: var(--mt5-border); 
+            border-color: #404040;
+        }
+        
+        .mt5-vol-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+        
+        .mt5-vol-display {
+            flex: 1;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            background: var(--mt5-bg);
+            border: 1px solid var(--mt5-border);
+            border-radius: 3px;
+            padding: 4px 0;
+            color: var(--mt5-text);
+        }
+        
+        .mt5-trade-btn {
+            width: 100%;
+            height: 34px;
+            border: none;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 6px;
+            transition: all 0.15s;
+        }
+        
+        .mt5-trade-btn:hover { 
+            filter: brightness(1.15); 
+            transform: translateY(-1px);
+        }
+        
+        .mt5-trade-btn:active {
+            transform: translateY(0);
+        }
+        
+        .mt5-btn-buy {
+            background: var(--mt5-buy);
+            color: #fff;
+        }
+        
+        .mt5-btn-sell {
+            background: var(--mt5-sell);
+            color: #fff;
+        }
+        
+        .mt5-btn-order {
+            background: var(--mt5-hover);
+            color: var(--mt5-text);
+            border: 1px solid var(--mt5-border);
+            font-weight: 500;
+            font-size: 11px;
+            height: 30px;
+        }
+        
+        .mt5-btn-order:hover { 
+            background: var(--mt5-border); 
+        }
+        
+        /* Bottom Status Bar */
+        .mt5-statusbar {
+            height: 24px;
+            background: var(--mt5-toolbar);
+            border-top: 1px solid var(--mt5-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            font-size: 10px;
+            color: var(--mt5-text-dim);
+            flex-shrink: 0;
+        }
+        
+        .mt5-status-left, .mt5-status-right {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .mt5-status-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .mt5-status-online {
+            width: 6px;
+            height: 6px;
+            background: var(--mt5-buy);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Indicators Panel */
+        .mt5-indicators-panel {
+            position: absolute;
+            left: 8px;
+            top: 8px;
+            width: 220px;
+            max-height: 320px;
+            background: rgba(19, 23, 34, 0.96);
+            border: 1px solid var(--mt5-border);
+            border-radius: 4px;
+            backdrop-filter: blur(10px);
+            z-index: 50;
+            overflow: hidden;
+            display: none;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+        }
+        
+        .mt5-indicators-panel.visible { 
+            display: block; 
+        }
+        
+        .mt5-ind-list {
+            max-height: 280px;
+            overflow-y: auto;
+        }
+        
+        .mt5-ind-item {
+            padding: 9px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.1s;
+            color: var(--mt5-text);
+        }
+        
+        .mt5-ind-item:hover { 
+            background: var(--mt5-hover); 
+        }
+        
+        .mt5-ind-item svg {
+            width: 14px;
+            height: 14px;
+            fill: var(--mt5-text-dim);
+            flex-shrink: 0;
+        }
+        
+        /* Mobile Toggle */
+        .mt5-mobile-toggle {
+            display: none;
+            position: fixed;
+            bottom: 36px;
+            left: 12px;
+            z-index: 100;
+            width: 44px;
+            height: 44px;
+            background: var(--mt5-accent);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+        }
+        
+        /* Symbol Detail Header */
+        .mt5-symbol-detail {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 8px;
+            height: 100%;
+            flex-shrink: 0;
+            border-left: 1px solid var(--mt5-border);
+        }
+        
+        .mt5-symbol-detail h2 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--mt5-text);
+        }
+        
+        .mt5-symbol-detail .mt5-detail-price {
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+        }
+        
+        .mt5-symbol-detail .mt5-detail-change {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        
+        .mt5-change-pos { 
+            color: var(--mt5-buy); 
+            background: rgba(8, 153, 129, 0.12); 
+        }
+        
+        .mt5-change-neg { 
+            color: var(--mt5-sell); 
+            background: rgba(242, 54, 69, 0.12); 
+        }
+        
+        /* TradingView widget containers */
+        .tradingview-widget-container {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .tradingview-widget-container__widget {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Loading Spinner */
+        .mt5-loader {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--mt5-border);
+            border-top-color: var(--mt5-accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin { 
+            to { transform: rotate(360deg); } 
+        }
+        
+        /* Notifications */
+        .mt5-toast {
+            position: fixed;
+            top: 40px;
+            right: 16px;
+            background: var(--mt5-panel);
+            border: 1px solid var(--mt5-border);
+            border-radius: 4px;
+            padding: 10px 16px;
+            font-size: 12px;
+            z-index: 200;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+            color: var(--mt5-text);
+        }
+        
+        .mt5-toast.show { 
+            transform: translateX(0); 
+        }
+        
+        .mt5-toast-success { 
+            border-left: 3px solid var(--mt5-buy); 
+        }
+        
+        .mt5-toast-error { 
+            border-left: 3px solid var(--mt5-sell); 
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .mt5-marketwatch {
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 60;
+                transform: translateX(-100%);
+                box-shadow: 4px 0 20px rgba(0,0,0,0.8);
+                width: 260px;
+            }
+            
+            .mt5-marketwatch.open { 
+                transform: translateX(0); 
+            }
+            
+            .mt5-mobile-toggle { 
+                display: flex; 
+            }
+            
+            .mt5-oct-panel {
+                width: 150px;
+                padding: 8px;
+                top: 4px;
+                right: 4px;
+            }
+            
+            .mt5-oct-price { 
+                font-size: 16px; 
+            }
+            
+            .mt5-trade-btn { 
+                height: 30px; 
+                font-size: 11px; 
+            }
+            
+            .mt5-chart-header { 
+                padding: 0 4px; 
+            }
+            
+            .mt5-chart-tab { 
+                padding: 0 8px; 
+                font-size: 10px; 
+            }
+            
+            .mt5-toolbar { 
+                height: 32px; 
+            }
+            
+            .mt5-tool-btn { 
+                height: 24px; 
+                padding: 0 6px; 
+                font-size: 10px; 
+            }
+            
+            .mt5-symbol-detail {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="ts-global-header"></div>
+
+<<main class="mt5-container">
+    <!-- Top Status Bar -->
+    <div class="mt5-topbar">
+        <div class="flex items-center gap-4">
+            <span class="font-bold text-white text-xs tracking-wider">MetaTrader 5</span>
+            <span id="connectionStatus">Connecting...</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <span id="accountBalance">Balance: --</span>
+            <span id="serverTime">--:--:--</span>
+        </div>
+    </div>
+    
+    <!-- Main Toolbar -->
+    <div class="mt5-toolbar">
+        <button class="mt5-tool-btn" onclick="toggleMarketWatch()" title="Market Watch">
+            <svg viewBox="0 0 24 24"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 10h2v7H7v-7zm4-3h2v10h-2V7zm4 6h2v4h-2v-4z"/></svg>
+            <span class="hidden sm:inline">Market Watch</span>
+        </button>
+        <button class="mt5-tool-btn active" onclick="setChartTab('advanced')" id="toolBtnAdvanced" title="Advanced Chart">
+            <svg viewBox="0 0 24 24"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/></svg>
+            <span class="hidden sm:inline">Chart</span>
+        </button>
+        <button class="mt5-tool-btn" onclick="setChartTab('market')" id="toolBtnMarket" title="Market Overview">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            <span class="hidden sm:inline">Market</span>
+        </button>
+        <button class="mt5-tool-btn" onclick="setChartTab('economic')" id="toolBtnEconomic" title="Economic Calendar">
+            <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>
+            <span class="hidden sm:inline">Calendar</span>
+        </button>
+        <button class="mt5-tool-btn" onclick="setChartTab('technical')" id="toolBtnTechnical" title="Technical Analysis">
+            <svg viewBox="0 0 24 24"><path d="M22 17H18V10H22V17ZM13 17H9V7H13V17ZM4 17H0V12H4V17Z"/></svg>
+            <span class="hidden sm:inline">Tech Analysis</span>
+        </button>
+        <button class="mt5-tool-btn" onclick="setChartTab('screener')" id="toolBtnScreener" title="Stock Screener">
+            <svg viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg>
+            <span class="hidden sm:inline">Screener</span>
+        </button>
+        <button class="mt5-tool-btn" onclick="setChartTab('tools')" id="toolBtnTools" title="Trading Tools">
+            <svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
+            <span class="hidden sm:inline">Tools</span>
+        </button>
+        <button class="mt5-tool-btn" onclick="setChartTab('ticker')" id="toolBtnTicker" title="Single Ticker">
+            <svg viewBox="0 0 24 24"><path d="M3 5v14h18V5H3zm16 12H5V7h14v10zM7 10h2v5H7v-5zm4-2h2v7h-2V8zm4 3h2v4h-2v-4z"/></svg>
+            <span class="hidden sm:inline">Ticker</span>
+        </button>
+        <div style="width: 1px; height: 20px; background: var(--mt5-border); margin: 0 4px; flex-shrink: 0;"></div>
+        <button class="mt5-tool-btn" onclick="toggleIndicatorsPanel()" title="Indicators">
+            <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+            <span class="hidden sm:inline">Indicators</span>
+        </button>
+        <button class="mt5-tool-btn" onclick="toggleOCTPanel()" title="Trade">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <span class="hidden sm:inline">Trade</span>
+        </button>
+        <button class="mt5-tool-btn" onclick="resetChart()" title="Reset">
+            <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+        </button>
+    </div>
+    
+    <!-- Workspace -->
+    <div class="mt5-workspace">
+        <!-- Market Watch Panel -->
+        <div class="mt5-marketwatch" id="marketWatchPanel">
+            <div class="mt5-panel-header">
+                <span>Market Watch</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="cursor:pointer" onclick="refreshSymbols()">
+                    <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                </svg>
+            </div>
+            <div class="mt5-symbol-search">
+                <input type="text" id="symbolSearch" placeholder="Search symbol..." oninput="filterSymbols(this.value)">
+            </div>
+            <div class="mt5-symbol-list" id="symbolList">
+                <div style="padding: 20px; text-align: center; color: var(--mt5-text-dim); font-size: 11px;">
+                    <div class="mt5-loader" style="margin: 0 auto 8px;"></div>
+                    Loading live symbols...
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chart Area -->
+        <div class="mt5-chart-area">
+            <!-- Chart Header -->
+            <div class="mt5-chart-header">
+                <div class="mt5-chart-tabs">
+                    <button class="mt5-chart-tab active" onclick="setChartTab('advanced')" id="tabAdvanced">
+                        <svg viewBox="0 0 24 24"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/></svg>
+                        Advanced Chart
+                    </button>
+                    <button class="mt5-chart-tab" onclick="setChartTab('market')" id="tabMarketWatch">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                        Market Watch
+                    </button>
+                    <button class="mt5-chart-tab" onclick="setChartTab('economic')" id="tabEconomic">
+                        <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+                        Economic Calendar
+                    </button>
+                    <button class="mt5-chart-tab" onclick="setChartTab('technical')" id="tabTechnical">
+                        <svg viewBox="0 0 24 24"><path d="M22 17H18V10H22V17ZM13 17H9V7H13V17ZM4 17H0V12H4V17Z"/></svg>
+                        Technical Analysis
+                    </button>
+                    <button class="mt5-chart-tab" onclick="setChartTab('screener')" id="tabScreener">
+                        <svg viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg>
+                        Stock Screener
+                    </button>
+                    <button class="mt5-chart-tab" onclick="setChartTab('tools')" id="tabTools">
+                        <svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
+                        Trading Tools
+                    </button>
+                    <button class="mt5-chart-tab" onclick="setChartTab('ticker')" id="tabTicker">
+                        <svg viewBox="0 0 24 24"><path d="M3 5v14h18V5H3zm16 12H5V7h14v10z"/></svg>
+                        Single Ticker
+                    </button>
+                </div>
+                <div class="mt5-symbol-detail" id="symbolDetail">
+                    <h2 id="currentSymbolDisplay">BTCUSD</h2>
+                    <span class="mt5-detail-price mt5-price-up" id="currentPriceDisplay">--.--</span>
+                    <span class="mt5-detail-change mt5-change-pos" id="currentChangeDisplay">+0.00%</span>
+                </div>
+            </div>
+            
+            <!-- Timeframe Bar -->
+            <div class="mt5-timeframe-bar" id="timeframeBar">
+                <button class="mt5-tf-btn" onclick="setTimeframe('1')" data-tf="1">M1</button>
+                <button class="mt5-tf-btn" onclick="setTimeframe('5')" data-tf="5">M5</button>
+                <button class="mt5-tf-btn" onclick="setTimeframe('15')" data-tf="15">M15</button>
+                <button class="mt5-tf-btn" onclick="setTimeframe('30')" data-tf="30">M30</button>
+                <button class="mt5-tf-btn" onclick="setTimeframe('60')" data-tf="60">H1</button>
+                <button class="mt5-tf-btn" onclick="setTimeframe('240')" data-tf="240">H4</button>
+                <button class="mt5-tf-btn active" onclick="setTimeframe('D')" data-tf="D">D1</button>
+                <button class="mt5-tf-btn" onclick="setTimeframe('W')" data-tf="W">W1</button>
+                <button class="mt5-tf-btn" onclick="setTimeframe('M')" data-tf="M">MN</button>
+            </div>
+            
+            <!-- Chart Widget - FULL SIZE -->
+            <div class="mt5-chart-widget" id="chartWidgetContainer">
+                <!-- Advanced Chart -->
+                <div class="mt5-widget-panel active" id="panelAdvanced">
+                    <div id="tradingview_chart"></div>
+                </div>
+                
+                <!-- Market Watch Widget -->
+                <div class="mt5-widget-panel" id="panelMarket">
+                    <div class="tradingview-widget-container">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+                        {
+                            "colorTheme": "dark",
+                            "dateRange": "12M",
+                            "showChart": true,
+                            "locale": "en",
+                            "width": "100%",
+                            "height": "100%",
+                            "largeChartUrl": "",
+                            "isTransparent": false,
+                            "showSymbolLogo": true,
+                            "showFloatingTooltip": false,
+                            "plotLineColorGrowing": "rgba(8, 153, 129, 1)",
+                            "plotLineColorFalling": "rgba(242, 54, 69, 1)",
+                            "gridLineColor": "rgba(42, 46, 57, 0)",
+                            "scaleFontColor": "rgba(134, 137, 147, 1)",
+                            "belowLineFillColorGrowing": "rgba(8, 153, 129, 0.05)",
+                            "belowLineFillColorFalling": "rgba(242, 54, 69, 0.05)",
+                            "belowLineFillColorGrowingBottom": "rgba(8, 153, 129, 0)",
+                            "belowLineFillColorFallingBottom": "rgba(242, 54, 69, 0)",
+                            "symbolActiveColor": "rgba(41, 98, 255, 0.2)",
+                            "tabs": [
+                                {"title": "Crypto", "symbols": [{"s": "BITSTAMP:BTCUSD"}, {"s": "BITSTAMP:ETHUSD"}, {"s": "BINANCE:SOLUSDT"}, {"s": "BINANCE:ADAUSDT"}]},
+                                {"title": "Forex", "symbols": [{"s": "FX:EURUSD"}, {"s": "FX:GBPUSD"}, {"s": "FX:USDJPY"}, {"s": "FX:AUDUSD"}]},
+                                {"title": "Stocks", "symbols": [{"s": "NASDAQ:AAPL"}, {"s": "NASDAQ:MSFT"}, {"s": "NASDAQ:GOOGL"}, {"s": "NASDAQ:TSLA"}]}
+                            ]
+                        }
+                        </script>
+                    </div>
+                </div>
+                
+                <!-- Economic Calendar -->
+                <div class="mt5-widget-panel" id="panelEconomic">
+                    <div class="tradingview-widget-container">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+                        {
+                            "colorTheme": "dark",
+                            "isTransparent": false,
+                            "width": "100%",
+                            "height": "100%",
+                            "locale": "en",
+                            "importanceFilter": "-1,0,1",
+                            "countryFilter": "ar,au,br,ca,cn,fr,de,in,id,it,jp,kr,mx,ru,sa,za,tr,gb,us,eu"
+                        }
+                        </script>
+                    </div>
+                </div>
+                
+                <!-- Technical Analysis -->
+                <div class="mt5-widget-panel" id="panelTechnical">
+                    <div class="tradingview-widget-container">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+                        {
+                            "interval": "1D",
+                            "width": "100%",
+                            "isTransparent": false,
+                            "height": "100%",
+                            "symbol": "BITSTAMP:BTCUSD",
+                            "showIntervalTabs": true,
+                            "displayMode": "single",
+                            "locale": "en",
+                            "colorTheme": "dark"
+                        }
+                        </script>
+                    </div>
+                </div>
+                
+                <!-- Stock Screener -->
+                <div class="mt5-widget-panel" id="panelScreener">
+                    <div class="tradingview-widget-container">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-screener.js" async>
+                        {
+                            "width": "100%",
+                            "height": "100%",
+                            "defaultColumn": "overview",
+                            "defaultScreen": "general",
+                            "market": "forex",
+                            "showToolbar": true,
+                            "colorTheme": "dark",
+                            "locale": "en",
+                            "isTransparent": false
+                        }
+                        </script>
+                    </div>
+                </div>
+                
+                <!-- Trading Tools -->
+                <div class="mt5-widget-panel" id="panelTools">
+                    <div class="tradingview-widget-container">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-chart.js" async>
+                        {
+                            "symbol": "BITSTAMP:BTCUSD",
+                            "width": "100%",
+                            "height": "100%",
+                            "locale": "en",
+                            "dateRange": "12M",
+                            "colorTheme": "dark",
+                            "isTransparent": false,
+                            "autosize": true,
+                            "largeChartUrl": ""
+                        }
+                        </script>
+                    </div>
+                </div>
+                
+                <!-- Single Ticker -->
+                <div class="mt5-widget-panel" id="panelTicker">
+                    <div class="tradingview-widget-container">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+                        {
+                            "symbol": "BITSTAMP:BTCUSD",
+                            "width": "100%",
+                            "height": "100%",
+                            "colorTheme": "dark",
+                            "isTransparent": false,
+                            "locale": "en"
+                        }
+                        </script>
+                    </div>
+                </div>
+                
+                <!-- Indicators Panel -->
+                <div class="mt5-indicators-panel" id="indicatorsPanel">
+                    <div class="mt5-panel-header">
+                        <span>Indicators</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="cursor:pointer" onclick="toggleIndicatorsPanel()">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </div>
+                    <div class="mt5-ind-list">
+                        <div class="mt5-ind-item" onclick="addIndicator('MA')">
+                            <svg viewBox="0 0 24 24"><path d="M3 17v2h18v-2H3zM3 13v2h18v-2H3zM3 9v2h18V9H3zM3 5v2h18V5H3z"/></svg>
+                            Moving Average
+                        </div>
+                        <div class="mt5-ind-item" onclick="addIndicator('RSI')">
+                            <svg viewBox="0 0 24 24"><path d="M3 17v2h18v-2H3zM3 13v2h18v-2H3zM3 9v2h18V9H3zM3 5v2h18V5H3z"/></svg>
+                            RSI
+                        </div>
+                        <div class="mt5-ind-item" onclick="addIndicator('MACD')">
+                            <svg viewBox="0 0 24 24"><path d="M3 17v2h18v-2H3zM3 13v2h18v-2H3zM3 9v2h18V9H3zM3 5v2h18V5H3z"/></svg>
+                            MACD
+                        </div>
+                        <div class="mt5-ind-item" onclick="addIndicator('BB')">
+                            <svg viewBox="0 0 24 24"><path d="M3 17v2h18v-2H3zM3 13v2h18v-2H3zM3 9v2h18V9H3zM3 5v2h18V5H3z"/></svg>
+                            Bollinger Bands
+                        </div>
+                        <div class="mt5-ind-item" onclick="addIndicator('Volume')">
+                            <svg viewBox="0 0 24 24"><path d="M3 17v2h18v-2H3zM3 13v2h18v-2H3zM3 9v2h18V9H3zM3 5v2h18V5H3z"/></svg>
+                            Volume
+                        </div>
+                        <div class="mt5-ind-item" onclick="addIndicator('Stochastic')">
+                            <svg viewBox="0 0 24 24"><path d="M3 17v2h18v-2H3zM3 13v2h18v-2H3zM3 9v2h18V9H3zM3 5v2h18V5H3z"/></svg>
+                            Stochastic
+                        </div>
+                        <div class="mt5-ind-item" onclick="addIndicator('ATR')">
+                            <svg viewBox="0 0 24 24"><path d="M3 17v2h18v-2H3zM3 13v2h18v-2H3zM3 9v2h18V9H3zM3 5v2h18V5H3z"/></svg>
+                            ATR
+                        </div>
+                        <div class="mt5-ind-item" onclick="addIndicator('Ichimoku')">
+                            <svg viewBox="0 0 24 24"><path d="M3 17v2h18v-2H3zM3 13v2h18v-2H3zM3 9v2h18V9H3zM3 5v2h18V5H3z"/></svg>
+                            Ichimoku Cloud
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- One-Click Trading -->
+                <div class="mt5-oct-panel" id="octPanel">
+                    <div class="mt5-oct-title">One Click Trading</div>
+                    <div class="mt5-oct-price mt5-price-up" id="octPrice">--.--</div>
+                    <div class="mt5-oct-spread">
+                        <span>Spread</span>
+                        <span id="octSpread">--</span>
+                    </div>
+                    <div class="mt5-volume-control">
+                        <button class="mt5-vol-btn" onclick="adjustVolume(-0.01)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M5 12h14"/>
+                            </svg>
+                        </button>
+                        <div class="mt5-vol-display" id="volumeDisplay">0.10</div>
+                        <button class="mt5-vol-btn" onclick="adjustVolume(0.01)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <button class="mt5-trade-btn mt5-btn-buy" onclick="location.href='order-ticket.html?direction=buy'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M12 19V5M5 12l7-7 7 7"/>
+                        </svg>
+                        Buy
+                    </button>
+                    <button class="mt5-trade-btn mt5-btn-sell" onclick="location.href='order-ticket.html?direction=sell'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M12 5v14M5 12l7 7 7-7"/>
+                        </svg>
+                        Sell
+                    </button>
+                    <button class="mt5-trade-btn mt5-btn-order" onclick="location.href='trade.html'">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                        </svg>
+                        New Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom Status Bar -->
+    <div class="mt5-statusbar">
+        <div class="mt5-status-left">
+            <div class="mt5-status-item">
+                <div class="mt5-status-online"></div>
+                <span>Connected</span>
+            </div>
+            <span id="statusSymbol">BTCUSD</span>
+            <span id="statusTF">D1</span>
+        </div>
+        <div class="mt5-status-right">
+            <span id="statusBidAsk">-- / --</span>
+            <span id="statusPing">0ms</span>
+        </div>
+    </div>
+</main>
+
+<!-- Mobile Toggle -->
+<button class="mt5-mobile-toggle" id="mobileToggle" onclick="toggleMarketWatch()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+    </svg>
+</button>
+
+<!-- Toast Notifications -->
+<div class="mt5-toast" id="toast"></div>
+
+<div id="ts-global-footer"></div>
+
+<script>
+// ==========================================
+// API CONFIGURATION
+// ==========================================
+const COINGECKO_API = 'https://api.coingecko.com/api/v3';
+const EXCHANGE_API = 'https://v6.exchangerate-api.com/v6/45602791eb9f29e022a7ce3f/latest/USD';
+const FINNHUB_API = 'https://finnhub.io/api/v1';
+const FINNHUB_KEY = 'd7cq1t9r01qv03eta4rgd7cq1t9r01qv03eta4s0';
+const ALPHAVANTAGE_API = 'https://www.alphavantage.co/query';
+const ALPHAVANTAGE_KEY = '3A3XN5PXKW8DG38L';
+
+// ==========================================
+// STATE MANAGEMENT
+// ==========================================
+let currentSymbol = 'BITSTAMP:BTCUSD';
+let currentSymbolPlain = 'BTCUSD';
+let currentTimeframe = 'D';
+let currentVolume = 0.10;
+let chartWidget = null;
+let symbolsData = [];
+let priceUpdateInterval = null;
+let activeTab = 'advanced';
+let octPanelVisible = false;
+
+// ==========================================
+// SYMBOLS DATASET (A-Z organized)
+// ==========================================
+const ALL_SYMBOLS = [
+    // Crypto
+    { symbol: 'ADAUSDT', type: 'crypto', tv: 'BINANCE:ADAUSDT', name: 'Cardano' },
+    { symbol: 'APTUSDT', type: 'crypto', tv: 'BINANCE:APTUSDT', name: 'Aptos' },
+    { symbol: 'ATOMUSDT', type: 'crypto', tv: 'BINANCE:ATOMUSDT', name: 'Cosmos' },
+    { symbol: 'AVAXUSDT', type: 'crypto', tv: 'BINANCE:AVAXUSDT', name: 'Avalanche' },
+    { symbol: 'BTCUSD', type: 'crypto', tv: 'BITSTAMP:BTCUSD', name: 'Bitcoin' },
+    { symbol: 'DOTUSDT', type: 'crypto', tv: 'BINANCE:DOTUSDT', name: 'Polkadot' },
+    { symbol: 'ETHUSD', type: 'crypto', tv: 'BITSTAMP:ETHUSD', name: 'Ethereum' },
+    { symbol: 'ETCUSDT', type: 'crypto', tv: 'BINANCE:ETCUSDT', name: 'Ethereum Classic' },
+    { symbol: 'FILUSDT', type: 'crypto', tv: 'BINANCE:FILUSDT', name: 'Filecoin' },
+    { symbol: 'LINKUSDT', type: 'crypto', tv: 'BINANCE:LINKUSDT', name: 'Chainlink' },
+    { symbol: 'LTCUSDT', type: 'crypto', tv: 'BINANCE:LTCUSDT', name: 'Litecoin' },
+    { symbol: 'MATICUSDT', type: 'crypto', tv: 'BINANCE:MATICUSDT', name: 'Polygon' },
+    { symbol: 'NEARUSDT', type: 'crypto', tv: 'BINANCE:NEARUSDT', name: 'NEAR Protocol' },
+    { symbol: 'SOLUSDT', type: 'crypto', tv: 'BINANCE:SOLUSDT', name: 'Solana' },
+    { symbol: 'TRXUSDT', type: 'crypto', tv: 'BINANCE:TRXUSDT', name: 'Tron' },
+    { symbol: 'UNIUSDT', type: 'crypto', tv: 'BINANCE:UNIUSDT', name: 'Uniswap' },
+    { symbol: 'VETUSDT', type: 'crypto', tv: 'BINANCE:VETUSDT', name: 'VeChain' },
+    { symbol: 'XLMUSDT', type: 'crypto', tv: 'BINANCE:XLMUSDT', name: 'Stellar' },
+    { symbol: 'XRPUSDT', type: 'crypto', tv: 'BINANCE:XRPUSDT', name: 'Ripple' },
+    // Forex
+    { symbol: 'AUDCAD', type: 'forex', tv: 'FX:AUDCAD', name: 'Australian Dollar / Canadian Dollar' },
+    { symbol: 'AUDCHF', type: 'forex', tv: 'FX:AUDCHF', name: 'Australian Dollar / Swiss Franc' },
+    { symbol: 'AUDJPY', type: 'forex', tv: 'FX:AUDJPY', name: 'Australian Dollar / Japanese Yen' },
+    { symbol: 'AUDUSD', type: 'forex', tv: 'FX:AUDUSD', name: 'Australian Dollar / US Dollar' },
+    { symbol: 'CADJPY', type: 'forex', tv: 'FX:CADJPY', name: 'Canadian Dollar / Japanese Yen' },
+    { symbol: 'CHFJPY', type: 'forex', tv: 'FX:CHFJPY', name: 'Swiss Franc / Japanese Yen' },
+    { symbol: 'EURAUD', type: 'forex', tv: 'FX:EURAUD', name: 'Euro / Australian Dollar' },
+    { symbol: 'EURCHF', type: 'forex', tv: 'FX:EURCHF', name: 'Euro / Swiss Franc' },
+    { symbol: 'EURGBP', type: 'forex', tv: 'FX:EURGBP', name: 'Euro / British Pound' },
+    { symbol: 'EURJPY', type: 'forex', tv: 'FX:EURJPY', name: 'Euro / Japanese Yen' },
+    { symbol: 'EURUSD', type: 'forex', tv: 'FX:EURUSD', name: 'Euro / US Dollar' },
+    { symbol: 'GBPAUD', type: 'forex', tv: 'FX:GBPAUD', name: 'British Pound / Australian Dollar' },
+    { symbol: 'GBPCAD', type: 'forex', tv: 'FX:GBPCAD', name: 'British Pound / Canadian Dollar' },
+    { symbol: 'GBPJPY', type: 'forex', tv: 'FX:GBPJPY', name: 'British Pound / Japanese Yen' },
+    { symbol: 'GBPUSD', type: 'forex', tv: 'FX:GBPUSD', name: 'British Pound / US Dollar' },
+    { symbol: 'NZDJPY', type: 'forex', tv: 'FX:NZDJPY', name: 'New Zealand Dollar / Japanese Yen' },
+    { symbol: 'NZDUSD', type: 'forex', tv: 'FX:NZDUSD', name: 'New Zealand Dollar / US Dollar' },
+    { symbol: 'USDCAD', type: 'forex', tv: 'FX:USDCAD', name: 'US Dollar / Canadian Dollar' },
+    { symbol: 'USDCHF', type: 'forex', tv: 'FX:USDCHF', name: 'US Dollar / Swiss Franc' },
+    { symbol: 'USDJPY', type: 'forex', tv: 'FX:USDJPY', name: 'US Dollar / Japanese Yen' },
+    // Stocks
+    { symbol: 'AAPL', type: 'stock', tv: 'NASDAQ:AAPL', name: 'Apple Inc.' },
+    { symbol: 'AMD', type: 'stock', tv: 'NASDAQ:AMD', name: 'Advanced Micro Devices' },
+    { symbol: 'AMZN', type: 'stock', tv: 'NASDAQ:AMZN', name: 'Amazon.com Inc.' },
+    { symbol: 'BA', type: 'stock', tv: 'NYSE:BA', name: 'Boeing Co.' },
+    { symbol: 'DIS', type: 'stock', tv: 'NYSE:DIS', name: 'Walt Disney Co.' },
+    { symbol: 'GOOGL', type: 'stock', tv: 'NASDAQ:GOOGL', name: 'Alphabet Inc.' },
+    { symbol: 'INTC', type: 'stock', tv: 'NASDAQ:INTC', name: 'Intel Corp.' },
+    { symbol: 'JNJ', type: 'stock', tv: 'NYSE:JNJ', name: 'Johnson & Johnson' },
+    { symbol: 'JPM', type: 'stock', tv: 'NYSE:JPM', name: 'JPMorgan Chase' },
+    { symbol: 'KO', type: 'stock', tv: 'NYSE:KO', name: 'Coca-Cola Co.' },
+    { symbol: 'META', type: 'stock', tv: 'NASDAQ:META', name: 'Meta Platforms Inc.' },
+    { symbol: 'MSFT', type: 'stock', tv: 'NASDAQ:MSFT', name: 'Microsoft Corp.' },
+    { symbol: 'NFLX', type: 'stock', tv: 'NASDAQ:NFLX', name: 'Netflix Inc.' },
+    { symbol: 'NVDA', type: 'stock', tv: 'NASDAQ:NVDA', name: 'NVIDIA Corp.' },
+    { symbol: 'PFE', type: 'stock', tv: 'NYSE:PFE', name: 'Pfizer Inc.' },
+    { symbol: 'PYPL', type: 'stock', tv: 'NASDAQ:PYPL', name: 'PayPal Holdings' },
+    { symbol: 'TSLA', type: 'stock', tv: 'NASDAQ:TSLA', name: 'Tesla Inc.' },
+    { symbol: 'V', type: 'stock', tv: 'NYSE:V', name: 'Visa Inc.' },
+    { symbol: 'WMT', type: 'stock', tv: 'NYSE:WMT', name: 'Walmart Inc.' },
+    { symbol: 'XOM', type: 'stock', tv: 'NYSE:XOM', name: 'Exxon Mobil Corp.' },
+    // Commodities/Indices
+    { symbol: 'BRENT', type: 'commodity', tv: 'TVC:UKOIL', name: 'Brent Crude Oil' },
+    { symbol: 'DXY', type: 'index', tv: 'TVC:DXY', name: 'US Dollar Index' },
+    { symbol: 'FTSE', type: 'index', tv: 'FTSE:UKX', name: 'FTSE 100' },
+    { symbol: 'NDX', type: 'index', tv: 'NASDAQ:NDX', name: 'NASDAQ 100' },
+    { symbol: 'SPX', type: 'index', tv: 'SP:SPX', name: 'S&P 500' },
+    { symbol: 'USOIL', type: 'commodity', tv: 'TVC:USOIL', name: 'WTI Crude Oil' },
+    { symbol: 'VIX', type: 'index', tv: 'TVC:VIX', name: 'Volatility Index' },
+    { symbol: 'XAGUSD', type: 'commodity', tv: 'OANDA:XAGUSD', name: 'Silver / US Dollar' },
+    { symbol: 'XAUUSD', type: 'commodity', tv: 'OANDA:XAUUSD', name: 'Gold / US Dollar' }
+];
+
+// ==========================================
+// INITIALIZATION
+// ==========================================
+document.addEventListener('DOMContentLoaded', function() {
+    initChart();
+    loadSymbols();
+    startPriceUpdates();
+    updateServerTime();
+    setInterval(updateServerTime, 1000);
+    
+    // Close panels on outside click
+    document.addEventListener('click', function(e) {
+        const indPanel = document.getElementById('indicatorsPanel');
+        const mwPanel = document.getElementById('marketWatchPanel');
+        
+        if (indPanel && !indPanel.contains(e.target) && !e.target.closest('[onclick*="toggleIndicatorsPanel"]')) {
+            indPanel.classList.remove('visible');
+        }
+        
+        if (window.innerWidth <= 768 && mwPanel && !mwPanel.contains(e.target) && !e.target.closest('[onclick*="toggleMarketWatch"]') && !e.target.closest('#mobileToggle')) {
+            mwPanel.classList.remove('open');
+        }
+    });
+});
+
+// ==========================================
+// CHART WIDGET (Exact User Config)
+// ==========================================
+function initChart() {
+    const container = document.getElementById('tradingview_chart');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    chartWidget = new TradingView.widget({
+        "autosize": true,
+        "symbol": currentSymbol,
+        "interval": currentTimeframe,
+        "timezone": "Etc/UTC",
+        "theme": "dark",
+        "style": "1",
+        "locale": "en",
+        "toolbar_bg": "#131722",
+        "enable_publishing": false,
+        "hide_top_toolbar": false,
+        "hide_legend": false,
+        "save_image": false,
+        "container_id": "tradingview_chart",
+        "studies": [],
+        "show_popup_button": true,
+        "popup_width": "1000",
+        "popup_height": "650",
+        "backgroundColor": "#0d0d0d",
+        "gridColor": "#2a2a2a",
+        "borderColor": "#2a2a2a",
+        "textColor": "#d1d4dc"
+    });
+}
+
+// ==========================================
+// SYMBOL MANAGEMENT (A-Z List with Live Prices)
+// ==========================================
+async function loadSymbols() {
+    const listContainer = document.getElementById('symbolList');
+    if (!listContainer) return;
+    listContainer.innerHTML = '<div style="padding:20px;text-align:center;color:#868993;font-size:11px;"><div class="mt5-loader" style="margin:0 auto 8px;"></div>Loading live market data...</div>';
+    
+    symbolsData = [...ALL_SYMBOLS];
+    symbolsData.sort((a, b) => a.symbol.localeCompare(b.symbol));
+    
+    try {
+        // Fetch top 100 coins from CoinGecko for real crypto prices
+        const cgResponse = await fetch(`${COINGECKO_API}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h`);
+        const cgData = await cgResponse.json();
+        
+        // Fetch forex rates
+        let fxRates = {};
+        try {
+            const fxResponse = await fetch(EXCHANGE_API);
+            const fxData = await fxResponse.json();
+            if (fxData && fxData.conversion_rates) fxRates = fxData.conversion_rates;
+        } catch(e) { console.warn('Forex API error:', e); }
+        
+        // Fetch stock quotes from Finnhub (free tier, 60 calls/min)
+        const stockSymbols = ['AAPL','MSFT','GOOGL','AMZN','TSLA','META','NVDA','NFLX','AMD','INTC','PYPL','DIS','BA','JPM','V','WMT','KO','PFE','XOM','JNJ'];
+        const stockPromises = stockSymbols.map(async sym => {
+            try {
+                const res = await fetch(`${FINNHUB_API}/quote?symbol=${sym}&token=${FINNHUB_KEY}`);
+                if (!res.ok) return null;
+                const data = await res.json();
+                return { symbol: sym, data };
+            } catch(e) { return null; }
+        });
+        const stockResults = await Promise.all(stockPromises);
+        
+        // Map prices
+        const priceMap = {};
+        
+        // Crypto from CoinGecko
+        cgData.forEach(coin => {
+            const sym = coin.symbol.toUpperCase();
+            const match = symbolsData.find(s => s.symbol.startsWith(sym) && s.type === 'crypto');
+            if (match) {
+                priceMap[match.symbol] = {
+                    price: coin.current_price,
+                    change: coin.price_change_percentage_24h || 0
+                };
+            }
+        });
+        
+        // Forex from ExchangeRate
+        if (fxRates.USD) {
+            const forexPairs = {
+                'EURUSD': fxRates.EUR,
+                'GBPUSD': fxRates.GBP,
+                'USDJPY': fxRates.JPY,
+                'AUDUSD': fxRates.AUD,
+                'USDCAD': 1/fxRates.CAD,
+                'USDCHF': fxRates.CHF,
+                'NZDUSD': fxRates.NZD,
+                'EURGBP': fxRates.EUR / fxRates.GBP,
+                'EURJPY': fxRates.EUR * fxRates.JPY,
+                'GBPJPY': fxRates.GBP * fxRates.JPY,
+                'AUDJPY': fxRates.AUD * fxRates.JPY,
+                'CHFJPY': fxRates.JPY / fxRates.CHF,
+                'EURAUD': fxRates.EUR / fxRates.AUD,
+                'EURCHF': fxRates.EUR / fxRates.CHF,
+                'GBPAUD': fxRates.GBP / fxRates.AUD,
+                'GBPCAD': fxRates.GBP / fxRates.CAD,
+                'CADJPY': fxRates.JPY / fxRates.CAD,
+                'NZDJPY': fxRates.NZD * fxRates.JPY,
+                'AUDCAD': fxRates.AUD / fxRates.CAD,
+                'AUDCHF': fxRates.AUD / fxRates.CHF
+            };
+            Object.entries(forexPairs).forEach(([sym, price]) => {
+                if (price && isFinite(price)) {
+                    priceMap[sym] = { price: price, change: (Math.random() - 0.5) * 1.5 };
+                }
+            });
+        }
+        
+        // Stocks from Finnhub
+        stockResults.forEach(result => {
+            if (result && result.data && result.data.c) {
+                const price = result.data.c;
+                const prev = result.data.pc;
+                const change = prev ? ((price - prev) / prev) * 100 : 0;
+                priceMap[result.symbol] = { price, change };
+            }
+        });
+        
+        // Commodities / Indices fallback to approximate real baselines with micro-movement
+        const commodityBase = {
+            'XAUUSD': 2340, 'XAGUSD': 27.5, 'USOIL': 78, 'BRENT': 82,
+            'SPX': 5200, 'NDX': 18300, 'DJI': 39000, 'DXY': 104.5,
+            'VIX': 13, 'FTSE': 8200
+        };
+        Object.entries(commodityBase).forEach(([sym, base]) => {
+            const move = (Math.random() - 0.5) * (base * 0.002);
+            priceMap[sym] = { 
+                price: base + move, 
+                change: (Math.random() - 0.5) * (sym.startsWith('X') ? 1.5 : 0.8) 
+            };
+        });
+        
+        // Merge into symbolsData
+        symbolsData.forEach(s => {
+            if (priceMap[s.symbol]) {
+                s.price = priceMap[s.symbol].price;
+                s.change = priceMap[s.symbol].change;
+            }
+        });
+        
+        renderSymbols(symbolsData);
+        updateCurrentSymbolPrice();
+        
+        const connStatus = document.getElementById('connectionStatus');
+        if (connStatus) connStatus.textContent = 'Connected';
+        
+    } catch (error) {
+        console.error('Error loading market data:', error);
+        renderSymbols(symbolsData);
+        showToast('Using offline mode - real-time data unavailable', 'error');
+        const connStatus = document.getElementById('connectionStatus');
+        if (connStatus) connStatus.textContent = 'Limited';
+    }
+}
+
+function renderSymbols(symbols) {
+    const listContainer = document.getElementById('symbolList');
+    if (!listContainer) return;
+    
+    if (symbols.length === 0) {
+        listContainer.innerHTML = '<div style="padding:20px;text-align:center;color:#868993;font-size:11px;">No symbols found</div>';
+        return;
+    }
+    
+    let currentLetter = '';
+    let html = '';
+    
+    symbols.forEach(s => {
+        const firstLetter = s.symbol.charAt(0).toUpperCase();
+        if (firstLetter !== currentLetter) {
+            currentLetter = firstLetter;
+            html += `<div class="mt5-alpha-section">${currentLetter}</div>`;
+        }
+        
+        const isActive = s.tv === currentSymbol;
+        const priceClass = (s.change >= 0) ? 'mt5-price-up' : 'mt5-price-down';
+        const changeSign = (s.change >= 0) ? '+' : '';
+        const price = s.price ? formatPrice(s.price, s.type) : '--';
+        const changeStr = s.change ? (changeSign + s.change.toFixed(2) + '%') : '0.00%';
+        
+        html += `
+            <div class="mt5-symbol-item ${isActive ? 'active' : ''}" onclick="selectSymbol('${s.tv}', '${s.symbol}')" data-symbol="${s.symbol}">
+                <div>
+                    <div class="mt5-symbol-name">${s.symbol}</div>
+                    <div class="mt5-symbol-type">${s.type}</div>
+                </div>
+                <div style="text-align:right">
+                    <div class="mt5-symbol-price ${priceClass}">${price}</div>
+                    <div class="mt5-symbol-spread">${changeStr}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    listContainer.innerHTML = html;
+}
+
+function filterSymbols(query) {
+    const filtered = symbolsData.filter(s => 
+        s.symbol.toLowerCase().includes(query.toLowerCase()) ||
+        s.name.toLowerCase().includes(query.toLowerCase()) ||
+        s.type.toLowerCase().includes(query.toLowerCase())
+    );
+    renderSymbols(filtered);
+}
+
+function selectSymbol(tvSymbol, plainSymbol) {
+    currentSymbol = tvSymbol;
+    currentSymbolPlain = plainSymbol;
+    
+    // Update active state in list
+    document.querySelectorAll('.mt5-symbol-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.symbol === plainSymbol);
+    });
+    
+    // Update displays
+    const currSymDisplay = document.getElementById('currentSymbolDisplay');
+    const statusSymbol = document.getElementById('statusSymbol');
+    if (currSymDisplay) currSymDisplay.textContent = plainSymbol;
+    if (statusSymbol) statusSymbol.textContent = plainSymbol;
+    
+    // Update chart if on advanced tab
+    if (activeTab === 'advanced') {
+        if (chartWidget) {
+            try { chartWidget.remove(); } catch(e) {}
+        }
+        setTimeout(initChart, 50);
+    }
+    
+    // Update embedded widget symbols where applicable
+    updateEmbeddedWidgets(tvSymbol);
+    
+    // Close mobile panel
+    if (window.innerWidth <= 768) {
+        const mwPanel = document.getElementById('marketWatchPanel');
+        if (mwPanel) mwPanel.classList.remove('open');
+    }
+    
+    updateCurrentSymbolPrice();
+    showToast(`Chart loaded: ${plainSymbol}`, 'success');
+}
+
+function updateEmbeddedWidgets(tvSymbol) {
+    // Update technical analysis widget symbol by re-reloading panel content
+    const techPanel = document.getElementById('panelTechnical');
+    if (techPanel && activeTab === 'technical') {
+        techPanel.innerHTML = `
+            <div class="tradingview-widget-container">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+                {
+                    "interval": "1D",
+                    "width": "100%",
+                    "isTransparent": false,
+                    "height": "100%",
+                    "symbol": "${tvSymbol}",
+                    "showIntervalTabs": true,
+                    "displayMode": "single",
+                    "locale": "en",
+                    "colorTheme": "dark"
+                }
+                <\/script>
+            </div>
+        `;
+    }
+    
+    // Update tools widget
+    const toolsPanel = document.getElementById('panelTools');
+    if (toolsPanel && activeTab === 'tools') {
+        toolsPanel.innerHTML = `
+            <div class="tradingview-widget-container">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-chart.js" async>
+                {
+                    "symbol": "${tvSymbol}",
+                    "width": "100%",
+                    "height": "100%",
+                    "locale": "en",
+                    "dateRange": "12M",
+                    "colorTheme": "dark",
+                    "isTransparent": false,
+                    "autosize": true,
+                    "largeChartUrl": ""
+                }
+                <\/script>
+            </div>
+        `;
+    }
+    
+    // Update ticker widget
+    const tickerPanel = document.getElementById('panelTicker');
+    if (tickerPanel && activeTab === 'ticker') {
+        tickerPanel.innerHTML = `
+            <div class="tradingview-widget-container">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+                {
+                    "symbol": "${tvSymbol}",
+                    "width": "100%",
+                    "height": "100%",
+                    "colorTheme": "dark",
+                    "isTransparent": false,
+                    "locale": "en"
+                }
+                <\/script>
+            </div>
+        `;
+    }
+}
+
+function refreshSymbols() {
+    loadSymbols();
+    showToast('Refreshing live market data...', 'success');
+}
+
+// ==========================================
+// LIVE PRICE UPDATES
+// ==========================================
+function startPriceUpdates() {
+    // Immediate first update
+    setTimeout(updateLivePrices, 2000);
+    
+    // Periodic updates every 15 seconds
+    priceUpdateInterval = setInterval(updateLivePrices, 15000);
+}
+
+async function updateLivePrices() {
+    try {
+        // Update top 20 crypto from CoinGecko
+        const ids = 'bitcoin,ethereum,solana,cardano,ripple,polkadot,avalanche-2,chainlink,matic-network,litecoin,uniswap,cosmos,ethereum-classic,stellar,algorand,vechain,filecoin,tron,near,aptos';
+        const cgResponse = await fetch(`${COINGECKO_API}/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`);
+        const cgData = await cgResponse.json();
+        
+        const cryptoMap = {
+            'bitcoin': 'BTCUSD', 'ethereum': 'ETHUSD', 'solana': 'SOLUSDT',
+            'cardano': 'ADAUSDT', 'ripple': 'XRPUSDT', 'polkadot': 'DOTUSDT',
+            'avalanche-2': 'AVAXUSDT', 'chainlink': 'LINKUSDT', 'matic-network': 'MATICUSDT',
+            'litecoin': 'LTCUSDT', 'uniswap': 'UNIUSDT', 'cosmos': 'ATOMUSDT',
+            'ethereum-classic': 'ETCUSDT', 'stellar': 'XLMUSDT', 'algorand': 'ALGOUSDT',
+            'vechain': 'VETUSDT', 'filecoin': 'FILUSDT', 'tron': 'TRXUSDT',
+            'near': 'NEARUSDT', 'aptos': 'APTUSDT'
+        };
+        
+        Object.entries(cryptoMap).forEach(([id, sym]) => {
+            if (cgData[id]) {
+                const s = symbolsData.find(x => x.symbol === sym);
+                if (s) {
+                    s.price = cgData[id].usd;
+                    s.change = cgData[id].usd_24h_change || 0;
+                }
+            }
+        });
+        
+        // Micro-movement simulation for forex/stocks to keep UI alive between API calls
+        symbolsData.forEach(s => {
+            if (s.price && !cryptoMap[Object.keys(cryptoMap).find(k => cryptoMap[k] === s.symbol)]) {
+                const jitter = s.price * 0.0002 * (Math.random() - 0.5);
+                s.price += jitter;
+            }
+        });
+        
+        renderSymbols(symbolsData);
+        updateCurrentSymbolPrice();
+        updateBidAsk();
+        
+    } catch (e) {
+        // Silent fail - prices remain at last known
+    }
+}
+
+function updateCurrentSymbolPrice() {
+    const s = symbolsData.find(x => x.tv === currentSymbol);
+    if (!s || !s.price) return;
+    
+    const priceEl = document.getElementById('currentPriceDisplay');
+    const changeEl = document.getElementById('currentChangeDisplay');
+    const octPrice = document.getElementById('octPrice');
+    const octSpread = document.getElementById('octSpread');
+    
+    const priceStr = formatPrice(s.price, s.type);
+    const changeStr = (s.change >= 0 ? '+' : '') + (s.change || 0).toFixed(2) + '%';
+    
+    if (priceEl) {
+        priceEl.textContent = priceStr;
+        priceEl.className = `mt5-detail-price ${s.change >= 0 ? 'mt5-price-up' : 'mt5-price-down'}`;
+    }
+    
+    if (changeEl) {
+        changeEl.textContent = changeStr;
+        changeEl.className = `mt5-detail-change ${s.change >= 0 ? 'mt5-change-pos' : 'mt5-change-neg'}`;
+    }
+    
+    if (octPrice) {
+        octPrice.textContent = priceStr;
+        octPrice.className = `mt5-oct-price ${s.change >= 0 ? 'mt5-price-up' : 'mt5-price-down'}`;
+    }
+    
+    if (octSpread) {
+        let spread;
+        if (s.type === 'forex') spread = (Math.random() * 1.5 + 0.3).toFixed(1) + ' pips';
+        else if (s.type === 'crypto') spread = (Math.random() * 45 + 15).toFixed(1) + ' pts';
+        else if (s.type === 'stock') spread = '$' + (Math.random() * 0.08 + 0.01).toFixed(2);
+        else spread = (Math.random() * 0.5).toFixed(2) + ' pts';
+        octSpread.textContent = spread;
+    }
+}
+
+function updateBidAsk() {
+    const s = symbolsData.find(x => x.tv === currentSymbol);
+    if (!s || !s.price) return;
+    const spread = s.type === 'forex' ? 0.0002 : s.type === 'crypto' ? 0.5 : 0.05;
+    const bid = s.price - spread/2;
+    const ask = s.price + spread/2;
+    const statusBidAsk = document.getElementById('statusBidAsk');
+    if (statusBidAsk) {
+        statusBidAsk.textContent = formatPrice(bid, s.type) + ' / ' + formatPrice(ask, s.type);
+    }
+}
+
+function formatPrice(price, type) {
+    if (price === undefined || price === null) return '--';
+    if (type === 'forex') return price.toFixed(5);
+    if (type === 'crypto') return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (type === 'index') return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (type === 'commodity') return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return price.toFixed(2);
+}
+
+// ==========================================
+// TIMEFRAME CONTROLS
+// ==========================================
+function setTimeframe(tf) {
+    currentTimeframe = tf;
+    
+    document.querySelectorAll('.mt5-tf-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tf === tf);
+    });
+    
+    const statusTF = document.getElementById('statusTF');
+    if (statusTF) {
+        statusTF.textContent = 
+            tf === '1' ? 'M1' : tf === '5' ? 'M5' : tf === '15' ? 'M15' : 
+            tf === '30' ? 'M30' : tf === '60' ? 'H1' : tf === '240' ? 'H4' : 
+            tf === 'D' ? 'D1' : tf === 'W' ? 'W1' : 'MN';
+    }
+    
+    if (activeTab === 'advanced') {
+        if (chartWidget) {
+            try { chartWidget.remove(); } catch(e) {}
+        }
+        setTimeout(initChart, 50);
+    }
+    
+    showToast(`Timeframe: ${statusTF ? statusTF.textContent : tf}`, 'success');
+}
+
+// ==========================================
+// TAB SWITCHING
+// ==========================================
+function setChartTab(tab) {
+    activeTab = tab;
+    
+    // Update toolbar buttons
+    document.querySelectorAll('.mt5-tool-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    const toolBtnMap = {
+        'advanced': 'toolBtnAdvanced',
+        'market': 'toolBtnMarket',
+        'economic': 'toolBtnEconomic',
+        'technical': 'toolBtnTechnical',
+        'screener': 'toolBtnScreener',
+        'tools': 'toolBtnTools',
+        'ticker': 'toolBtnTicker'
+    };
+    const toolBtn = document.getElementById(toolBtnMap[tab]);
+    if (toolBtn) toolBtn.classList.add('active');
+    
+    // Update chart tabs
+    document.querySelectorAll('.mt5-chart-tab').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    const tabMap = {
+        'advanced': 'tabAdvanced',
+        'market': 'tabMarketWatch',
+        'economic': 'tabEconomic',
+        'technical': 'tabTechnical',
+        'screener': 'tabScreener',
+        'tools': 'tabTools',
+        'ticker': 'tabTicker'
+    };
+    const tabBtn = document.getElementById(tabMap[tab]);
+    if (tabBtn) tabBtn.classList.add('active');
+    
+    // Show/hide panels
+    document.querySelectorAll('.mt5-widget-panel').forEach(panel => {
+        panel.classList.remove('active');
+    });
+    
+    const panelMap = {
+        'advanced': 'panelAdvanced',
+        'market': 'panelMarket',
+        'economic': 'panelEconomic',
+        'technical': 'panelTechnical',
+        'screener': 'panelScreener',
+        'tools': 'panelTools',
+        'ticker': 'panelTicker'
+    };
+    
+    const targetPanel = document.getElementById(panelMap[tab]);
+    if (targetPanel) targetPanel.classList.add('active');
+    
+    // Re-init chart if switching to advanced
+    if (tab === 'advanced') {
+        setTimeout(() => {
+            if (chartWidget) {
+                try { chartWidget.remove(); } catch(e) {}
+            }
+            initChart();
+        }, 100);
+    }
+    
+    // Update embedded widgets for other tabs when switching to them
+    if (['technical','tools','ticker'].includes(tab)) {
+        updateEmbeddedWidgets(currentSymbol);
+    }
+}
+
+// ==========================================
+// PANEL TOGGLES
+// ==========================================
+function toggleOCTPanel() {
+    const panel = document.getElementById('octPanel');
+    if (!panel) return;
+    octPanelVisible = !octPanelVisible;
+    panel.classList.toggle('visible', octPanelVisible);
+}
+
+function toggleIndicatorsPanel() {
+    const panel = document.getElementById('indicatorsPanel');
+    if (panel) panel.classList.toggle('visible');
+}
+
+function toggleMarketWatch() {
+    const panel = document.getElementById('marketWatchPanel');
+    if (panel) panel.classList.toggle('open');
+}
+
+// ==========================================
+// VOLUME CONTROLS
+// ==========================================
+function adjustVolume(delta) {
+    let newVol = currentVolume + delta;
+    newVol = Math.max(0.01, Math.min(1000, newVol));
+    newVol = Math.round(newVol * 100) / 100;
+    currentVolume = newVol;
+    const volDisplay = document.getElementById('volumeDisplay');
+    if (volDisplay) volDisplay.textContent = newVol.toFixed(2);
+}
+
+// ==========================================
+// TRADING FUNCTIONS
+// ==========================================
+function placeChartOrder(direction) {
+    const s = symbolsData.find(x => x.tv === currentSymbol);
+    const price = s ? s.price : 0;
+    const type = direction.toUpperCase();
+    
+    showToast(`${type} Order: ${currentSymbolPlain} @ ${price ? formatPrice(price, s.type) : '--'} | Vol: ${currentVolume.toFixed(2)}`, 'success');
+    
+    const btn = event && event.target ? event.target.closest('.mt5-trade-btn') : null;
+    if (btn) {
+        btn.style.transform = 'scale(0.95)';
+        setTimeout(() => btn.style.transform = 'scale(1)', 150);
+    }
+}
+
+function addIndicator(indicator) {
+    showToast(`Indicator: ${indicator} added`, 'success');
+    toggleIndicatorsPanel();
+}
+
+// ==========================================
+// UTILITY FUNCTIONS
+// ==========================================
+function resetChart() {
+    if (chartWidget) {
+        try { chartWidget.remove(); } catch(e) {}
+    }
+    initChart();
+    showToast('Chart reset', 'success');
+}
+
+function updateServerTime() {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+    const servTime = document.getElementById('serverTime');
+    if (servTime) servTime.textContent = timeStr;
+    
+    // Update ping randomly
+    const ping = Math.floor(Math.random() * 40) + 10;
+    const statusPing = document.getElementById('statusPing');
+    if (statusPing) statusPing.textContent = ping + 'ms';
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.className = `mt5-toast mt5-toast-${type} show`;
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+// ==========================================
+// KEYBOARD SHORTCUTS
+// ==========================================
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F8') {
+        e.preventDefault();
+        toggleIndicatorsPanel();
+    }
+    
+    const tfMap = {
+        '1': '1', '2': '5', '3': '15', '4': '30', '5': '60',
+        '6': '240', '7': 'D', '8': 'W', '9': 'M'
+    };
+    if (tfMap[e.key] && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        setTimeframe(tfMap[e.key]);
+    }
+    
+    if (e.key === 'b' || e.key === 'B') {
+        if (!e.ctrlKey && !e.altKey && !e.metaKey) {
+            // Quick buy shortcut
+        }
+    }
+});
+
+// ==========================================
+// WINDOW RESIZE HANDLER
+// ==========================================
+let resizeTimeout;
+window.addEventListener('resize', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        if (activeTab === 'advanced') {
+            if (chartWidget) {
+                try { chartWidget.remove(); } catch(e) {}
+            }
+            initChart();
+        }
+    }, 300);
+});
+</script>
+
+</body>
+</html>
