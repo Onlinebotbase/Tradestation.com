@@ -5,61 +5,876 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Select Coin - Trade Station</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{600:'#2563eb'},dark:{800:'#1f2937',900:'#111827',950:'#0b0f19'}}}}}</script>
-  <style>body{background:#0b0f19;}</style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 600: '#2563eb', 500: '#3b82f6', 400: '#60a5fa' },
+            dark: { 950: '#0b0f19', 900: '#111827', 800: '#1f2937', 700: '#374151', 600: '#4b5563' },
+            mt5: { bg: '#0b0f19', panel: '#111827', border: '#1f2937', accent: '#2563eb', success: '#10b981', warning: '#f59e0b', danger: '#ef4444' }
+          },
+          fontFamily: {
+            sans: ['Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #0b0f19; color: #f3f4f6; -webkit-font-smoothing: antialiased; }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0b0f19; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+    
+    /* Animations */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); } 50% { box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); } }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    .animate-fade-in { animation: fadeIn 0.35s ease-out forwards; }
+    .animate-slide-in { animation: slideInRight 0.4s ease-out forwards; }
+    .animate-pulse-glow { animation: pulseGlow 2s infinite; }
+    
+    /* Glass morphism panels */
+    .glass-panel {
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(55, 65, 81, 0.5);
+    }
+    
+    /* Coin card hover effects */
+    .coin-card {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .coin-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .coin-card:hover::before { opacity: 1; }
+    .coin-card:hover {
+      border-color: rgba(37, 99, 235, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(37, 99, 235, 0.2);
+    }
+    .coin-card:active { transform: translateY(0) scale(0.98); }
+    
+    /* Search input */
+    .search-input {
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid rgba(55, 65, 81, 0.6);
+      transition: all 0.3s ease;
+    }
+    .search-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15), 0 0 20px rgba(37, 99, 235, 0.1);
+      background: rgba(17, 24, 39, 1);
+    }
+    
+    /* Alphabet index */
+    .alpha-index {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+    }
+    .alpha-btn {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #6b7280;
+      background: rgba(31, 41, 55, 0.6);
+      border: 1px solid rgba(55, 65, 81, 0.3);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .alpha-btn:hover, .alpha-btn.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+      transform: scale(1.1);
+    }
+    .alpha-btn.disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    
+    /* Section headers */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      margin-top: 20px;
+    }
+    .section-header svg { flex-shrink: 0; }
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+    }
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(55, 65, 81, 0.8) 0%, transparent 100%);
+      margin-left: 8px;
+    }
+    
+    /* Price ticker */
+    .price-ticker {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: 'tnum';
+    }
+    .price-up { color: #10b981; }
+    .price-down { color: #ef4444; }
+    
+    /* Loading skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+    
+    /* Network badge */
+    .network-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      background: rgba(37, 99, 235, 0.12);
+      color: #60a5fa;
+      border: 1px solid rgba(37, 99, 235, 0.2);
+    }
+    
+    /* Favorite star */
+    .fav-btn {
+      transition: all 0.2s ease;
+      opacity: 0.6;
+    }
+    .fav-btn:hover { opacity: 1; transform: scale(1.2); }
+    .fav-btn.active { opacity: 1; color: #f59e0b; }
+    
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(17, 24, 39, 0.95);
+      border: 1px solid rgba(55, 65, 81, 0.6);
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #e5e7eb;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: #6b7280;
+    }
+    
+    /* Header back button */
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: rgba(31, 41, 55, 0.6);
+      border: 1px solid rgba(55, 65, 81, 0.3);
+      color: #9ca3af;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .back-btn:hover {
+      background: rgba(55, 65, 81, 0.6);
+      color: #f3f4f6;
+      transform: translateX(-2px);
+    }
+    
+    /* Sticky alphabet nav */
+    .sticky-alpha {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: linear-gradient(180deg, #0b0f19 0%, rgba(11, 15, 25, 0.95) 85%, transparent 100%);
+      padding: 8px 0;
+      backdrop-filter: blur(8px);
+    }
+    
+    /* Coin icon container */
+    .coin-icon-wrap {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+    .coin-icon-wrap img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(55, 65, 81, 0.4);
+      background: #1f2937;
+    }
+    .coin-icon-wrap .chain-dot {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid #0b0f19;
+      background: #2563eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .coin-icon-wrap .chain-dot svg { width: 8px; height: 8px; }
+    
+    /* Market cap / volume stats */
+    .stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: #6b7280;
+      font-variant-numeric: tabular-nums;
+    }
+    
+    /* Live indicator */
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      background: #10b981;
+      border-radius: 50%;
+      display: inline-block;
+      position: relative;
+    }
+    .live-dot::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      border: 1px solid #10b981;
+      animation: pulseGlow 2s infinite;
+    }
+    
+    /* Responsive */
+    @media (max-width: 640px) {
+      .alpha-btn { width: 24px; height: 24px; font-size: 10px; }
+    }
+  </style>
 </head>
-<body class="text-white">
+<body class="text-white min-h-screen">
   <div id="ts-global-header"></div>
-  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
-    <h1 class="text-lg font-bold mb-4">Select Coin</h1>
-    <input type="text" id="search" placeholder="Search coins..." class="w-full px-3 py-2 bg-dark-800 border border-gray-700 rounded-lg text-white text-sm mb-4 focus:outline-none focus:border-brand-600">
-    <div class="space-y-2 mb-4">
-      <div onclick="selectCoin('USDT', 'Tether')" class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:border-brand-500/50">
-        <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 font-bold text-xs">USDT</div>
-        <div class="flex-1"><div class="text-sm font-bold text-white">USDT</div><div class="text-xs text-gray-400">Tether USD</div></div>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+  
+  <!-- Main Container -->
+  <main class="pb-28 pt-2 px-4 max-w-lg mx-auto">
+    
+    <!-- Header Section -->
+    <div class="flex items-center gap-3 mb-6 animate-fade-in">
+      <button onclick="history.back()" class="back-btn" aria-label="Go back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <div class="flex-1">
+        <h1 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand-500">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+          Select Deposit Coin
+        </h1>
+        <p class="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5">
+          <span class="live-dot"></span>
+          Live market data via CoinGecko
+        </p>
       </div>
-      <div onclick="selectCoin('ETH', 'Ethereum')" class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:border-brand-500/50">
-        <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs">ETH</div>
-        <div class="flex-1"><div class="text-sm font-bold text-white">ETH</div><div class="text-xs text-gray-400">Ethereum</div></div>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </div>
-      <div onclick="selectCoin('BNB', 'BNB')" class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:border-brand-500/50">
-        <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 font-bold text-xs">BNB</div>
-        <div class="flex-1"><div class="text-sm font-bold text-white">BNB</div><div class="text-xs text-gray-400">BNB Smart Chain</div></div>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </div>
-      <div onclick="selectCoin('TRX', 'Tron')" class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:border-brand-500/50">
-        <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 font-bold text-xs">TRX</div>
-        <div class="flex-1"><div class="text-sm font-bold text-white">TRX</div><div class="text-xs text-gray-400">Tron</div></div>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      <div class="text-right">
+        <div class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Account</div>
+        <div class="text-xs text-brand-400 font-mono font-semibold" id="account-id">--</div>
       </div>
     </div>
-    <div id="more-coins" class="space-y-2"></div>
+    
+    <!-- Search Section -->
+    <div class="relative mb-4 animate-fade-in" style="animation-delay: 0.05s">
+      <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+      </div>
+      <input 
+        type="text" 
+        id="search" 
+        placeholder="Search by name, symbol, or network..." 
+        class="search-input w-full pl-10 pr-10 py-3 rounded-xl text-white text-sm focus:outline-none"
+        autocomplete="off"
+      >
+      <button id="clear-search" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-white transition-colors hidden" onclick="clearSearch()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Quick Filters -->
+    <div class="flex gap-2 mb-4 overflow-x-auto pb-1 no-scrollbar animate-fade-in" style="animation-delay: 0.1s">
+      <button onclick="filterCategory('all')" class="filter-chip active px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 text-white border border-brand-500 transition-all whitespace-nowrap" data-filter="all">
+        All Coins
+      </button>
+      <button onclick="filterCategory('popular')" class="filter-chip px-3 py-1.5 rounded-lg text-xs font-semibold bg-dark-800 text-gray-400 border border-gray-700 hover:border-gray-600 transition-all whitespace-nowrap" data-filter="popular">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline mr-1" style="vertical-align: -1px">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Popular
+      </button>
+      <button onclick="filterCategory('stable')" class="filter-chip px-3 py-1.5 rounded-lg text-xs font-semibold bg-dark-800 text-gray-400 border border-gray-700 hover:border-gray-600 transition-all whitespace-nowrap" data-filter="stable">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline mr-1" style="vertical-align: -1px">
+          <path d="M12 2v20M2 12h20"/>
+        </svg>
+        Stablecoins
+      </button>
+      <button onclick="filterCategory('favorites')" class="filter-chip px-3 py-1.5 rounded-lg text-xs font-semibold bg-dark-800 text-gray-400 border border-gray-700 hover:border-gray-600 transition-all whitespace-nowrap" data-filter="favorites">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline mr-1" style="vertical-align: -1px">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Favorites
+      </button>
+    </div>
+    
+    <!-- Alphabetical Index -->
+    <div class="sticky-alpha mb-2 animate-fade-in" style="animation-delay: 0.15s">
+      <div class="alpha-index" id="alpha-index"></div>
+    </div>
+    
+    <!-- Recently Used Section -->
+    <div id="recent-section" class="hidden">
+      <div class="section-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+        </svg>
+        <span class="section-title">Recently Used</span>
+        <div class="section-line"></div>
+      </div>
+      <div id="recent-coins" class="space-y-2 mb-4"></div>
+    </div>
+    
+    <!-- Popular Section -->
+    <div id="popular-section">
+      <div class="section-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        <span class="section-title">Popular</span>
+        <div class="section-line"></div>
+      </div>
+      <div id="popular-coins" class="space-y-2 mb-4"></div>
+    </div>
+    
+    <!-- All Coins Section -->
+    <div id="all-coins-section">
+      <div class="section-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        <span class="section-title">All Cryptocurrencies</span>
+        <span class="text-[10px] text-gray-600 ml-2 font-mono" id="coin-count">0 coins</span>
+        <div class="section-line"></div>
+      </div>
+      <div id="more-coins" class="space-y-2"></div>
+    </div>
+    
+    <!-- Empty State -->
+    <div id="empty-state" class="empty-state hidden">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.5" class="mx-auto mb-3">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <p class="text-sm font-medium text-gray-500">No coins found</p>
+      <p class="text-xs text-gray-600 mt-1">Try adjusting your search or filters</p>
+    </div>
+    
+    <!-- Loading State -->
+    <div id="loading-state" class="space-y-3 py-4">
+      <div class="skeleton h-16 w-full"></div>
+      <div class="skeleton h-16 w-full"></div>
+      <div class="skeleton h-16 w-full"></div>
+      <div class="skeleton h-16 w-full"></div>
+      <div class="skeleton h-16 w-full"></div>
+      <div class="skeleton h-16 w-full"></div>
+    </div>
+    
   </main>
+  
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+  
   <div id="ts-global-footer"></div>
+  
   <script src="app.js"></script>
   <script>
-    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
-    function selectCoin(symbol, name) { TS_DB.set('deposit_coin', { symbol, name }); location.href = 'deposit-network.html'; }
-    async function loadMoreCoins() {
-      const coins = await TS_Market.getCoins();
-      const container = document.getElementById('more-coins');
-      const search = document.getElementById('search');
-      function render(filter='') {
-        const filtered = coins.filter(c => c.symbol.toLowerCase().includes(filter.toLowerCase()) || c.name.toLowerCase().includes(filter.toLowerCase()));
-        container.innerHTML = filtered.slice(0, 20).map(c => `
-          <div onclick="selectCoin('${c.symbol.toUpperCase()}', '${c.name.replace(/'/g, "\\'")}')" class="bg-dark-800 border border-gray-700/50 rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-brand-500/50">
-            <img src="${c.image}" class="w-8 h-8 rounded-full" onerror="this.style.display='none'">
-            <div class="flex-1"><div class="text-sm font-bold text-white">${c.symbol.toUpperCase()}</div><div class="text-xs text-gray-400">${c.name}</div></div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </div>
-        `).join('');
-      }
-      search.addEventListener('input', e => render(e.target.value));
-      render();
+    // ─── CONSTANTS ───
+    const COINGECKO_API = 'https://api.coingecko.com/api/v3';
+    const POPULAR_SYMBOLS = ['bitcoin', 'ethereum', 'tether', 'binancecoin', 'usd-coin', 'ripple', 'cardano', 'dogecoin', 'solana', 'tron'];
+    const STABLE_SYMBOLS = ['tether', 'usd-coin', 'dai', 'binance-usd', 'true-usd', 'paxos-standard', 'usd-coin-wormhole-from-ethereum', 'frax'];
+    
+    // ─── STATE ───
+    let allCoins = [];
+    let filteredCoins = [];
+    let currentFilter = 'all';
+    let favorites = JSON.parse(localStorage.getItem('ts_favorite_coins') || '[]');
+    let recentCoins = JSON.parse(localStorage.getItem('ts_recent_coins') || '[]');
+    let priceData = {};
+    let priceUpdateInterval = null;
+    
+    // ─── AUTH CHECK ───
+    if (typeof TS_Auth !== 'undefined' && !TS_Auth.requireAuth()) {
+      throw new Error('Auth required');
     }
+    
+    // ─── ACCOUNT DISPLAY ───
+    function loadAccountInfo() {
+      const account = (typeof TS_DB !== 'undefined' && TS_DB.get('account')) || { id: '8805827', name: 'Broker' };
+      const el = document.getElementById('account-id');
+      if (el) el.textContent = account.id || account.login || '8805827';
+    }
+    loadAccountInfo();
+    
+    // ─── SEARCH FUNCTIONS ───
+    const searchInput = document.getElementById('search');
+    const clearBtn = document.getElementById('clear-search');
+    
+    searchInput.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      clearBtn.classList.toggle('hidden', !val);
+      renderAll(val);
+    });
+    
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') clearSearch();
+    });
+    
+    function clearSearch() {
+      searchInput.value = '';
+      clearBtn.classList.add('hidden');
+      renderAll();
+      searchInput.focus();
+    }
+    
+    // ─── CATEGORY FILTER ───
+    function filterCategory(category) {
+      currentFilter = category;
+      document.querySelectorAll('.filter-chip').forEach(chip => {
+        const isActive = chip.dataset.filter === category;
+        chip.classList.toggle('active', isActive);
+        chip.classList.toggle('bg-brand-600', isActive);
+        chip.classList.toggle('text-white', isActive);
+        chip.classList.toggle('border-brand-500', isActive);
+        chip.classList.toggle('bg-dark-800', !isActive);
+        chip.classList.toggle('text-gray-400', !isActive);
+        chip.classList.toggle('border-gray-700', !isActive);
+      });
+      renderAll(searchInput.value.trim());
+    }
+    
+    // ─── ALPHABET INDEX ───
+    function buildAlphaIndex() {
+      const container = document.getElementById('alpha-index');
+      const letters = '#' + Array.from({length: 26}, (_, i) => String.fromCharCode(65 + i)).join('');
+      container.innerHTML = letters.split('').map(l => 
+        `<button class="alpha-btn" data-letter="${l}" onclick="scrollToLetter('${l}')">${l}</button>`
+      ).join('');
+    }
+    buildAlphaIndex();
+    
+    function scrollToLetter(letter) {
+      const cards = document.querySelectorAll('[data-alpha]');
+      let target = null;
+      for (const card of cards) {
+        const alpha = card.dataset.alpha;
+        if (letter === '#' ? /^[0-9]/.test(alpha) : alpha === letter) {
+          target = card;
+          break;
+        }
+      }
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        target.style.transition = 'none';
+        target.style.background = 'rgba(37, 99, 235, 0.15)';
+        setTimeout(() => {
+          target.style.transition = 'background 0.8s ease';
+          target.style.background = '';
+        }, 50);
+      }
+      document.querySelectorAll('.alpha-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.letter === letter));
+    }
+    
+    function updateAlphaIndex() {
+      const visibleLetters = new Set();
+      document.querySelectorAll('[data-alpha]:not([style*="display: none"])').forEach(card => {
+        visibleLetters.add(card.dataset.alpha);
+      });
+      document.querySelectorAll('.alpha-btn').forEach(btn => {
+        const letter = btn.dataset.letter;
+        const hasMatch = letter === '#' ? 
+          Array.from(visibleLetters).some(a => /^[0-9]/.test(a)) : 
+          visibleLetters.has(letter);
+        btn.classList.toggle('disabled', !hasMatch);
+      });
+    }
+    
+    // ─── COIN SELECTION ───
+    function selectCoin(symbol, name, image, id) {
+      // Save to recent
+      const recent = recentCoins.filter(c => c.symbol !== symbol);
+      recent.unshift({ symbol, name, image, id, timestamp: Date.now() });
+      recentCoins = recent.slice(0, 5);
+      localStorage.setItem('ts_recent_coins', JSON.stringify(recentCoins));
+      
+      // Save selection
+      if (typeof TS_DB !== 'undefined') {
+        TS_DB.set('deposit_coin', { symbol, name, image, id });
+      } else {
+        localStorage.setItem('deposit_coin', JSON.stringify({ symbol, name, image, id }));
+      }
+      
+      showToast(`${name} (${symbol}) selected`);
+      setTimeout(() => { location.href = 'deposit-network.html'; }, 400);
+    }
+    
+    // ─── FAVORITES ───
+    function toggleFavorite(e, coinId, symbol, name, image) {
+      e.stopPropagation();
+      const idx = favorites.findIndex(f => f.id === coinId);
+      if (idx >= 0) {
+        favorites.splice(idx, 1);
+        showToast(`Removed ${symbol} from favorites`);
+      } else {
+        favorites.push({ id: coinId, symbol, name, image, added: Date.now() });
+        showToast(`Added ${symbol} to favorites`);
+      }
+      localStorage.setItem('ts_favorite_coins', JSON.stringify(favorites));
+      renderAll(searchInput.value.trim());
+    }
+    
+    function isFavorite(coinId) {
+      return favorites.some(f => f.id === coinId);
+    }
+    
+    // ─── TOAST ───
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+    
+    // ─── PRICE FORMATTING ───
+    function formatPrice(price) {
+      if (!price || price === 0) return '--';
+      if (price >= 1) return '$' + price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      if (price >= 0.01) return '$' + price.toFixed(4);
+      return '$' + price.toFixed(6);
+    }
+    
+    function formatMarketCap(cap) {
+      if (!cap) return '--';
+      if (cap >= 1e12) return '$' + (cap / 1e12).toFixed(2) + 'T';
+      if (cap >= 1e9) return '$' + (cap / 1e9).toFixed(2) + 'B';
+      if (cap >= 1e6) return '$' + (cap / 1e6).toFixed(2) + 'M';
+      return '$' + cap.toLocaleString();
+    }
+    
+    function formatVolume(vol) {
+      if (!vol) return '--';
+      if (vol >= 1e9) return '$' + (vol / 1e9).toFixed(2) + 'B';
+      if (vol >= 1e6) return '$' + (vol / 1e6).toFixed(2) + 'M';
+      return '$' + vol.toLocaleString();
+    }
+    
+    function getChangeColor(change) {
+      if (!change && change !== 0) return 'text-gray-500';
+      return change >= 0 ? 'price-up' : 'price-down';
+    }
+    
+    function getChangeArrow(change) {
+      if (!change && change !== 0) return '';
+      return change >= 0 ? '▲' : '▼';
+    }
+    
+    // ─── COIN CARD HTML ───
+    function coinCardHTML(c, options = {}) {
+      const price = priceData[c.id]?.price || c.current_price || 0;
+      const change24h = priceData[c.id]?.change24h ?? c.price_change_percentage_24h ?? null;
+      const marketCap = c.market_cap || 0;
+      const volume = c.total_volume || 0;
+      const alpha = (c.symbol || c.name || '')[0].toUpperCase();
+      const safeAlpha = /^[A-Z]/.test(alpha) ? alpha : '#';
+      const fav = isFavorite(c.id);
+      const networks = c.platforms ? Object.keys(c.platforms).filter(k => c.platforms[k]).slice(0, 2) : [];
+      
+      return `
+        <div onclick="selectCoin('${c.symbol.toUpperCase()}', '${c.name.replace(/'/g, "\\'")}', '${c.image || ''}', '${c.id}')" 
+             class="coin-card bg-dark-900 border border-gray-800 rounded-xl p-3.5 flex items-center gap-3 cursor-pointer animate-fade-in"
+             data-alpha="${safeAlpha}" data-symbol="${c.symbol.toUpperCase()}" data-name="${c.name.toLowerCase()}" data-id="${c.id}">
+          
+          <!-- Coin Icon -->
+          <div class="coin-icon-wrap">
+            <img src="${c.image || ''}" alt="${c.name}" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2244%22 height=%2244%22 viewBox=%220 0 44 44%22%3E%3Crect width=%2244%22 height=%2244%22 rx=%2222%22 fill=%22%231f2937%22/%3E%3Ctext x=%2222%22 y=%2226%22 text-anchor=%22middle%22 fill=%22%239ca3af%22 font-size=%2214%22 font-weight=%22600%22 font-family=%22sans-serif%22%3E${c.symbol ? c.symbol.slice(0, 2).toUpperCase() : '??'}%3C/text%3E%3C/svg%3E'">
+            ${networks.length > 0 ? `
+            <div class="chain-dot" title="${networks.join(', ')}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+              </svg>
+            </div>` : ''}
+          </div>
+          
+          <!-- Coin Info -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-white truncate">${c.symbol.toUpperCase()}</span>
+              <span class="text-xs text-gray-500 truncate">${c.name}</span>
+              ${c.categories && c.categories.includes('Stablecoins') ? `
+                <span class="network-badge">Stable</span>
+              ` : ''}
+            </div>
+            <div class="flex items-center gap-3 mt-1">
+              <span class="stat-pill price-ticker text-xs font-semibold">${formatPrice(price)}</span>
+              ${change24h !== null ? `
+                <span class="stat-pill text-xs ${getChangeColor(change24h)}">
+                  ${getChangeArrow(change24h)} ${Math.abs(change24h).toFixed(2)}%
+                </span>
+              ` : ''}
+              <span class="stat-pill text-[10px]">MCap ${formatMarketCap(marketCap)}</span>
+            </div>
+          </div>
+          
+          <!-- Right Side -->
+          <div class="flex items-center gap-2">
+            <button onclick="toggleFavorite(event, '${c.id}', '${c.symbol.toUpperCase()}', '${c.name.replace(/'/g, "\\'")}', '${c.image || ''}')" 
+                    class="fav-btn ${fav ? 'active' : ''} p-1.5 rounded-lg hover:bg-dark-800" aria-label="Favorite">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="${fav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </button>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+      `;
+    }
+    
+    // ─── RENDER FUNCTIONS ───
+    function renderAll(searchTerm = '') {
+      const term = searchTerm.toLowerCase();
+      
+      // Filter logic
+      let pool = allCoins;
+      if (currentFilter === 'popular') pool = allCoins.filter(c => POPULAR_SYMBOLS.includes(c.id));
+      else if (currentFilter === 'stable') pool = allCoins.filter(c => STABLE_SYMBOLS.includes(c.id) || (c.categories && c.categories.includes('Stablecoins')));
+      else if (currentFilter === 'favorites') pool = allCoins.filter(c => isFavorite(c.id));
+      
+      if (term) {
+        pool = pool.filter(c => 
+          c.symbol.toLowerCase().includes(term) || 
+          c.name.toLowerCase().includes(term) ||
+          (c.id && c.id.toLowerCase().includes(term))
+        );
+      }
+      
+      filteredCoins = pool;
+      
+      // Update count
+      document.getElementById('coin-count').textContent = pool.length + ' coins';
+      
+      // Show/hide empty state
+      const hasResults = pool.length > 0;
+      document.getElementById('empty-state').classList.toggle('hidden', hasResults);
+      document.getElementById('all-coins-section').classList.toggle('hidden', !hasResults);
+      
+      // Render main list
+      const container = document.getElementById('more-coins');
+      container.innerHTML = pool.map((c, i) => coinCardHTML(c, { delay: i * 0.02 })).join('');
+      
+      // Update alpha index
+      updateAlphaIndex();
+    }
+    
+    function renderPopular() {
+      const popular = allCoins.filter(c => POPULAR_SYMBOLS.includes(c.id)).slice(0, 6);
+      const container = document.getElementById('popular-coins');
+      if (popular.length === 0) {
+        document.getElementById('popular-section').classList.add('hidden');
+        return;
+      }
+      document.getElementById('popular-section').classList.remove('hidden');
+      container.innerHTML = popular.map((c, i) => coinCardHTML(c, { delay: i * 0.03 })).join('');
+    }
+    
+    function renderRecent() {
+      if (recentCoins.length === 0) {
+        document.getElementById('recent-section').classList.add('hidden');
+        return;
+      }
+      const container = document.getElementById('recent-coins');
+      const recentData = recentCoins.map(r => {
+        const live = allCoins.find(c => c.id === r.id || c.symbol.toUpperCase() === r.symbol.toUpperCase());
+        return live || { ...r, symbol: r.symbol, name: r.name, image: r.image, id: r.id || r.symbol.toLowerCase() };
+      }).filter(Boolean);
+      
+      if (recentData.length === 0) {
+        document.getElementById('recent-section').classList.add('hidden');
+        return;
+      }
+      document.getElementById('recent-section').classList.remove('hidden');
+      container.innerHTML = recentData.map((c, i) => coinCardHTML(c, { delay: i * 0.03 })).join('');
+    }
+    
+    // ─── LIVE PRICE UPDATES ───
+    async function updatePrices() {
+      if (allCoins.length === 0) return;
+      const ids = allCoins.slice(0, 50).map(c => c.id).join(',');
+      try {
+        const res = await fetch(`${COINGECKO_API}/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`);
+        const data = await res.json();
+        Object.keys(data).forEach(id => {
+          priceData[id] = {
+            price: data[id].usd,
+            change24h: data[id].usd_24h_change
+          };
+        });
+        // Update visible prices without full re-render
+        document.querySelectorAll('[data-id]').forEach(card => {
+          const id = card.dataset.id;
+          const pd = priceData[id];
+          if (!pd) return;
+          const priceEl = card.querySelector('.price-ticker');
+          const changeEl = card.querySelector('.price-up, .price-down');
+          if (priceEl) priceEl.textContent = formatPrice(pd.price);
+          if (changeEl && pd.change24h !== undefined) {
+            changeEl.className = `stat-pill text-xs ${getChangeColor(pd.change24h)}`;
+            changeEl.innerHTML = `${getChangeArrow(pd.change24h)} ${Math.abs(pd.change24h).toFixed(2)}%`;
+          }
+        });
+      } catch (e) {
+        console.warn('Price update failed:', e);
+      }
+    }
+    
+    // ─── LOAD COINS ───
+    async function loadMoreCoins() {
+      const loadingEl = document.getElementById('loading-state');
+      const container = document.getElementById('more-coins');
+      
+      try {
+        // Try TS_Market first if available
+        if (typeof TS_Market !== 'undefined' && TS_Market.getCoins) {
+          const coins = await TS_Market.getCoins();
+          if (coins && coins.length > 0) {
+            allCoins = sortCoinsAlphabetical(coins);
+            finishLoad();
+            return;
+          }
+        }
+        
+        // Fallback to CoinGecko API
+        const res = await fetch(`${COINGECKO_API}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&sparkline=false&price_change_percentage=24h`);
+        if (!res.ok) throw new Error('CoinGecko API error: ' + res.status);
+        const coins = await res.json();
+        allCoins = sortCoinsAlphabetical(coins);
+        finishLoad();
+        
+      } catch (err) {
+        console.error('Failed to load coins:', err);
+        loadingEl.innerHTML = `
+          <div class="text-center py-8">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.5" class="mx-auto mb-2">
+              <circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>
+            </svg>
+            <p class="text-sm text-gray-400">Unable to load coins</p>
+            <button onclick="loadMoreCoins()" class="mt-3 px-4 py-2 bg-brand-600 hover:bg-brand-500 rounded-lg text-xs font-semibold transition-colors">Retry</button>
+          </div>
+        `;
+      }
+      
+      function finishLoad() {
+        loadingEl.classList.add('hidden');
+        renderPopular();
+        renderRecent();
+        renderAll();
+        updatePrices();
+        // Start live price polling
+        if (priceUpdateInterval) clearInterval(priceUpdateInterval);
+        priceUpdateInterval = setInterval(updatePrices, 30000);
+      }
+    }
+    
+    function sortCoinsAlphabetical(coins) {
+      return [...coins].sort((a, b) => {
+        const symA = (a.symbol || '').toUpperCase();
+        const symB = (b.symbol || '').toUpperCase();
+        if (symA < symB) return -1;
+        if (symA > symB) return 1;
+        return (a.name || '').localeCompare(b.name || '');
+      });
+    }
+    
+    // ─── INIT ───
     loadMoreCoins();
+    
+    // ─── VISIBILITY API ───
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && priceUpdateInterval) {
+        updatePrices();
+      }
+    });
+    
+    // ─── KEYBOARD SHORTCUTS ───
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    });
   </script>
 </body>
-</html>
+</html>       
