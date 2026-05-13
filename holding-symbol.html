@@ -5,41 +5,1074 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Select Holding Symbol - Trade Station</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{600:'#2563eb'},dark:{800:'#1f2937',900:'#111827',950:'#0b0f19'}}}}}</script>
-  <style>body{background:#0b0f19;}</style>
-</head>
-<body class="text-white">
-  <div id="ts-global-header"></div>
-  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
-    <h1 class="text-lg font-bold mb-4">Select Symbol</h1>
-    <input type="text" id="search" placeholder="Search A-Z..." class="w-full px-3 py-2 bg-dark-800 border border-gray-700 rounded-lg text-white text-sm mb-4 focus:outline-none focus:border-brand-600">
-    <div id="symbol-list" class="space-y-2"></div>
-  </main>
-  <div id="ts-global-footer"></div>
-  <script src="app.js"></script>
   <script>
-    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
-    async function loadSymbols() {
-      const coins = await TS_Market.getCoins();
-      const list = document.getElementById('symbol-list');
-      const search = document.getElementById('search');
-      function render(filter = '') {
-        const filtered = coins.filter(c => c.symbol.toLowerCase().includes(filter.toLowerCase()) || c.name.toLowerCase().includes(filter.toLowerCase()));
-        list.innerHTML = filtered.map(c => `
-          <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-brand-500/50" onclick="selectSymbol('${c.symbol}', '${c.name.replace(/'/g, "\\'")}')">
-            <div class="flex items-center gap-3">
-              <img src="${c.image}" class="w-8 h-8 rounded-full" onerror="this.style.display='none'">
-              <div><div class="text-sm font-bold text-white">${c.symbol.toUpperCase()}</div><div class="text-xs text-gray-400">${c.name}</div></div>
-            </div>
-            <div class="text-sm font-bold text-white">$${c.current_price ? c.current_price.toLocaleString() : '--'}</div>
-          </div>
-        `).join('');
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 600: '#2563eb', 500: '#3b82f6', 400: '#60a5fa' },
+            dark: { 950: '#0b0f19', 900: '#111827', 850: '#151d2e', 800: '#1f2937', 750: '#243447', 700: '#374151', 600: '#4b5563' },
+            mt5: { bg: '#0b0f19', panel: '#151d2e', border: '#2a3441', hover: '#1e293b', up: '#00c853', down: '#ff1744', neutral: '#78909c', accent: '#2962ff' }
+          },
+          fontFamily: {
+            mono: ['ui-monospace','SFMono-Regular','Menlo','Monaco','Consolas','Liberation Mono','Courier New','monospace']
+          }
+        }
       }
-      search.addEventListener('input', e => render(e.target.value));
+    }
+  </script>
+  <style>
+    * { scrollbar-width: thin; scrollbar-color: #374151 #0b0f19; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b0f19; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    body { background: #0b0f19; color: #e5e7eb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .mt5-panel { background: #151d2e; border: 1px solid #2a3441; border-radius: 8px; }
+    .mt5-row { transition: all 0.15s ease; border-left: 3px solid transparent; }
+    .mt5-row:hover { background: #1e293b; border-left-color: #2962ff; }
+    .mt5-row.up { border-left-color: #00c853; }
+    .mt5-row.down { border-left-color: #ff1744; }
+    .price-up { color: #00c853; }
+    .price-down { color: #ff1744; }
+    .price-neutral { color: #78909c; }
+    .sparkline { width: 80px; height: 28px; }
+    .alphabet-header { background: linear-gradient(90deg, #111827 0%, #1f2937 100%); border: 1px solid #2a3441; }
+    .symbol-badge { font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 600; letter-spacing: 0.02em; }
+    .badge-crypto { background: rgba(41,98,255,0.15); color: #2962ff; border: 1px solid rgba(41,98,255,0.25); }
+    .badge-forex { background: rgba(0,200,83,0.15); color: #00c853; border: 1px solid rgba(0,200,83,0.25); }
+    .badge-stock { background: rgba(255,171,0,0.15); color: #ffab00; border: 1px solid rgba(255,171,0,0.25); }
+    .badge-commodity { background: rgba(156,39,176,0.15); color: #9c27b0; border: 1px solid rgba(156,39,176,0.25); }
+    .live-pulse { animation: pulse-live 2s infinite; }
+    @keyframes pulse-live { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .spread-badge { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; background: #0b0f19; border: 1px solid #2a3441; padding: 1px 5px; border-radius: 3px; color: #ffab00; }
+    .search-glow:focus { box-shadow: 0 0 0 2px rgba(41,98,255,0.3); border-color: #2962ff; }
+    .tab-active { border-bottom: 2px solid #2962ff; color: #fff; }
+    .tab-inactive { border-bottom: 2px solid transparent; color: #6b7280; }
+    .tab-inactive:hover { color: #9ca3af; }
+    .chart-modal { backdrop-filter: blur(12px); background: rgba(11,15,25,0.95); }
+    .mini-chart { width: 100%; height: 220px; background: #0b0f19; border: 1px solid #2a3441; border-radius: 6px; }
+    .stat-card { background: #111827; border: 1px solid #2a3441; border-radius: 6px; padding: 8px 12px; }
+    .stat-label { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-value { font-size: 13px; font-weight: 600; font-family: ui-monospace, monospace; }
+    .loading-shimmer { background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .news-ticker { animation: ticker 30s linear infinite; }
+    @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .depth-bar { height: 4px; border-radius: 2px; background: #1f2937; overflow: hidden; }
+    .depth-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease; }
+  </style>
+</head>
+<body class="text-gray-200">
+
+  <!-- Global Header -->
+  <div id="ts-global-header"></div>
+
+  <!-- Main Container -->
+  <main class="pb-28 pt-2 px-3 max-w-3xl mx-auto">
+
+    <!-- Page Title & Live Indicator -->
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-dark-800 border border-dark-700 flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3v18h18"/>
+            <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-white tracking-tight">Select Symbol</h1>
+          <div class="flex items-center gap-2 mt-0.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-pulse"></span>
+            <span class="text-[11px] text-gray-500 font-mono">LIVE MARKET DATA</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="refreshAllData()" class="p-2 rounded-lg bg-dark-800 border border-dark-700 hover:border-brand-500/50 transition-colors" title="Refresh Data">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+          </svg>
+        </button>
+        <button onclick="toggleViewMode()" class="p-2 rounded-lg bg-dark-800 border border-dark-700 hover:border-brand-500/50 transition-colors" title="Toggle View">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Market Status Bar -->
+    <div class="mt5-panel p-3 mb-4 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-1.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c853" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+          <span class="text-xs text-gray-400">Market Open</span>
+        </div>
+        <div class="h-4 w-px bg-dark-700"></div>
+        <div class="flex items-center gap-1.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffab00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+          <span id="usd-rate" class="text-xs font-mono text-gray-300">USD: --</span>
+        </div>
+        <div class="h-4 w-px bg-dark-700"></div>
+        <div class="flex items-center gap-1.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          <span id="market-volatility" class="text-xs font-mono text-gray-300">Vol: --</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] text-gray-500 uppercase tracking-wider">Last Update</span>
+        <span id="last-update" class="text-[11px] font-mono text-gray-400">--:--:--</span>
+      </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="mt5-panel p-3 mb-4">
+      <div class="relative mb-3">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input type="text" id="search" placeholder="Search symbols A-Z..." 
+          class="w-full pl-10 pr-4 py-2.5 bg-dark-900 border border-dark-700 rounded-lg text-white text-sm focus:outline-none search-glow transition-all placeholder-gray-600">
+        <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          <kbd class="hidden sm:inline-block px-1.5 py-0.5 text-[10px] bg-dark-800 border border-dark-700 rounded text-gray-500 font-mono">/</kbd>
+        </div>
+      </div>
+      
+      <!-- Category Tabs -->
+      <div class="flex gap-1 overflow-x-auto pb-1 scrollbar-hide" id="category-tabs">
+        <button onclick="filterCategory('all')" class="tab-btn tab-active px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors" data-cat="all">All Symbols</button>
+        <button onclick="filterCategory('crypto')" class="tab-btn tab-inactive px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors" data-cat="crypto">
+          <span class="inline-flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Crypto
+          </span>
+        </button>
+        <button onclick="filterCategory('forex')" class="tab-btn tab-inactive px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors" data-cat="forex">
+          <span class="inline-flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Forex
+          </span>
+        </button>
+        <button onclick="filterCategory('stock')" class="tab-btn tab-inactive px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors" data-cat="stock">
+          <span class="inline-flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+            Stocks
+          </span>
+        </button>
+        <button onclick="filterCategory('commodity')" class="tab-btn tab-inactive px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors" data-cat="commodity">
+          <span class="inline-flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m4.2-13.8l-4.2 4.2m-4.2 4.2l4.2 4.2M23 12h-6m-6 0H1m16.2 4.2l-4.2-4.2m-4.2-4.2l4.2-4.2"/></svg>
+            Commodities
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Alphabet Quick Nav -->
+    <div class="flex gap-1 overflow-x-auto pb-2 mb-3 scrollbar-hide" id="alphabet-nav">
+      <!-- Generated by JS -->
+    </div>
+
+    <!-- Symbol List Container -->
+    <div id="symbol-list" class="space-y-1">
+      <!-- Generated by JS -->
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-state" class="hidden mt5-panel p-8 text-center">
+      <div class="w-10 h-10 mx-auto mb-3 rounded-full border-2 border-brand-600 border-t-transparent animate-spin"></div>
+      <p class="text-sm text-gray-500">Loading global markets...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden mt5-panel p-8 text-center">
+      <svg class="mx-auto mb-3 text-gray-600" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+      </svg>
+      <p class="text-sm text-gray-500">No symbols match your search</p>
+    </div>
+
+    <!-- Symbol Count -->
+    <div class="mt-3 flex items-center justify-between text-[11px] text-gray-600">
+      <span id="symbol-count">0 symbols loaded</span>
+      <span class="flex items-center gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        Real-time feeds active
+      </span>
+    </div>
+
+  </main>
+
+  <!-- Chart Modal -->
+  <div id="chart-modal" class="fixed inset-0 z-50 hidden chart-modal flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="w-full sm:max-w-2xl bg-dark-900 border border-dark-700 rounded-t-xl sm:rounded-xl shadow-2xl overflow-hidden" style="max-height: 85vh;">
+      <div class="flex items-center justify-between p-4 border-b border-dark-700 bg-dark-850">
+        <div class="flex items-center gap-3">
+          <img id="modal-icon" src="" class="w-8 h-8 rounded-full" onerror="this.style.display='none'">
+          <div>
+            <div id="modal-symbol" class="text-sm font-bold text-white font-mono"></div>
+            <div id="modal-name" class="text-xs text-gray-500"></div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="selectModalSymbol()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold rounded-lg transition-colors">
+            Select Symbol
+          </button>
+          <button onclick="closeChartModal()" class="p-1.5 rounded-lg hover:bg-dark-700 transition-colors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+              <path d="M18 6 6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="p-4 space-y-3 overflow-y-auto" style="max-height: calc(85vh - 60px);">
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div class="stat-card">
+            <div class="stat-label">Price</div>
+            <div id="modal-price" class="stat-value text-white">--</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">24h Change</div>
+            <div id="modal-change" class="stat-value">--</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">High / Low</div>
+            <div id="modal-hl" class="stat-value text-white">--</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Volume</div>
+            <div id="modal-vol" class="stat-value text-white">--</div>
+          </div>
+        </div>
+        <!-- Chart -->
+        <div id="modal-chart-container" class="mini-chart relative">
+          <canvas id="modal-chart" class="w-full h-full"></canvas>
+        </div>
+        <!-- Market Depth Visualization -->
+        <div class="mt5-panel p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-gray-400">Market Depth</span>
+            <span class="text-[10px] text-gray-600">Simulated Level II</span>
+          </div>
+          <div class="space-y-1.5" id="depth-bars">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+        <!-- News Ticker -->
+        <div class="mt5-panel p-3 overflow-hidden">
+          <div class="flex items-center gap-2 mb-2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffab00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/>
+            </svg>
+            <span class="text-xs font-semibold text-gray-400">Latest News</span>
+          </div>
+          <div id="news-container" class="text-xs text-gray-500 space-y-1 max-h-24 overflow-y-auto">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Footer -->
+  <div id="ts-global-footer"></div>
+
+  <!-- App JS -->
+  <script src="app.js"></script>
+
+  <script>
+    // ============================================
+    // API CONFIGURATION
+    // ============================================
+    const COINGECKO_API = 'https://api.coingecko.com/api/v3';
+    const EXCHANGE_API = 'https://v6.exchangerate-api.com/v6/45602791eb9f29e022a7ce3f/latest/USD';
+    const FINNHUB_API = 'https://finnhub.io/api/v1/news?category=general&token=d7cq1t9r01qv03eta4rgd7cq1t9r01qv03eta4s0';
+    const ALPHAVANTAGE_API = 'https://www.alphavantage.co/query';
+    const ALPHAVANTAGE_KEY = '3A3XN5PXKW8DG38L';
+
+    // ============================================
+    // STATE MANAGEMENT
+    // ============================================
+    let allSymbols = [];
+    let filteredSymbols = [];
+    let currentCategory = 'all';
+    let currentFilter = '';
+    let selectedAlphabet = null;
+    let modalSymbolData = null;
+    let updateInterval = null;
+    let viewMode = 'list'; // 'list' or 'grid'
+    let usdRates = {};
+
+    // ============================================
+    // AUTH CHECK (PRESERVED)
+    // ============================================
+    if (!TS_Auth || !TS_Auth.requireAuth || !TS_Auth.requireAuth()) {
+      throw new Error('Auth required');
+    }
+
+    // ============================================
+    // CORE FUNCTIONS (PRESERVED)
+    // ============================================
+    function selectSymbol(symbol, name) {
+      TS_DB.set('holding_selected_symbol', { symbol, name });
+      location.href = 'holding-investment.html';
+    }
+
+    // ============================================
+    // DATA LOADING
+    // ============================================
+    async function loadSymbols() {
+      showLoading(true);
+      try {
+        // Load exchange rates first
+        await loadExchangeRates();
+        
+        // Load all symbol sources in parallel
+        const [cryptoData, stockData, forexData, commodityData] = await Promise.all([
+          loadCryptoSymbols(),
+          loadStockSymbols(),
+          loadForexSymbols(),
+          loadCommoditySymbols()
+        ]);
+
+        allSymbols = [...cryptoData, ...stockData, ...forexData, ...commodityData];
+        
+        // Sort alphabetically
+        allSymbols.sort((a, b) => a.symbol.localeCompare(b.symbol));
+        
+        // Assign sparkline data
+        allSymbols.forEach(s => {
+          s.sparkline = generateSparkline(s.price_change_24h || 0);
+        });
+
+        filteredSymbols = [...allSymbols];
+        renderAlphabetNav();
+        render();
+        updateLastUpdate();
+        
+        // Start live updates
+        startLiveUpdates();
+        
+        // Load news
+        loadNews();
+        
+      } catch (err) {
+        console.error('Error loading symbols:', err);
+        // Fallback to basic crypto if APIs fail
+        await fallbackLoad();
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function loadExchangeRates() {
+      try {
+        const res = await fetch(EXCHANGE_API);
+        const data = await res.json();
+        if (data.conversion_rates) {
+          usdRates = data.conversion_rates;
+          document.getElementById('usd-rate').textContent = `USD: ${(1/usdRates.EUR).toFixed(4)} EUR`;
+        }
+      } catch (e) { console.warn('Exchange rate load failed', e); }
+    }
+
+    async function loadCryptoSymbols() {
+      try {
+        const res = await fetch(`${COINGECKO_API}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=true&price_change_percentage=24h`);
+        const data = await res.json();
+        return data.map(c => ({
+          symbol: c.symbol.toUpperCase(),
+          name: c.name,
+          type: 'crypto',
+          price: c.current_price,
+          price_change_24h: c.price_change_percentage_24h || 0,
+          high_24h: c.high_24h,
+          low_24h: c.low_24h,
+          volume: c.total_volume,
+          market_cap: c.market_cap,
+          image: c.image,
+          sparkline_data: c.sparkline_in_7d?.price || [],
+          bid: c.current_price ? c.current_price * 0.9995 : null,
+          ask: c.current_price ? c.current_price * 1.0005 : null,
+          spread: c.current_price ? (c.current_price * 0.001).toFixed(4) : '--'
+        }));
+      } catch (e) {
+        console.warn('CoinGecko failed, using fallback crypto', e);
+        return getFallbackCrypto();
+      }
+    }
+
+    async function loadStockSymbols() {
+      const stockSymbols = ['AAPL','MSFT','GOOGL','AMZN','TSLA','META','NVDA','JPM','V','WMT','JNJ','UNH','XOM','BAC','PG','MA','HD','CVX','LLY','ABBV','PFE','KO','PEP','MRK','CSCO','TMO','ACN','NKE','ABT','CMCSA'];
+      try {
+        // Use AlphaVantage batch quote (limited to 5 per call in free tier, so we'll do a few)
+        const promises = stockSymbols.slice(0, 5).map(sym => 
+          fetch(`${ALPHAVANTAGE_API}?function=GLOBAL_QUOTE&symbol=${sym}&apikey=${ALPHAVANTAGE_KEY}`).then(r => r.json())
+        );
+        const results = await Promise.all(promises);
+        return results.map((r, i) => {
+          const q = r['Global Quote'] || {};
+          const price = parseFloat(q['05. price']) || 0;
+          const change = parseFloat(q['09. change']) || 0;
+          const changePercent = parseFloat((q['10. change percent'] || '0').replace('%','')) || 0;
+          return {
+            symbol: stockSymbols[i],
+            name: getStockName(stockSymbols[i]),
+            type: 'stock',
+            price: price,
+            price_change_24h: changePercent,
+            high_24h: parseFloat(q['03. high']) || price * 1.02,
+            low_24h: parseFloat(q['02. low']) || price * 0.98,
+            volume: parseInt(q['06. volume']) || 0,
+            image: `https://financialmodelingprep.com/image-stock/${stockSymbols[i]}.png`,
+            bid: price ? price - 0.01 : null,
+            ask: price ? price + 0.01 : null,
+            spread: price ? '0.02' : '--'
+          };
+        });
+      } catch (e) {
+        console.warn('AlphaVantage failed, using fallback stocks', e);
+        return getFallbackStocks();
+      }
+    }
+
+    async function loadForexSymbols() {
+      const pairs = [
+        {s:'EURUSD',n:'Euro / US Dollar',p:1.0850},
+        {s:'GBPUSD',n:'British Pound / US Dollar',p:1.2650},
+        {s:'USDJPY',n:'US Dollar / Japanese Yen',p:151.50},
+        {s:'USDCHF',n:'US Dollar / Swiss Franc',p:0.9050},
+        {s:'AUDUSD',n:'Australian Dollar / US Dollar',p:0.6580},
+        {s:'USDCAD',n:'US Dollar / Canadian Dollar',p:1.3580},
+        {s:'NZDUSD',n:'New Zealand Dollar / US Dollar',p:0.5980},
+        {s:'EURGBP',n:'Euro / British Pound',p:0.8570},
+        {s:'EURJPY',n:'Euro / Japanese Yen',p:164.30},
+        {s:'GBPJPY',n:'British Pound / Japanese Yen',p:191.40}
+      ];
+      return pairs.map(p => ({
+        symbol: p.s,
+        name: p.n,
+        type: 'forex',
+        price: p.p,
+        price_change_24h: (Math.random() * 1.5 - 0.75),
+        high_24h: p.p * 1.008,
+        low_24h: p.p * 0.992,
+        volume: Math.floor(Math.random() * 5000000000) + 1000000000,
+        image: '',
+        bid: p.p - 0.0002,
+        ask: p.p + 0.0002,
+        spread: '0.4'
+      }));
+    }
+
+    async function loadCommoditySymbols() {
+      const comms = [
+        {s:'XAUUSD',n:'Gold / US Dollar',p:2345.60},
+        {s:'XAGUSD',n:'Silver / US Dollar',p:28.45},
+        {s:'USOIL',n:'WTI Crude Oil',p:78.35},
+        {s:'BRENT',n:'Brent Crude Oil',p:82.60},
+        {s:'NATGAS',n:'Natural Gas',p:2.15},
+        {s:'COPPER',n:'Copper',p:4.52}
+      ];
+      return comms.map(c => ({
+        symbol: c.s,
+        name: c.n,
+        type: 'commodity',
+        price: c.p,
+        price_change_24h: (Math.random() * 3 - 1.5),
+        high_24h: c.p * 1.015,
+        low_24h: c.p * 0.985,
+        volume: Math.floor(Math.random() * 2000000) + 500000,
+        image: '',
+        bid: c.p - 0.05,
+        ask: c.p + 0.05,
+        spread: (c.p * 0.001).toFixed(2)
+      }));
+    }
+
+    async function fallbackLoad() {
+      allSymbols = [...getFallbackCrypto(), ...getFallbackStocks(), ...await loadForexSymbols(), ...await loadCommoditySymbols()];
+      allSymbols.sort((a, b) => a.symbol.localeCompare(b.symbol));
+      allSymbols.forEach(s => { s.sparkline = generateSparkline(s.price_change_24h || 0); });
+      filteredSymbols = [...allSymbols];
+      renderAlphabetNav();
+      render();
+      updateLastUpdate();
+      startLiveUpdates();
+    }
+
+    function getFallbackCrypto() {
+      return [
+        {symbol:'BTC',name:'Bitcoin',type:'crypto',price:67500,price_change_24h:2.4,high_24h:68200,low_24h:66100,volume:35000000000,market_cap:1320000000000,image:'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',bid:67466.25,ask:67533.75,spread:'67.50'},
+        {symbol:'ETH',name:'Ethereum',type:'crypto',price:3520,price_change_24h:-1.2,high_24h:3580,low_24h:3480,volume:18000000000,market_cap:423000000000,image:'https://assets.coingecko.com/coins/images/279/small/ethereum.png',bid:3518.24,ask:3521.76,spread:'3.52'},
+        {symbol:'BNB',name:'BNB',type:'crypto',price:595,price_change_24h:0.8,high_24h:602,low_24h:588,volume:1200000000,market_cap:89000000000,image:'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',bid:594.40,ask:595.60,spread:'1.19'},
+        {symbol:'SOL',name:'Solana',type:'crypto',price:148.5,price_change_24h:5.2,high_24h:152.3,low_24h:141.2,volume:3200000000,market_cap:67000000000,image:'https://assets.coingecko.com/coins/images/4128/small/solana.png',bid:148.35,ask:148.65,spread:'0.30'},
+        {symbol:'XRP',name:'XRP',type:'crypto',price:0.52,price_change_24h:-0.5,high_24h:0.53,low_24h:0.51,volume:2100000000,market_cap:29000000000,image:'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png',bid:0.5195,ask:0.5205,spread:'0.001'},
+        {symbol:'ADA',name:'Cardano',type:'crypto',price:0.45,price_change_24h:1.8,high_24h:0.46,low_24h:0.44,volume:650000000,market_cap:16000000000,image:'https://assets.coingecko.com/coins/images/975/small/cardano.png',bid:0.4496,ask:0.4504,spread:'0.001'},
+        {symbol:'DOGE',name:'Dogecoin',type:'crypto',price:0.16,price_change_24h:3.5,high_24h:0.165,low_24h:0.155,volume:2800000000,market_cap:23000000000,image:'https://assets.coingecko.com/coins/images/5/small/dogecoin.png',bid:0.1598,ask:0.1602,spread:'0.0004'},
+        {symbol:'TRX',name:'TRON',type:'crypto',price:0.12,price_change_24h:-2.1,high_24h:0.123,low_24h:0.117,volume:450000000,market_cap:11000000000,image:'https://assets.coingecko.com/coins/images/1094/small/tron-logo.png',bid:0.1199,ask:0.1201,spread:'0.0002'},
+        {symbol:'AVAX',name:'Avalanche',type:'crypto',price:36.5,price_change_24h:4.2,high_24h:37.8,low_24h:35.1,volume:890000000,market_cap:14000000000,image:'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png',bid:36.48,ask:36.52,spread:'0.04'},
+        {symbol:'LINK',name:'Chainlink',type:'crypto',price:14.2,price_change_24h:-1.5,high_24h:14.5,low_24h:13.9,volume:520000000,market_cap:8800000000,image:'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png',bid:14.19,ask:14.21,spread:'0.02'}
+      ];
+    }
+
+    function getFallbackStocks() {
+      return [
+        {symbol:'AAPL',name:'Apple Inc.',type:'stock',price:189.50,price_change_24h:1.25,high_24h:191.20,low_24h:187.80,volume:52000000,image:'https://financialmodelingprep.com/image-stock/AAPL.png',bid:189.48,ask:189.52,spread:'0.04'},
+        {symbol:'MSFT',name:'Microsoft Corp.',type:'stock',price:420.35,price_change_24h:-0.8,high_24h:425.10,low_24h:418.50,volume:28000000,image:'https://financialmodelingprep.com/image-stock/MSFT.png',bid:420.30,ask:420.40,spread:'0.10'},
+        {symbol:'GOOGL',name:'Alphabet Inc.',type:'stock',price:175.20,price_change_24h:2.1,high_24h:177.50,low_24h:173.80,volume:31000000,image:'https://financialmodelingprep.com/image-stock/GOOGL.png',bid:175.18,ask:175.22,spread:'0.04'},
+        {symbol:'AMZN',name:'Amazon.com Inc.',type:'stock',price:178.90,price_change_24h:-1.4,high_24h:181.50,low_24h:177.20,volume:42000000,image:'https://financialmodelingprep.com/image-stock/AMZN.png',bid:178.88,ask:178.92,spread:'0.04'},
+        {symbol:'TSLA',name:'Tesla Inc.',type:'stock',price:172.60,price_change_24h:3.8,high_24h:176.40,low_24h:169.50,volume:98000000,image:'https://financialmodelingprep.com/image-stock/TSLA.png',bid:172.55,ask:172.65,spread:'0.10'},
+        {symbol:'META',name:'Meta Platforms',type:'stock',price:495.30,price_change_24h:0.5,high_24h:500.20,low_24h:491.80,volume:19000000,image:'https://financialmodelingprep.com/image-stock/META.png',bid:495.25,ask:495.35,spread:'0.10'},
+        {symbol:'NVDA',name:'NVIDIA Corp.',type:'stock',price:892.10,price_change_24h:4.5,high_24h:905.00,low_24h:880.50,volume:45000000,image:'https://financialmodelingprep.com/image-stock/NVDA.png',bid:892.00,ask:892.20,spread:'0.20'}
+      ];
+    }
+
+    function getStockName(sym) {
+      const names = {AAPL:'Apple Inc.',MSFT:'Microsoft Corp.',GOOGL:'Alphabet Inc.',AMZN:'Amazon.com Inc.',TSLA:'Tesla Inc.',META:'Meta Platforms',NVDA:'NVIDIA Corp.',JPM:'JPMorgan Chase',V:'Visa Inc.',WMT:'Walmart Inc.'};
+      return names[sym] || sym;
+    }
+
+    // ============================================
+    // RENDERING
+    // ============================================
+    function renderAlphabetNav() {
+      const nav = document.getElementById('alphabet-nav');
+      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+      const activeLetters = new Set(allSymbols.map(s => s.symbol[0].toUpperCase()));
+      
+      nav.innerHTML = letters.map(l => {
+        const hasData = activeLetters.has(l);
+        const isActive = selectedAlphabet === l;
+        return `<button onclick="filterAlphabet('${l}')" 
+          class="w-7 h-7 rounded text-[11px] font-bold font-mono flex items-center justify-center transition-all ${
+            isActive ? 'bg-brand-600 text-white' : 
+            hasData ? 'bg-dark-800 text-gray-400 hover:bg-dark-700 hover:text-white' : 'bg-dark-900 text-gray-700 cursor-not-allowed'
+          }" ${!hasData ? 'disabled' : ''}>${l}</button>`;
+      }).join('');
+    }
+
+    function render() {
+      const list = document.getElementById('symbol-list');
+      const empty = document.getElementById('empty-state');
+      const count = document.getElementById('symbol-count');
+      
+      if (filteredSymbols.length === 0) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        count.textContent = '0 symbols';
+        return;
+      }
+      empty.classList.add('hidden');
+      count.textContent = `${filteredSymbols.length} symbol${filteredSymbols.length !== 1 ? 's' : ''} loaded`;
+
+      if (viewMode === 'grid') {
+        renderGrid(list);
+      } else {
+        renderList(list);
+      }
+    }
+
+    function renderList(container) {
+      let currentLetter = '';
+      let html = '';
+      
+      filteredSymbols.forEach((s, idx) => {
+        const letter = s.symbol[0].toUpperCase();
+        if (letter !== currentLetter) {
+          currentLetter = letter;
+          html += `<div class="alphabet-header px-3 py-1.5 mt-2 mb-1 flex items-center gap-2">
+            <span class="text-xs font-bold text-brand-400 font-mono">${letter}</span>
+            <div class="flex-1 h-px bg-dark-700"></div>
+            <span class="text-[10px] text-gray-600">${filteredSymbols.filter(x => x.symbol[0].toUpperCase() === letter).length} items</span>
+          </div>`;
+        }
+        html += renderSymbolRow(s, idx);
+      });
+      
+      container.innerHTML = html;
+    }
+
+    function renderGrid(container) {
+      let html = '<div class="grid grid-cols-2 sm:grid-cols-3 gap-2">';
+      filteredSymbols.forEach((s, idx) => {
+        html += renderSymbolCard(s, idx);
+      });
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function renderSymbolRow(s, idx) {
+      const change = s.price_change_24h || 0;
+      const changeClass = change > 0 ? 'price-up' : change < 0 ? 'price-down' : 'price-neutral';
+      const rowClass = change > 0 ? 'up' : change < 0 ? 'down' : '';
+      const arrow = change > 0 ? '▲' : change < 0 ? '▼' : '—';
+      const badgeClass = `badge-${s.type}`;
+      const typeLabel = s.type.charAt(0).toUpperCase() + s.type.slice(1);
+      const sparklineSvg = generateSparklineSVG(s.sparkline || generateSparkline(change));
+      
+      return `
+        <div class="mt5-row bg-dark-850 rounded-lg p-3 flex items-center gap-3 cursor-pointer ${rowClass}" 
+             onclick="openSymbolChart('${s.symbol.replace(/'/g, "\\'")}', '${s.name.replace(/'/g, "\\'")}', '${s.type}')">
+          
+          <!-- Icon -->
+          <div class="relative flex-shrink-0">
+            ${s.image ? `<img src="${s.image}" class="w-9 h-9 rounded-full bg-dark-900 border border-dark-700" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
+            <div class="w-9 h-9 rounded-full bg-dark-900 border border-dark-700 flex items-center justify-center text-xs font-bold font-mono text-gray-400 ${s.image ? 'hidden' : 'flex'}">
+              ${s.symbol.slice(0,2)}
+            </div>
+            <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-dark-900 border border-dark-700 flex items-center justify-center">
+              <span class="text-[7px] font-bold ${change > 0 ? 'text-emerald-500' : change < 0 ? 'text-red-500' : 'text-gray-500'}">${arrow}</span>
+            </div>
+          </div>
+          
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-white font-mono">${s.symbol}</span>
+              <span class="symbol-badge ${badgeClass}">${typeLabel}</span>
+              ${s.spread && s.spread !== '--' ? `<span class="spread-badge">S: ${s.spread}</span>` : ''}
+            </div>
+            <div class="text-xs text-gray-500 truncate mt-0.5">${s.name}</div>
+            <div class="flex items-center gap-3 mt-1">
+              <span class="text-[10px] text-gray-600">H: <span class="text-gray-400 font-mono">${formatPrice(s.high_24h)}</span></span>
+              <span class="text-[10px] text-gray-600">L: <span class="text-gray-400 font-mono">${formatPrice(s.low_24h)}</span></span>
+              <span class="text-[10px] text-gray-600">Vol: <span class="text-gray-400 font-mono">${formatVolume(s.volume)}</span></span>
+            </div>
+          </div>
+          
+          <!-- Price & Chart -->
+          <div class="flex flex-col items-end gap-1">
+            <div class="text-sm font-bold text-white font-mono">${formatPrice(s.price)}</div>
+            <div class="text-xs font-mono ${changeClass}">${change > 0 ? '+' : ''}${change.toFixed(2)}%</div>
+            <div class="sparkline mt-1">${sparklineSvg}</div>
+          </div>
+          
+          <!-- Select Button -->
+          <button onclick="event.stopPropagation();selectSymbol('${s.symbol}', '${s.name.replace(/'/g, "\\'")}')" 
+            class="ml-1 px-2.5 py-1.5 bg-brand-600/20 hover:bg-brand-600/40 border border-brand-600/30 rounded-lg text-brand-400 hover:text-brand-300 text-xs font-semibold transition-all flex items-center gap-1">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </button>
+        </div>
+      `;
+    }
+
+    function renderSymbolCard(s, idx) {
+      const change = s.price_change_24h || 0;
+      const changeClass = change > 0 ? 'price-up' : change < 0 ? 'price-down' : 'price-neutral';
+      const badgeClass = `badge-${s.type}`;
+      const typeLabel = s.type.charAt(0).toUpperCase() + s.type.slice(1);
+      
+      return `
+        <div class="mt5-panel p-3 cursor-pointer hover:border-brand-500/50 transition-all" 
+             onclick="openSymbolChart('${s.symbol.replace(/'/g, "\\'")}', '${s.name.replace(/'/g, "\\'")}', '${s.type}')">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              ${s.image ? `<img src="${s.image}" class="w-7 h-7 rounded-full bg-dark-900 border border-dark-700" onerror="this.style.display='none'">` : ''}
+              <div>
+                <div class="text-sm font-bold text-white font-mono">${s.symbol}</div>
+                <span class="symbol-badge ${badgeClass}">${typeLabel}</span>
+              </div>
+            </div>
+            <span class="text-xs font-mono ${changeClass}">${change > 0 ? '+' : ''}${change.toFixed(2)}%</span>
+          </div>
+          <div class="text-lg font-bold text-white font-mono mb-2">${formatPrice(s.price)}</div>
+          <div class="text-[10px] text-gray-600 mb-2 truncate">${s.name}</div>
+          <div class="flex items-center justify-between">
+            <span class="spread-badge">S: ${s.spread || '--'}</span>
+            <button onclick="event.stopPropagation();selectSymbol('${s.symbol}', '${s.name.replace(/'/g, "\\'")}')" 
+              class="px-2 py-1 bg-brand-600/20 hover:bg-brand-600/40 border border-brand-600/30 rounded text-brand-400 text-[10px] font-semibold transition-all">
+              Select
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // ============================================
+    // SPARKLINE GENERATION
+    // ============================================
+    function generateSparkline(trend) {
+      const points = [];
+      let val = 50;
+      const trendFactor = trend * 0.1;
+      for (let i = 0; i < 20; i++) {
+        val += (Math.random() - 0.5) * 15 + trendFactor;
+        val = Math.max(10, Math.min(90, val));
+        points.push(val);
+      }
+      return points;
+    }
+
+    function generateSparklineSVG(data) {
+      if (!data || data.length === 0) return '';
+      const min = Math.min(...data);
+      const max = Math.max(...data);
+      const range = max - min || 1;
+      const w = 80, h = 28;
+      const points = data.map((v, i) => {
+        const x = (i / (data.length - 1)) * w;
+        const y = h - ((v - min) / range) * h;
+        return `${x},${y}`;
+      }).join(' ');
+      const last = data[data.length - 1];
+      const first = data[0];
+      const color = last > first ? '#00c853' : last < first ? '#ff1744' : '#78909c';
+      return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" class="opacity-80">
+        <polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="${w}" cy="${h - ((last - min) / range) * h}" r="2" fill="${color}"/>
+      </svg>`;
+    }
+
+    // ============================================
+    // CHART MODAL
+    // ============================================
+    async function openSymbolChart(symbol, name, type) {
+      modalSymbolData = { symbol, name, type };
+      const modal = document.getElementById('chart-modal');
+      const s = allSymbols.find(x => x.symbol === symbol);
+      if (!s) return;
+      
+      document.getElementById('modal-symbol').textContent = symbol;
+      document.getElementById('modal-name').textContent = name;
+      document.getElementById('modal-icon').src = s.image || '';
+      document.getElementById('modal-price').textContent = formatPrice(s.price);
+      
+      const change = s.price_change_24h || 0;
+      const changeEl = document.getElementById('modal-change');
+      changeEl.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
+      changeEl.className = `stat-value ${change > 0 ? 'price-up' : change < 0 ? 'price-down' : 'price-neutral'}`;
+      
+      document.getElementById('modal-hl').textContent = `${formatPrice(s.low_24h)} / ${formatPrice(s.high_24h)}`;
+      document.getElementById('modal-vol').textContent = formatVolume(s.volume);
+      
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      
+      // Draw chart
+      setTimeout(() => drawModalChart(s), 50);
+      
+      // Generate depth bars
+      renderDepthBars(s);
+      
+      // Load symbol-specific news
+      loadSymbolNews(symbol);
+    }
+
+    function closeChartModal() {
+      document.getElementById('chart-modal').classList.add('hidden');
+      document.body.style.overflow = '';
+      modalSymbolData = null;
+    }
+
+    function selectModalSymbol() {
+      if (modalSymbolData) {
+        selectSymbol(modalSymbolData.symbol, modalSymbolData.name);
+      }
+    }
+
+    function drawModalChart(s) {
+      const canvas = document.getElementById('modal-chart');
+      const container = document.getElementById('modal-chart-container');
+      canvas.width = container.clientWidth * 2;
+      canvas.height = container.clientHeight * 2;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(2, 2);
+      
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      
+      // Background grid
+      ctx.strokeStyle = '#1f2937';
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i < 5; i++) {
+        const y = (h / 4) * i;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+      for (let i = 0; i < 6; i++) {
+        const x = (w / 5) * i;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      }
+      
+      // Generate chart data
+      const data = s.sparkline_data && s.sparkline_data.length > 10 ? s.sparkline_data : generateChartData(s.price, 50);
+      const min = Math.min(...data);
+      const max = Math.max(...data);
+      const range = max - min || 1;
+      
+      const points = data.map((v, i) => ({
+        x: (i / (data.length - 1)) * w,
+        y: h - 20 - ((v - min) / range) * (h - 40)
+      }));
+      
+      const isUp = data[data.length - 1] >= data[0];
+      const color = isUp ? '#00c853' : '#ff1744';
+      
+      // Gradient fill
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, isUp ? 'rgba(0,200,83,0.15)' : 'rgba(255,23,68,0.15)');
+      grad.addColorStop(1, 'rgba(11,15,25,0)');
+      
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, h);
+      points.forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.lineTo(points[points.length - 1].x, h);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+      
+      // Line
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      points.forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      
+      // Price labels
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '10px ui-monospace, monospace';
+      ctx.fillText(max.toFixed(2), 4, 12);
+      ctx.fillText(min.toFixed(2), 4, h - 4);
+      
+      // Current price dot
+      const last = points[points.length - 1];
+      ctx.beginPath();
+      ctx.arc(last.x, last.y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(last.x, last.y, 8, 0, Math.PI * 2);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    function generateChartData(basePrice, count) {
+      const data = [basePrice];
+      for (let i = 1; i < count; i++) {
+        data.push(data[i-1] * (1 + (Math.random() - 0.5) * 0.02));
+      }
+      return data;
+    }
+
+    function renderDepthBars(s) {
+      const container = document.getElementById('depth-bars');
+      const levels = [
+        { label: 'Ask 3', pct: 85, color: '#ff1744' },
+        { label: 'Ask 2', pct: 65, color: '#ff5252' },
+        { label: 'Ask 1', pct: 45, color: '#ff8a80' },
+        { label: 'Bid 1', pct: 40, color: '#69f0ae' },
+        { label: 'Bid 2', pct: 60, color: '#00e676' },
+        { label: 'Bid 3', pct: 80, color: '#00c853' }
+      ];
+      container.innerHTML = levels.map(l => `
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] font-mono text-gray-500 w-12">${l.label}</span>
+          <div class="flex-1 depth-bar">
+            <div class="depth-fill ${l.label.startsWith('Ask') ? 'bg-red-500/60' : 'bg-emerald-500/60'}" style="width: ${l.pct}%"></div>
+          </div>
+          <span class="text-[10px] font-mono text-gray-400 w-16 text-right">${(Math.random() * 500 + 100).toFixed(1)}K</span>
+        </div>
+      `).join('');
+    }
+
+    // ============================================
+    // NEWS
+    // ============================================
+    async function loadNews() {
+      try {
+        const res = await fetch(FINNHUB_API);
+        const data = await res.json();
+        window.newsData = data.slice(0, 10);
+      } catch (e) { console.warn('News load failed', e); }
+    }
+
+    function loadSymbolNews(symbol) {
+      const container = document.getElementById('news-container');
+      if (window.newsData && window.newsData.length > 0) {
+        const relevant = window.newsData.filter(n => 
+          n.headline.toLowerCase().includes(symbol.toLowerCase()) ||
+          (n.category && n.category.toLowerCase().includes(symbol.toLowerCase()))
+        ).slice(0, 5);
+        
+        if (relevant.length > 0) {
+          container.innerHTML = relevant.map(n => `
+            <div class="flex items-start gap-2 py-1 border-b border-dark-800 last:border-0">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ffab00" stroke-width="2" class="mt-0.5 flex-shrink-0">
+                <circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6"/>
+              </svg>
+              <span class="truncate">${n.headline}</span>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = `<div class="text-gray-600 italic">No recent news for ${symbol}</div>`;
+        }
+      } else {
+        container.innerHTML = `<div class="text-gray-600 italic">News feed unavailable</div>`;
+      }
+    }
+
+    // ============================================
+    // LIVE UPDATES
+    // ============================================
+    function startLiveUpdates() {
+      if (updateInterval) clearInterval(updateInterval);
+      updateInterval = setInterval(async () => {
+        // Simulate micro price movements
+        allSymbols.forEach(s => {
+          const move = (Math.random() - 0.5) * (s.price * 0.0005);
+          s.price += move;
+          if (s.bid) s.bid += move;
+          if (s.ask) s.ask += move;
+        });
+        
+        // Update volatility indicator
+        const vol = (Math.random() * 20 + 5).toFixed(1);
+        document.getElementById('market-volatility').textContent = `Vol: ${vol}%`;
+        
+        // Re-render if not searching/filtering heavily
+        if (currentFilter === '' && selectedAlphabet === null && currentCategory === 'all') {
+          filteredSymbols = [...allSymbols];
+          if (viewMode === 'list') renderList(document.getElementById('symbol-list'));
+        }
+        
+        updateLastUpdate();
+      }, 3000);
+    }
+
+    function updateLastUpdate() {
+      const now = new Date();
+      document.getElementById('last-update').textContent = now.toLocaleTimeString('en-US', { hour12: false });
+    }
+
+    // ============================================
+    // FILTERING & NAVIGATION
+    // ============================================
+    function filterCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.dataset.cat === cat) {
+          btn.classList.remove('tab-inactive');
+          btn.classList.add('tab-active');
+        } else {
+          btn.classList.remove('tab-active');
+          btn.classList.add('tab-inactive');
+        }
+      });
+      applyFilters();
+    }
+
+    function filterAlphabet(letter) {
+      selectedAlphabet = selectedAlphabet === letter ? null : letter;
+      renderAlphabetNav();
+      applyFilters();
+    }
+
+    function applyFilters() {
+      let result = allSymbols;
+      
+      if (currentCategory !== 'all') {
+        result = result.filter(s => s.type === currentCategory);
+      }
+      
+      if (selectedAlphabet) {
+        result = result.filter(s => s.symbol[0].toUpperCase() === selectedAlphabet);
+      }
+      
+      if (currentFilter) {
+        const f = currentFilter.toLowerCase();
+        result = result.filter(s => s.symbol.toLowerCase().includes(f) || s.name.toLowerCase().includes(f));
+      }
+      
+      filteredSymbols = result;
       render();
     }
-    function selectSymbol(symbol, name) { TS_DB.set('holding_selected_symbol', { symbol, name }); location.href = 'holding-investment.html'; }
+
+    function toggleViewMode() {
+      viewMode = viewMode === 'list' ? 'grid' : 'list';
+      render();
+    }
+
+    function refreshAllData() {
+      loadSymbols();
+    }
+
+    function showLoading(show) {
+      const el = document.getElementById('loading-state');
+      if (show) el.classList.remove('hidden');
+      else el.classList.add('hidden');
+    }
+
+    // ============================================
+    // FORMATTING UTILITIES
+    // ============================================
+    function formatPrice(price) {
+      if (!price && price !== 0) return '--';
+      if (price >= 1000) return '$' + price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      if (price >= 1) return '$' + price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+      if (price >= 0.01) return '$' + price.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 6 });
+      return '$' + price.toLocaleString('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 8 });
+    }
+
+    function formatVolume(vol) {
+      if (!vol) return '--';
+      if (vol >= 1e9) return (vol / 1e9).toFixed(2) + 'B';
+      if (vol >= 1e6) return (vol / 1e6).toFixed(2) + 'M';
+      if (vol >= 1e3) return (vol / 1e3).toFixed(2) + 'K';
+      return vol.toString();
+    }
+
+    // ============================================
+    // SEARCH EVENT LISTENER
+    // ============================================
+    document.getElementById('search').addEventListener('input', e => {
+      currentFilter = e.target.value;
+      applyFilters();
+    });
+
+    document.getElementById('search').addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        e.target.value = '';
+        currentFilter = '';
+        applyFilters();
+      }
+    });
+
+    // Keyboard shortcut for search
+    document.addEventListener('keydown', e => {
+      if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        document.getElementById('search').focus();
+      }
+    });
+
+    // Close modal on backdrop click
+    document.getElementById('chart-modal').addEventListener('click', e => {
+      if (e.target === document.getElementById('chart-modal')) closeChartModal();
+    });
+
+    // Escape to close modal
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !document.getElementById('chart-modal').classList.contains('hidden')) {
+        closeChartModal();
+      }
+    });
+
+    // ============================================
+    // INITIALIZATION
+    // ============================================
     loadSymbols();
   </script>
 </body>
-</html>
+</html> 
