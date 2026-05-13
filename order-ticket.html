@@ -5,69 +5,298 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Order Ticket - Trade Station</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config = { darkMode: 'class', theme: { extend: { colors: { brand: { 600: '#2563eb' }, dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19' } } } } }</script>
-  <style>body { background: #0b0f19; }</style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 600: '#2563eb', 500: '#3b82f6', 400: '#60a5fa' },
+            dark: { 800: '#1a1d29', 900: '#111827', 950: '#0b0f19', 700: '#252a3c', 600: '#2d3348' },
+            mt5: { bg: '#0d1117', panel: '#161b22', border: '#30363d', sell: '#ef4444', buy: '#3b82f6', accent: '#58a6ff' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+    .mt5-panel { background: #161b22; border: 1px solid #30363d; }
+    .mt5-input { background: #0d1117; border: 1px solid #30363d; color: #e6edf3; }
+    .mt5-input:focus { border-color: #58a6ff; outline: none; box-shadow: 0 0 0 2px rgba(88,166,255,0.15); }
+    .mt5-btn-sell { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
+    .mt5-btn-buy { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
+    .mt5-btn-sell:active { transform: scale(0.98); }
+    .mt5-btn-buy:active { transform: scale(0.98); }
+    .price-tick { font-variant-numeric: tabular-nums; }
+    .spread-indicator { font-size: 10px; letter-spacing: 0.5px; }
+    .order-type-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+    .volume-btn { background: #21262d; border: 1px solid #30363d; transition: all 0.15s; }
+    .volume-btn:hover { background: #30363d; border-color: #58a6ff; }
+    .volume-btn:active { transform: scale(0.95); }
+    .summary-row { border-bottom: 1px solid #21262d; }
+    .summary-row:last-child { border-bottom: none; }
+    @keyframes pulse-live { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .live-indicator { animation: pulse-live 2s infinite; }
+    .depth-bar { height: 4px; border-radius: 2px; transition: width 0.3s ease; }
+    .svg-icon { display: inline-block; vertical-align: middle; }
+    .ticket-header { background: linear-gradient(90deg, #161b22 0%, #1a2332 100%); }
+    .bid-ask-panel { background: linear-gradient(180deg, #0d1117 0%, #161b22 100%); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0d1117; }
+    ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+  </style>
 </head>
-<body class="text-white">
+<body class="text-white antialiased">
   <div id="ts-global-header"></div>
-  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
-    <h1 class="text-lg font-bold mb-4">Order Ticket</h1>
 
-    <!-- Symbol Selection -->
-    <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 mb-4" onclick="location.href='trade-symbol.html'">
-      <div class="flex items-center justify-between cursor-pointer">
-        <div>
-          <div class="text-xs text-gray-400">Symbol</div>
-          <div class="text-lg font-bold text-white" id="selected-symbol">Select Symbol</div>
-          <div class="text-sm text-green-400 font-mono" id="symbol-price">--</div>
-        </div>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+  <!-- Main Order Ticket Container -->
+  <main class="pb-24 pt-1 px-3 max-w-lg mx-auto">
+    
+    <!-- SVG Header Label -->
+    <div class="flex items-center justify-between mb-3 px-1">
+      <div class="flex items-center gap-2">
+        <svg class="svg-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="3" width="18" height="18" rx="2" stroke="#58a6ff" stroke-width="1.5"/>
+          <path d="M8 12h8M12 8v8" stroke="#58a6ff" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="18" cy="6" r="1.5" fill="#ef4444"/>
+        </svg>
+        <h1 class="text-sm font-bold tracking-wide text-gray-200 uppercase">Order Ticket</h1>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="live-indicator w-1.5 h-1.5 rounded-full bg-green-500"></span>
+        <span class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Live</span>
       </div>
     </div>
 
-    <form id="order-form" class="space-y-4">
-      <!-- Order Type -->
-      <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Order Type</label>
-        <select id="orderType" class="w-full px-3 py-2.5 bg-dark-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-600">
-          <option>Market Execution</option>
-          <option>Buy Limit</option>
-          <option>Sell Limit</option>
+    <!-- Symbol Selection Card -->
+    <div id="symbol-card" class="mt5-panel rounded-lg p-3 mb-3 cursor-pointer hover:border-gray-500 transition-colors" onclick="location.href='trade-symbol.html'">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <!-- SVG Symbol Icon -->
+          <svg class="svg-icon flex-shrink-0" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" rx="6" fill="#21262d"/>
+            <path d="M10 22V12l6-4 6 4v10H10z" stroke="#58a6ff" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M16 8v6M12 14h8" stroke="#8b949e" stroke-width="1" stroke-linecap="round"/>
+            <circle cx="16" cy="20" r="1.5" fill="#3b82f6"/>
+          </svg>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] text-gray-500 uppercase tracking-wider">Symbol</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#8b949e" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </div>
+            <div class="text-base font-bold text-white tracking-tight" id="selected-symbol">BTCUSD</div>
+            <div class="text-xs text-gray-400" id="symbol-fullname">Bitcoin vs US Dollar</div>
+          </div>
+        </div>
+        <!-- Live Price Display -->
+        <div class="text-right">
+          <div class="flex items-center justify-end gap-1 mb-0.5">
+            <span class="text-[10px] text-gray-500 uppercase">Price</span>
+            <span class="live-indicator w-1 h-1 rounded-full bg-green-500"></span>
+          </div>
+          <div class="text-lg font-bold text-white price-tick" id="symbol-price">--.--</div>
+          <div class="text-[10px] text-gray-500" id="price-change">--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bid/Ask Spread Panel -->
+    <div class="bid-ask-panel rounded-lg p-3 mb-3 border border-gray-800">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[10px] text-gray-500 uppercase tracking-wider">Market Depth</span>
+        <span class="spread-indicator text-gray-500" id="spread-display">Spread: --</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <!-- Bid Side -->
+        <div class="bg-red-950/20 border border-red-900/30 rounded p-2">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] text-red-400 uppercase font-bold">Bid</span>
+            <span class="text-[10px] text-gray-500">Sell</span>
+          </div>
+          <div class="text-base font-bold text-red-400 price-tick" id="bid-price">--.--</div>
+          <div class="depth-bar bg-red-500/30 mt-1" id="bid-depth" style="width: 60%"></div>
+        </div>
+        <!-- Ask Side -->
+        <div class="bg-blue-950/20 border border-blue-900/30 rounded p-2">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] text-blue-400 uppercase font-bold">Ask</span>
+            <span class="text-[10px] text-gray-500">Buy</span>
+          </div>
+          <div class="text-base font-bold text-blue-400 price-tick" id="ask-price">--.--</div>
+          <div class="depth-bar bg-blue-500/30 mt-1" id="ask-depth" style="width: 45%"></div>
+        </div>
+      </div>
+      <!-- Mini Depth of Market -->
+      <div class="mt-2 space-y-1" id="depth-of-market">
+        <div class="flex items-center text-[10px]">
+          <span class="w-8 text-gray-500">Size</span>
+          <span class="flex-1 text-gray-500 text-center">Bid</span>
+          <span class="w-8 text-gray-500 text-right">Size</span>
+          <span class="flex-1 text-gray-500 text-center">Ask</span>
+        </div>
+        <div class="flex items-center text-[10px] font-mono">
+          <span class="w-8 text-red-400" id="bid-size-1">2.5</span>
+          <div class="flex-1 mx-1 h-3 bg-red-500/20 rounded relative overflow-hidden">
+            <div class="absolute left-0 top-0 h-full bg-red-500/40 rounded" style="width: 65%"></div>
+            <span class="absolute inset-0 flex items-center justify-center text-red-300" id="bid-price-1">--</span>
+          </div>
+          <div class="flex-1 mx-1 h-3 bg-blue-500/20 rounded relative overflow-hidden">
+            <div class="absolute right-0 top-0 h-full bg-blue-500/40 rounded" style="width: 40%"></div>
+            <span class="absolute inset-0 flex items-center justify-center text-blue-300" id="ask-price-1">--</span>
+          </div>
+          <span class="w-8 text-blue-400 text-right" id="ask-size-1">1.8</span>
+        </div>
+        <div class="flex items-center text-[10px] font-mono">
+          <span class="w-8 text-red-400" id="bid-size-2">1.2</span>
+          <div class="flex-1 mx-1 h-3 bg-red-500/15 rounded relative overflow-hidden">
+            <div class="absolute left-0 top-0 h-full bg-red-500/30 rounded" style="width: 35%"></div>
+            <span class="absolute inset-0 flex items-center justify-center text-red-300/70" id="bid-price-2">--</span>
+          </div>
+          <div class="flex-1 mx-1 h-3 bg-blue-500/15 rounded relative overflow-hidden">
+            <div class="absolute right-0 top-0 h-full bg-blue-500/30 rounded" style="width: 55%"></div>
+            <span class="absolute inset-0 flex items-center justify-center text-blue-300/70" id="ask-price-2">--</span>
+          </div>
+          <span class="w-8 text-blue-400 text-right" id="ask-size-2">3.1</span>
+        </div>
+      </div>
+    </div>
+
+    <form id="order-form" class="space-y-3">
+      
+      <!-- Order Type Selector -->
+      <div class="mt5-panel rounded-lg p-3">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Order Type</label>
+          <!-- SVG Info Icon -->
+          <svg class="svg-icon cursor-pointer" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+          </svg>
+        </div>
+        <select id="orderType" class="order-type-select w-full px-3 py-2 mt5-input rounded text-sm font-medium">
+          <option value="Market Execution">Market Execution</option>
+          <option value="Buy Limit">Buy Limit</option>
+          <option value="Sell Limit">Sell Limit</option>
+          <option value="Buy Stop">Buy Stop</option>
+          <option value="Sell Stop">Sell Stop</option>
         </select>
+        <!-- Order Type Description -->
+        <div class="mt-2 p-2 bg-blue-950/20 border border-blue-900/20 rounded text-[10px] text-blue-300/80" id="order-type-desc">
+          Order will be executed at the current market price.
+        </div>
       </div>
 
-      <!-- Volume -->
-      <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Volume (Lots)</label>
+      <!-- Volume Control -->
+      <div class="mt5-panel rounded-lg p-3">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Volume (Lots)</label>
+          <span class="text-[10px] text-gray-600" id="volume-value-display">0.10 Lots</span>
+        </div>
         <div class="flex items-center gap-2">
-          <button type="button" onclick="adjustVolume(-0.01)" class="w-10 h-10 bg-gray-700 rounded-lg text-white font-bold">-</button>
-          <input type="number" id="volume" value="0.10" step="0.01" min="0.01" class="flex-1 px-3 py-2 bg-dark-800 border border-gray-700 rounded-lg text-white text-center font-bold">
-          <button type="button" onclick="adjustVolume(0.01)" class="w-10 h-10 bg-gray-700 rounded-lg text-white font-bold">+</button>
+          <button type="button" onclick="adjustVolume(-0.01)" class="volume-btn w-10 h-9 rounded flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e6edf3" stroke-width="2.5" stroke-linecap="round">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+          <input type="number" id="volume" value="0.10" step="0.01" min="0.01" max="100" 
+            class="flex-1 px-3 py-2 mt5-input rounded text-center text-sm font-bold price-tick">
+          <button type="button" onclick="adjustVolume(0.01)" class="volume-btn w-10 h-9 rounded flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e6edf3" stroke-width="2.5" stroke-linecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+        </div>
+        <!-- Volume Presets -->
+        <div class="flex gap-1.5 mt-2">
+          <button type="button" onclick="setVolume(0.01)" class="flex-1 py-1 text-[10px] bg-gray-800/50 border border-gray-700 rounded text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-all">0.01</button>
+          <button type="button" onclick="setVolume(0.10)" class="flex-1 py-1 text-[10px] bg-gray-800/50 border border-gray-700 rounded text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-all">0.10</button>
+          <button type="button" onclick="setVolume(0.50)" class="flex-1 py-1 text-[10px] bg-gray-800/50 border border-gray-700 rounded text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-all">0.50</button>
+          <button type="button" onclick="setVolume(1.00)" class="flex-1 py-1 text-[10px] bg-gray-800/50 border border-gray-700 rounded text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-all">1.00</button>
         </div>
       </div>
 
       <!-- Investment Amount -->
-      <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Investment Amount ($)</label>
-        <input type="number" id="amount" required min="10" class="w-full px-3 py-2.5 bg-dark-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-600" placeholder="Min $10">
+      <div class="mt5-panel rounded-lg p-3">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Investment Amount</label>
+          <span class="text-[10px] text-gray-600">USD</span>
+        </div>
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold">$</span>
+          <input type="number" id="amount" required min="10" 
+            class="w-full pl-7 pr-3 py-2.5 mt5-input rounded text-sm font-bold price-tick" 
+            placeholder="Min $10">
+        </div>
+        <!-- Quick Amount Buttons -->
+        <div class="flex gap-1.5 mt-2">
+          <button type="button" onclick="setAmount(100)" class="flex-1 py-1 text-[10px] bg-gray-800/50 border border-gray-700 rounded text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-all">$100</button>
+          <button type="button" onclick="setAmount(500)" class="flex-1 py-1 text-[10px] bg-gray-800/50 border border-gray-700 rounded text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-all">$500</button>
+          <button type="button" onclick="setAmount(1000)" class="flex-1 py-1 text-[10px] bg-gray-800/50 border border-gray-700 rounded text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-all">$1K</button>
+          <button type="button" onclick="setAmount(5000)" class="flex-1 py-1 text-[10px] bg-gray-800/50 border border-gray-700 rounded text-gray-400 hover:border-gray-500 hover:text-gray-300 transition-all">$5K</button>
+        </div>
       </div>
 
       <!-- Stop Loss / Take Profit -->
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block text-xs font-medium text-gray-400 mb-1">Stop Loss ($)</label>
-          <input type="number" id="stopLoss" class="w-full px-3 py-2.5 bg-dark-800 border border-gray-700 rounded-lg text-white text-sm" placeholder="Optional">
+      <div class="mt5-panel rounded-lg p-3">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Risk Management</label>
+          <div class="flex items-center gap-1">
+            <span class="text-[10px] text-gray-600">SL/TP</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
         </div>
-        <div>
-          <label class="block text-xs font-medium text-gray-400 mb-1">Take Profit ($)</label>
-          <input type="number" id="takeProfit" class="w-full px-3 py-2.5 bg-dark-800 border border-gray-700 rounded-lg text-white text-sm" placeholder="Optional">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <div class="flex items-center gap-1 mb-1">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+              </svg>
+              <span class="text-[10px] text-gray-500">Stop Loss</span>
+            </div>
+            <div class="relative">
+              <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-600 text-xs">$</span>
+              <input type="number" id="stopLoss" class="w-full pl-6 pr-2 py-2 mt5-input rounded text-sm price-tick" placeholder="0.00">
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-1 mb-1">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+              </svg>
+              <span class="text-[10px] text-gray-500">Take Profit</span>
+            </div>
+            <div class="relative">
+              <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-600 text-xs">$</span>
+              <input type="number" id="takeProfit" class="w-full pl-6 pr-2 py-2 mt5-input rounded text-sm price-tick" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+        <!-- Risk/Reward Ratio -->
+        <div class="mt-2 flex items-center justify-between text-[10px]">
+          <span class="text-gray-500">Risk/Reward Ratio</span>
+          <span class="text-gray-300 font-mono" id="risk-reward-ratio">--</span>
         </div>
       </div>
 
-      <!-- Duration -->
-      <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Trade Duration</label>
-        <select id="duration" class="w-full px-3 py-2.5 bg-dark-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-600">
+      <!-- Trade Duration -->
+      <div class="mt5-panel rounded-lg p-3">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Trade Duration</label>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <select id="duration" class="order-type-select w-full px-3 py-2 mt5-input rounded text-sm">
           <option>1 week</option>
           <option>2 weeks</option>
           <option>1 month</option>
@@ -81,52 +310,278 @@
         </select>
       </div>
 
-      <!-- Summary -->
-      <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4">
-        <div class="flex justify-between text-sm mb-1"><span class="text-gray-400">Daily Return Rate</span><span class="text-white font-bold">10.95%</span></div>
-        <div class="flex justify-between text-sm mb-1"><span class="text-gray-400">Est. Daily Profit</span><span class="text-green-400 font-bold" id="est-profit">$0.00</span></div>
-        <div class="flex justify-between text-sm"><span class="text-gray-400">Available Balance</span><span class="text-white font-bold" id="avail-balance">$0.00</span></div>
+      <!-- Order Preview / Summary Panel -->
+      <div class="mt5-panel rounded-lg p-3">
+        <div class="flex items-center gap-2 mb-3">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <span class="text-[10px] text-gray-400 uppercase tracking-wider font-medium">Order Preview</span>
+        </div>
+        <div class="space-y-0">
+          <div class="summary-row flex justify-between items-center py-2">
+            <span class="text-xs text-gray-500">Daily Return Rate</span>
+            <span class="text-xs text-white font-bold">10.95%</span>
+          </div>
+          <div class="summary-row flex justify-between items-center py-2">
+            <span class="text-xs text-gray-500">Est. Daily Profit</span>
+            <span class="text-xs text-green-400 font-bold price-tick" id="est-profit">$0.00</span>
+          </div>
+          <div class="summary-row flex justify-between items-center py-2">
+            <span class="text-xs text-gray-500">Est. Total Profit</span>
+            <span class="text-xs text-green-400/70 font-bold price-tick" id="est-total-profit">$0.00</span>
+          </div>
+          <div class="summary-row flex justify-between items-center py-2">
+            <span class="text-xs text-gray-500">Margin Required</span>
+            <span class="text-xs text-yellow-400/80 font-bold price-tick" id="margin-required">$0.00</span>
+          </div>
+          <div class="summary-row flex justify-between items-center py-2">
+            <span class="text-xs text-gray-500">Available Balance</span>
+            <span class="text-xs text-white font-bold price-tick" id="avail-balance">$0.00</span>
+          </div>
+          <div class="summary-row flex justify-between items-center py-2">
+            <span class="text-xs text-gray-500">Balance After</span>
+            <span class="text-xs text-gray-300 font-bold price-tick" id="balance-after">$0.00</span>
+          </div>
+        </div>
       </div>
 
       <!-- Action Buttons -->
-      <div class="grid grid-cols-2 gap-3">
-        <button type="button" onclick="submitOrder('buy')" class="py-3 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white font-bold rounded-xl shadow-lg shadow-green-600/20 transition-all">Buy</button>
-        <button type="button" onclick="submitOrder('sell')" class="py-3 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold rounded-xl shadow-lg shadow-red-600/20 transition-all">Sell</button>
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        <button type="button" onclick="submitOrder('sell')" class="mt5-btn-sell py-3.5 rounded-lg text-white font-bold text-sm tracking-wide shadow-lg shadow-red-900/20 transition-all flex items-center justify-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>SELL</span>
+          <span class="text-[10px] opacity-80 font-normal" id="sell-btn-price">--</span>
+        </button>
+        <button type="button" onclick="submitOrder('buy')" class="mt5-btn-buy py-3.5 rounded-lg text-white font-bold text-sm tracking-wide shadow-lg shadow-blue-900/20 transition-all flex items-center justify-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>BUY</span>
+          <span class="text-[10px] opacity-80 font-normal" id="buy-btn-price">--</span>
+        </button>
+      </div>
+
+      <!-- Order Warning -->
+      <div class="flex items-start gap-2 p-2 bg-yellow-950/20 border border-yellow-900/20 rounded-lg">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" class="flex-shrink-0 mt-0.5">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <span class="text-[10px] text-yellow-500/80 leading-relaxed">Trading involves risk. Ensure you understand the risks before placing an order.</span>
       </div>
     </form>
   </main>
+
   <div id="ts-global-footer"></div>
+
   <script src="app.js"></script>
   <script>
+    // API Configuration
+    const COINGECKO_API = 'https://api.coingecko.com/api/v3';
+    const EXCHANGE_API = 'https://v6.exchangerate-api.com/v6/45602791eb9f29e022a7ce3f/latest/USD';
+    const FINNHUB_API = 'https://finnhub.io/api/v1/news?category=general&token=d7cq1t9r01qv03eta4rgd7cq1t9r01qv03eta4s0';
+    const ALPHAVANTAGE_API = 'https://www.alphavantage.co/query';
+    const ALPHAVANTAGE_KEY = '3A3XN5PXKW8DG38L';
+
+    // Auth Check
     if (!TS_Auth.requireAuth()) throw new Error('Auth required');
 
+    // State
     const selected = TS_DB.get('selected_symbol', null);
-    let currentSymbol = selected || { symbol: 'BTC', name: 'Bitcoin' };
-    document.getElementById('selected-symbol').textContent = currentSymbol.symbol.toUpperCase();
+    let currentSymbol = selected || { symbol: 'BTC', name: 'Bitcoin', type: 'crypto' };
+    let currentPrice = 0;
+    let bidPrice = 0;
+    let askPrice = 0;
+    let exchangeRates = {};
 
-    async function updatePrice() {
-      const coins = await TS_Market.getCoins();
-      const coin = coins.find(c => c.symbol.toLowerCase() === currentSymbol.symbol.toLowerCase());
-      if (coin) document.getElementById('symbol-price').textContent = '$' + coin.current_price.toLocaleString();
+    // Initialize Symbol Display
+    document.getElementById('selected-symbol').textContent = currentSymbol.symbol.toUpperCase();
+    document.getElementById('symbol-fullname').textContent = currentSymbol.name || currentSymbol.symbol;
+
+    // Load Exchange Rates
+    async function loadExchangeRates() {
+      try {
+        const res = await fetch(EXCHANGE_API);
+        const data = await res.json();
+        if (data && data.conversion_rates) exchangeRates = data.conversion_rates;
+      } catch (e) { console.log('Exchange rate load failed', e); }
     }
 
+    // Determine Symbol Type
+    function getSymbolType(symbol) {
+      const s = symbol.toUpperCase();
+      const cryptoList = ['BTC','ETH','XRP','LTC','ADA','DOT','LINK','BNB','SOL','AVAX','MATIC','UNI'];
+      const forexList = ['EURUSD','GBPUSD','USDJPY','AUDUSD','USDCAD','USDCHF','NZDUSD','EURGBP','EURJPY','GBPJPY'];
+      if (cryptoList.includes(s)) return 'crypto';
+      if (forexList.includes(s) || s.includes('USD') || s.includes('EUR') || s.includes('GBP') || s.includes('JPY')) return 'forex';
+      return 'stock';
+    }
+
+    // Fetch Price from APIs
+    async function fetchLivePrice() {
+      const symbol = currentSymbol.symbol.toUpperCase();
+      const type = getSymbolType(symbol);
+      
+      try {
+        if (type === 'crypto') {
+          const res = await fetch(`${COINGECKO_API}/coins/markets?vs_currency=usd&ids=${getCoinGeckoId(symbol)}`);
+          const data = await res.json();
+          if (data && data[0]) {
+            currentPrice = data[0].current_price;
+            bidPrice = currentPrice * 0.9995;
+            askPrice = currentPrice * 1.0005;
+          }
+        } else if (type === 'forex') {
+          const from = symbol.slice(0, 3);
+          const to = symbol.slice(3, 6) || 'USD';
+          if (exchangeRates[to] && exchangeRates[from]) {
+            currentPrice = exchangeRates[to] / exchangeRates[from];
+            bidPrice = currentPrice * 0.9998;
+            askPrice = currentPrice * 1.0002;
+          }
+        } else {
+          // Stock via Alpha Vantage
+          const res = await fetch(`${ALPHAVANTAGE_API}?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${ALPHAVANTAGE_KEY}`);
+          const data = await res.json();
+          if (data && data['Global Quote']) {
+            currentPrice = parseFloat(data['Global Quote']['05. price']);
+            bidPrice = currentPrice * 0.999;
+            askPrice = currentPrice * 1.001;
+          }
+        }
+      } catch (e) {
+        console.log('Price fetch failed, using fallback', e);
+        if (!currentPrice) {
+          currentPrice = 45000;
+          bidPrice = 44995;
+          askPrice = 45005;
+        }
+      }
+      updatePriceDisplay();
+    }
+
+    function getCoinGeckoId(symbol) {
+      const map = { 'BTC': 'bitcoin', 'ETH': 'ethereum', 'XRP': 'ripple', 'LTC': 'litecoin', 
+        'ADA': 'cardano', 'DOT': 'polkadot', 'LINK': 'chainlink', 'BNB': 'binancecoin',
+        'SOL': 'solana', 'AVAX': 'avalanche-2', 'MATIC': 'matic-network', 'UNI': 'uniswap' };
+      return map[symbol.toUpperCase()] || symbol.toLowerCase();
+    }
+
+    function updatePriceDisplay() {
+      const priceEl = document.getElementById('symbol-price');
+      const bidEl = document.getElementById('bid-price');
+      const askEl = document.getElementById('ask-price');
+      const sellBtn = document.getElementById('sell-btn-price');
+      const buyBtn = document.getElementById('buy-btn-price');
+      const spreadEl = document.getElementById('spread-display');
+      
+      if (currentPrice > 0) {
+        const decimals = currentPrice < 10 ? 4 : currentPrice < 1000 ? 2 : 0;
+        priceEl.textContent = '$' + currentPrice.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        bidEl.textContent = bidPrice.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        askEl.textContent = askPrice.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        sellBtn.textContent = bidPrice.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        buyBtn.textContent = askPrice.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        
+        const spread = ((askPrice - bidPrice) / currentPrice * 100).toFixed(3);
+        spreadEl.textContent = `Spread: ${spread}%`;
+        
+        // Update DOM depth prices
+        document.getElementById('bid-price-1').textContent = (bidPrice * 0.9998).toFixed(decimals);
+        document.getElementById('ask-price-1').textContent = (askPrice * 1.0002).toFixed(decimals);
+        document.getElementById('bid-price-2').textContent = (bidPrice * 0.9996).toFixed(decimals);
+        document.getElementById('ask-price-2').textContent = (askPrice * 1.0004).toFixed(decimals);
+        
+        // Price change indicator
+        const changeEl = document.getElementById('price-change');
+        const change = (Math.random() * 2 - 1).toFixed(2);
+        changeEl.textContent = (change >= 0 ? '+' : '') + change + '%';
+        changeEl.className = 'text-[10px] ' + (change >= 0 ? 'text-green-400' : 'text-red-400');
+      }
+    }
+
+    // Volume Functions
     function adjustVolume(delta) {
       const el = document.getElementById('volume');
       let val = parseFloat(el.value) + delta;
       if (val < 0.01) val = 0.01;
+      if (val > 100) val = 100;
       el.value = val.toFixed(2);
+      document.getElementById('volume-value-display').textContent = val.toFixed(2) + ' Lots';
+      updateSummary();
     }
 
+    function setVolume(val) {
+      document.getElementById('volume').value = val.toFixed(2);
+      document.getElementById('volume-value-display').textContent = val.toFixed(2) + ' Lots';
+      updateSummary();
+    }
+
+    // Amount Functions
+    function setAmount(val) {
+      document.getElementById('amount').value = val;
+      updateSummary();
+    }
+
+    // Order Type Description
+    document.getElementById('orderType').addEventListener('change', function() {
+      const desc = document.getElementById('order-type-desc');
+      const descriptions = {
+        'Market Execution': 'Order will be executed at the current market price.',
+        'Buy Limit': 'Order will be placed below current price and executed when market reaches specified price.',
+        'Sell Limit': 'Order will be placed above current price and executed when market reaches specified price.',
+        'Buy Stop': 'Order will be placed above current price to buy when market breaks resistance.',
+        'Sell Stop': 'Order will be placed below current price to sell when market breaks support.'
+      };
+      desc.textContent = descriptions[this.value] || descriptions['Market Execution'];
+    });
+
+    // Summary Calculations
     function updateSummary() {
       const amount = parseFloat(document.getElementById('amount').value) || 0;
-      const daily = amount * 0.1095;
-      document.getElementById('est-profit').textContent = '$' + daily.toFixed(2);
-      document.getElementById('avail-balance').textContent = '$' + TS_Balance.get().toFixed(2);
+      const volume = parseFloat(document.getElementById('volume').value) || 0;
+      const stopLoss = parseFloat(document.getElementById('stopLoss').value) || 0;
+      const takeProfit = parseFloat(document.getElementById('takeProfit').value) || 0;
+      const balance = TS_Balance.get() || 0;
+      
+      const dailyRate = 0.1095;
+      const dailyProfit = amount * dailyRate;
+      const totalProfit = dailyProfit * 30; // Approx 1 month
+      const margin = amount * 0.1; // 10% margin
+      
+      document.getElementById('est-profit').textContent = '$' + dailyProfit.toFixed(2);
+      document.getElementById('est-total-profit').textContent = '$' + totalProfit.toFixed(2);
+      document.getElementById('margin-required').textContent = '$' + margin.toFixed(2);
+      document.getElementById('avail-balance').textContent = '$' + balance.toFixed(2);
+      document.getElementById('balance-after').textContent = '$' + (balance - amount).toFixed(2);
+      
+      // Risk/Reward
+      if (stopLoss > 0 && takeProfit > 0) {
+        const ratio = (takeProfit / stopLoss).toFixed(2);
+        document.getElementById('risk-reward-ratio').textContent = '1:' + ratio;
+      } else {
+        document.getElementById('risk-reward-ratio').textContent = '--';
+      }
     }
 
     document.getElementById('amount').addEventListener('input', updateSummary);
-    updateSummary();
+    document.getElementById('stopLoss').addEventListener('input', updateSummary);
+    document.getElementById('takeProfit').addEventListener('input', updateSummary);
+    document.getElementById('volume').addEventListener('input', function() {
+      document.getElementById('volume-value-display').textContent = this.value + ' Lots';
+      updateSummary();
+    });
 
+    // Submit Order
     function submitOrder(direction) {
       const amount = parseFloat(document.getElementById('amount').value);
       if (!amount || amount < 10) { TS_UI.showToast('Minimum investment is $10', 'warning'); return; }
@@ -142,7 +597,9 @@
         takeProfit: parseFloat(document.getElementById('takeProfit').value) || 0,
         duration: document.getElementById('duration').value,
         direction: direction,
-        dailyReturnRate: 10.95
+        dailyReturnRate: 10.95,
+        entryPrice: direction === 'buy' ? askPrice : bidPrice,
+        timestamp: new Date().toISOString()
       };
 
       TS_Invest.addTrade(trade);
@@ -150,15 +607,25 @@
 
       // Record transaction
       const txs = TS_DB.get('transactions', []);
-      txs.unshift({ type: 'trade', amount, symbol: currentSymbol.symbol, status: 'active', createdAt: new Date().toISOString() });
+      txs.unshift({ 
+        type: 'trade', 
+        amount: amount, 
+        symbol: currentSymbol.symbol, 
+        status: 'active', 
+        direction: direction,
+        createdAt: new Date().toISOString() 
+      });
       TS_DB.set('transactions', txs);
 
-      TS_UI.showToast(`${direction.toUpperCase()} order placed successfully!`, 'success');
-      setTimeout(() => location.href = 'trade.html', 1000);
+      TS_UI.showToast(direction.toUpperCase() + ' order placed successfully at ' + (direction === 'buy' ? askPrice : bidPrice).toFixed(2), 'success');
+      setTimeout(() => location.href = 'trade.html', 1200);
     }
 
-    updatePrice();
-    setInterval(updatePrice, 30000);
+    // Initialize
+    loadExchangeRates();
+    fetchLivePrice();
+    updateSummary();
+    setInterval(fetchLivePrice, 30000);
   </script>
 </body>
-</html>
+</html>  
