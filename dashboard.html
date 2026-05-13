@@ -40,21 +40,68 @@
     .ts-dismiss:hover { background: rgba(255,255,255,0.15); }
     @keyframes fadeIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: translateY(0); } }
     .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+
+    /* MT5 Portfolio Interface Styles */
+    .mt5-table { width: 100%; border-collapse: collapse; }
+    .mt5-table th { font-size: 11px; font-weight: 700; color: #787b86; text-transform: uppercase; letter-spacing: 0.04em; padding: 8px 12px; border-bottom: 1px solid #2a2e39; background: #161b27; text-align: left; white-space: nowrap; }
+    .mt5-table td { font-size: 13px; padding: 9px 12px; border-bottom: 1px solid #2a2e39; white-space: nowrap; }
+    .mt5-table tr:last-child td { border-bottom: none; }
+    .mt5-table .col-right { text-align: right; }
+    .mt5-table .col-center { text-align: center; }
+    .mt5-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+    .mt5-badge-green { background: rgba(8,153,129,0.12); color: #089981; border: 1px solid rgba(8,153,129,0.25); }
+    .mt5-badge-red { background: rgba(242,54,69,0.12); color: #f23645; border: 1px solid rgba(242,54,69,0.25); }
+    .mt5-badge-blue { background: rgba(41,98,255,0.12); color: #2962ff; border: 1px solid rgba(41,98,255,0.25); }
+    .mt5-summary-bar { background: #131722; border: 1px solid #2a2e39; border-radius: 6px; }
+    .mt5-summary-item { padding: 10px 14px; border-right: 1px solid #2a2e39; display: flex; align-items: center; gap: 8px; min-width: fit-content; }
+    .mt5-summary-item:last-child { border-right: none; }
+    .mt5-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; border: 1px solid #2a2e39; background: #161b27; color: #d1d4dc; transition: all 0.15s; cursor: pointer; }
+    .mt5-btn:hover { background: #1a1f2e; border-color: #3a3e4b; color: #fff; }
+    .mt5-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .mt5-card { background: #131722; border: 1px solid #2a2e39; border-radius: 8px; overflow: hidden; }
+    .mt5-card-header { background: #161b27; border-bottom: 1px solid #2a2e39; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+    .mt5-welcome { background: linear-gradient(135deg, #131722 0%, #1a2332 100%); border: 1px solid #2a3a4f; border-left: 4px solid #2962ff; }
+    .mt5-icon-btn { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid #2a2e39; background: #161b27; color: #787b86; transition: all 0.15s; cursor: pointer; }
+    .mt5-icon-btn:hover { background: #1a1f2e; color: #d1d4dc; border-color: #3a3e4b; }
+    .hidden-force { display: none !important; }
   </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col">
 
   <div id="ts-global-header"></div>
 
-  <!-- Welcome Banner -->
-  <div id="ts-welcome-banner" class="bg-gradient-to-r from-[#2962ff] to-[#7c4dff] text-white px-4 py-3 text-sm font-medium flex items-center justify-between animate-fade-in">
-    <span class="flex items-center gap-2">
-      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-      Welcome to Trade Station! Your Real Account is ready.
-    </span>
-    <button class="ts-dismiss p-1.5 rounded-lg" aria-label="Dismiss">
-      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-    </button>
+  <!-- Welcome Banner: shown only after first-time account creation -->
+  <div id="welcomeBanner" class="mt5-welcome hidden animate-fade-in">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-lg bg-[#2962ff]/10 border border-[#2962ff]/20 flex items-center justify-center shrink-0 mt-0.5">
+            <svg class="w-5 h-5 text-[#2962ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-base mb-1 text-white tracking-tight">Welcome to Trade Station AI Auto-Trading Broker</h3>
+            <p class="text-sm text-gray-400 leading-relaxed max-w-2xl">Experience the power of AI-driven automation built on the MQL5 ecosystem. Trade smarter with our advanced platform.</p>
+          </div>
+        </div>
+        <div class="flex gap-2 flex-wrap shrink-0">
+          <button onclick="location.href='mailbox.html'" class="mt5-btn border-[#2962ff]/40 text-[#2962ff] hover:bg-[#2962ff]/10">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            Support
+          </button>
+          <button onclick="mailToAdmin()" class="mt5-btn border-[#2a2e39] hover:border-[#d1d4dc]/30">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            Mail Admin
+          </button>
+          <button onclick="dismissWelcomeBanner()" class="mt5-btn bg-[#f23645]/10 border-[#f23645]/30 text-[#f23645] hover:bg-[#f23645]/20">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- 4. Account Dashboard -->
@@ -62,22 +109,36 @@
     <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
 
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 animate-fade-in">
-        <div>
-          <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <svg class="w-5 h-5 text-[#2962ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-            Dashboard
-          </h2>
-          <p class="text-gray-400 text-sm mt-0.5 flex items-center gap-1.5">
-            Welcome back, <span id="userName" class="text-white font-medium">Trader</span>
-            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#089981]/10 text-[#089981] text-[10px] font-bold uppercase tracking-wide">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#089981] pulse-dot"></span>
-              Live
-            </span>
-          </p>
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-4 animate-fade-in">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-[#2962ff]/10 border border-[#2962ff]/20 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-[#2962ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              Dashboard
+            </h2>
+            <p class="text-gray-400 text-sm mt-0.5 flex items-center gap-2">
+              <span>Welcome back,</span>
+              <span id="userName" class="text-white font-semibold">Trader</span>
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#089981]/10 text-[#089981] text-[10px] font-bold uppercase tracking-wide border border-[#089981]/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#089981] pulse-dot"></span>
+                Live
+              </span>
+            </p>
+          </div>
         </div>
-        <button id="saveAccountBtn" onclick="saveAccountDetails()" class="btn-action inline-flex items-center gap-2 px-4 py-2 bg-[#2962ff] hover:bg-[#1e4ad1] text-white text-sm font-semibold rounded-lg border border-[#2962ff]/50 shadow-lg shadow-[#2962ff]/10">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        <button id="saveAccountBtn" onclick="saveAccountDetails()" class="save-account-action btn-action inline-flex items-center gap-2 px-4 py-2.5 bg-[#1a2332] hover:bg-[#1e2d40] text-[#2962ff] text-sm font-semibold rounded-lg border border-[#2a3a4f] hover:border-[#2962ff]/40 transition-all">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
           Save Account
         </button>
       </div>
@@ -85,90 +146,105 @@
       <!-- Top Cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5 animate-fade-in">
         <!-- Account ID -->
-        <div class="panel rounded-lg p-5 flex items-center gap-4">
-          <div class="w-12 h-12 bg-[#2962ff]/10 rounded-lg flex items-center justify-center shrink-0 border border-[#2962ff]/20">
-            <svg class="w-6 h-6 text-[#2962ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+        <div class="panel rounded-lg p-4 flex items-center gap-4 panel-hover">
+          <div class="w-11 h-11 bg-[#2962ff]/10 rounded-lg flex items-center justify-center shrink-0 border border-[#2962ff]/20">
+            <svg class="w-5 h-5 text-[#2962ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+              <line x1="1" y1="10" x2="23" y2="10"></line>
+            </svg>
           </div>
           <div class="min-w-0">
-            <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Account ID</p>
-            <p class="text-lg font-bold font-mono text-white truncate" id="accountId">--</p>
-            <p class="text-[10px] text-gray-500 font-mono mt-0.5" id="account-id">--</p>
+            <p class="text-[11px] text-gray-500 uppercase tracking-wider font-bold">Account ID</p>
+            <p class="text-base font-bold font-mono text-white truncate" id="accountId">--</p>
+            <p class="text-[10px] text-gray-600 font-mono mt-0.5" id="account-id">--</p>
           </div>
         </div>
 
         <!-- Total Balance -->
-        <div class="panel rounded-lg p-5 flex items-center gap-4">
-          <div class="w-12 h-12 bg-[#089981]/10 rounded-lg flex items-center justify-center shrink-0 border border-[#089981]/20">
-            <svg class="w-6 h-6 text-[#089981]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <div class="panel rounded-lg p-4 flex items-center gap-4 panel-hover">
+          <div class="w-11 h-11 bg-[#089981]/10 rounded-lg flex items-center justify-center shrink-0 border border-[#089981]/20">
+            <svg class="w-5 h-5 text-[#089981]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
           </div>
           <div>
-            <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Total Balance</p>
-            <p class="text-2xl font-extrabold font-mono text-white tracking-tight" id="totalBalance">$0.00</p>
-            <p class="text-[10px] text-gray-500 font-mono mt-0.5" id="total-balance">$0.00</p>
+            <p class="text-[11px] text-gray-500 uppercase tracking-wider font-bold">Total Balance</p>
+            <p class="text-xl font-extrabold font-mono text-white tracking-tight" id="totalBalance">$0.00</p>
+            <p class="text-[10px] text-gray-600 font-mono mt-0.5" id="total-balance">$0.00</p>
           </div>
         </div>
 
         <!-- Account Type -->
-        <div class="panel rounded-lg p-5 flex items-center gap-4">
-          <div class="w-12 h-12 bg-[#7c4dff]/10 rounded-lg flex items-center justify-center shrink-0 border border-[#7c4dff]/20">
-            <svg class="w-6 h-6 text-[#7c4dff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 12 15 16 10"></polyline></svg>
+        <div class="panel rounded-lg p-4 flex items-center gap-4 panel-hover">
+          <div class="w-11 h-11 bg-[#7c4dff]/10 rounded-lg flex items-center justify-center shrink-0 border border-[#7c4dff]/20">
+            <svg class="w-5 h-5 text-[#7c4dff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <polyline points="9 12 12 15 16 10"></polyline>
+            </svg>
           </div>
           <div>
-            <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Account Type</p>
-            <p class="text-lg font-bold text-[#089981]">Real Account</p>
+            <p class="text-[11px] text-gray-500 uppercase tracking-wider font-bold">Account Type</p>
+            <p class="text-base font-bold text-[#089981]">Real Account</p>
             <div class="flex items-center gap-1.5 mt-1">
               <span class="w-1.5 h-1.5 rounded-full bg-[#089981] pulse-dot"></span>
-              <span class="text-[10px] text-[#089981] font-medium">Verified & Active</span>
+              <span class="text-[10px] text-[#089981] font-semibold">Verified & Active</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Action Buttons -->
+      <!-- Action Buttons Toolbar -->
       <div class="flex overflow-x-auto gap-2 mb-5 pb-1 scrollbar-hide animate-fade-in">
-        <button onclick="showDepositOptions()" class="btn-action flex items-center gap-2 px-5 py-2.5 bg-[#131722] hover:bg-[#1a1f2e] border border-[#2a2e39] hover:border-[#089981]/40 rounded-lg text-sm font-semibold text-white shrink-0">
-          <svg class="w-4 h-4 text-[#089981]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+        <button onclick="showDepositOptions()" class="mt5-btn border-[#089981]/30 text-[#089981] hover:bg-[#089981]/10">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
           Deposit
         </button>
-        <button onclick="showWithdrawOptions()" class="btn-action flex items-center gap-2 px-5 py-2.5 bg-[#131722] hover:bg-[#1a1f2e] border border-[#2a2e39] hover:border-[#f23645]/40 rounded-lg text-sm font-semibold text-white shrink-0">
-          <svg class="w-4 h-4 text-[#f23645]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+        <button onclick="showWithdrawOptions()" class="mt5-btn border-[#f23645]/30 text-[#f23645] hover:bg-[#f23645]/10">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
           Withdraw
         </button>
-        <button onclick="showPage('orderTicketPage')" class="btn-action flex items-center gap-2 px-5 py-2.5 bg-[#131722] hover:bg-[#1a1f2e] border border-[#2a2e39] hover:border-[#2962ff]/40 rounded-lg text-sm font-semibold text-white shrink-0">
-          <svg class="w-4 h-4 text-[#2962ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        <button onclick="showPage('orderTicketPage')" class="mt5-btn border-[#2962ff]/30 text-[#2962ff] hover:bg-[#2962ff]/10">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
           Order
         </button>
-        <button onclick="showPage('holdingPage')" class="btn-action flex items-center gap-2 px-5 py-2.5 bg-[#131722] hover:bg-[#1a1f2e] border border-[#2a2e39] hover:border-[#7c4dff]/40 rounded-lg text-sm font-semibold text-white shrink-0">
-          <svg class="w-4 h-4 text-[#7c4dff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+        <button onclick="showPage('holdingPage')" class="mt5-btn border-[#7c4dff]/30 text-[#7c4dff] hover:bg-[#7c4dff]/10">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
           Hold
         </button>
-        <button onclick="location.href='transfer.html'" class="btn-action flex items-center gap-2 px-5 py-2.5 bg-[#131722] hover:bg-[#1a1f2e] border border-[#2a2e39] hover:border-[#d1d4dc]/30 rounded-lg text-sm font-semibold text-white shrink-0">
-          <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+        <button onclick="location.href='transfer.html'" class="mt5-btn hover:border-[#d1d4dc]/30">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
           Transfer
         </button>
       </div>
 
-      <!-- Metrics Ticker Bar -->
-      <div class="flex overflow-x-auto items-center bg-[#131722] border border-[#2a2e39] rounded-lg mb-5 px-2 py-2 gap-1 scrollbar-hide animate-fade-in">
-        <div class="flex items-center px-3 sm:px-4 border-r border-[#2a2e39] min-w-fit">
-          <svg class="w-3.5 h-3.5 text-gray-500 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-          <span class="text-gray-400 text-[11px] uppercase tracking-wider font-semibold mr-2">Trade Balance:</span>
+      <!-- Metrics Summary Bar -->
+      <div class="mt5-summary-bar flex overflow-x-auto items-center mb-5 scrollbar-hide animate-fade-in">
+        <div class="mt5-summary-item">
+          <svg class="w-3.5 h-3.5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+          <span class="text-gray-500 text-[11px] uppercase tracking-wider font-bold">Trade Balance:</span>
           <span class="font-mono font-bold text-white text-sm" id="tradeBalance">$0.00</span>
         </div>
-        <div class="flex items-center px-3 sm:px-4 border-r border-[#2a2e39] min-w-fit">
-          <svg class="w-3.5 h-3.5 text-[#089981] mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-          <span class="text-gray-400 text-[11px] uppercase tracking-wider font-semibold mr-2">Equity:</span>
+        <div class="mt5-summary-item">
+          <svg class="w-3.5 h-3.5 text-[#089981]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+          <span class="text-gray-500 text-[11px] uppercase tracking-wider font-bold">Equity:</span>
           <span class="font-mono font-bold text-[#089981] text-sm" id="equityBalance">$0.00</span>
         </div>
-        <div class="flex items-center px-3 sm:px-4 border-r border-[#2a2e39] min-w-fit">
-          <svg class="w-3.5 h-3.5 text-gray-500 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-          <span class="text-gray-400 text-[11px] uppercase tracking-wider font-semibold mr-2">Margin:</span>
+        <div class="mt5-summary-item">
+          <svg class="w-3.5 h-3.5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          <span class="text-gray-500 text-[11px] uppercase tracking-wider font-bold">Margin:</span>
           <span class="font-mono font-bold text-white text-sm" id="marginBalance">$0.00</span>
         </div>
-        <div class="flex items-center px-3 sm:px-4 min-w-fit">
-          <svg class="w-3.5 h-3.5 text-[#2962ff] mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-          <span class="text-gray-400 text-[11px] uppercase tracking-wider font-semibold mr-2">Free Margin:</span>
+        <div class="mt5-summary-item">
+          <svg class="w-3.5 h-3.5 text-[#2962ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          <span class="text-gray-500 text-[11px] uppercase tracking-wider font-bold">Free Margin:</span>
           <span class="font-mono font-bold text-white text-sm" id="freeMarginBalance">$0.00</span>
+        </div>
+        <div class="mt5-summary-item">
+          <svg class="w-3.5 h-3.5 text-[#ff9800]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"></path></svg>
+          <span class="text-gray-500 text-[11px] uppercase tracking-wider font-bold">Margin Level:</span>
+          <span class="font-mono font-bold text-white text-sm" id="marginLevel">--%</span>
         </div>
       </div>
 
@@ -179,25 +255,28 @@
         <div class="lg:col-span-2 space-y-4">
 
           <!-- Ongoing Trades -->
-          <div class="panel rounded-lg overflow-hidden">
-            <div class="flex items-center justify-between px-4 py-3 border-b border-[#2a2e39] bg-[#161b27]">
-              <div class="flex items-center gap-2">
+          <div class="mt5-card flex flex-col">
+            <div class="mt5-card-header">
+              <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-[#2962ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
                 <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Ongoing Trades</h3>
+                <span class="mt5-badge mt5-badge-blue" id="activeTradesCount">0 active</span>
               </div>
-              <div class="flex items-center gap-3">
-                <span class="text-[11px] text-gray-500 font-mono" id="activeTradesCount">0 active</span>
-                <button onclick="location.href='trade.html'" class="text-[11px] text-[#2962ff] hover:text-[#5c8aff] font-semibold">View All</button>
-              </div>
+              <button onclick="location.href='trade.html'" class="text-[11px] text-[#2962ff] hover:text-[#5c8aff] font-bold flex items-center gap-1 transition-colors">
+                View All
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
             </div>
-            <div id="ongoingTradesList" class="divide-y divide-[#2a2e39]">
-              <div class="text-center py-10 text-gray-500">
-                <svg class="w-12 h-12 mx-auto mb-3 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                <p class="text-sm font-medium">No active trades</p>
-                <button onclick="location.href='order-ticket.html'" class="text-[#2962ff] hover:text-[#5c8aff] mt-2 text-xs font-semibold inline-flex items-center gap-1 transition-colors">
-                  Start Trading
-                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </button>
+            <div class="overflow-x-auto">
+              <div id="ongoingTradesList">
+                <div class="text-center py-10 text-gray-500">
+                  <svg class="w-12 h-12 mx-auto mb-3 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                  <p class="text-sm font-medium">No active trades</p>
+                  <button onclick="location.href='order-ticket.html'" class="text-[#2962ff] hover:text-[#5c8aff] mt-2 text-xs font-bold inline-flex items-center gap-1 transition-colors">
+                    Start Trading
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                  </button>
+                </div>
               </div>
             </div>
             <!-- Legacy ID support -->
@@ -205,35 +284,40 @@
           </div>
 
           <!-- Active Holdings -->
-          <div class="panel rounded-lg overflow-hidden">
-            <div class="flex items-center justify-between px-4 py-3 border-b border-[#2a2e39] bg-[#161b27]">
-              <div class="flex items-center gap-2">
+          <div class="mt5-card flex flex-col">
+            <div class="mt5-card-header">
+              <div class="flex items-center gap-2.5">
                 <svg class="w-4 h-4 text-[#7c4dff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Active Holdings</h3>
               </div>
-              <button onclick="location.href='holding.html'" class="text-[11px] text-[#2962ff] hover:text-[#5c8aff] font-semibold">View All</button>
+              <button onclick="location.href='holding.html'" class="text-[11px] text-[#2962ff] hover:text-[#5c8aff] font-bold flex items-center gap-1 transition-colors">
+                View All
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
             </div>
-            <div id="holdings-list" class="divide-y divide-[#2a2e39]">
-              <div class="text-center py-10 text-gray-500">
-                <svg class="w-12 h-12 mx-auto mb-3 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-                <p class="text-sm font-medium">No active holdings</p>
+            <div class="overflow-x-auto">
+              <div id="holdings-list">
+                <div class="text-center py-10 text-gray-500">
+                  <svg class="w-12 h-12 mx-auto mb-3 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                  <p class="text-sm font-medium">No active holdings</p>
+                </div>
               </div>
             </div>
           </div>
 
         </div>
 
-        <!-- Right Column: Market Overview -->
+        <!-- Right Column: Market Overview + Actions -->
         <div class="lg:col-span-1 flex flex-col gap-4">
-          <div class="panel rounded-lg overflow-hidden flex-1 flex flex-col min-h-[360px]">
-            <div class="px-4 py-3 border-b border-[#2a2e39] bg-[#161b27] flex items-center justify-between">
-              <h3 class="text-sm font-bold text-gray-300 flex items-center gap-2">
+          <div class="mt5-card flex-1 flex flex-col min-h-[360px]">
+            <div class="mt5-card-header">
+              <div class="flex items-center gap-2">
                 <svg class="w-4 h-4 text-[#ff9800]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg>
-                Market Overview
-              </h3>
-              <span class="text-[10px] text-gray-500 font-mono">BTC/USD</span>
+                <h3 class="text-sm font-bold text-gray-300">Market Overview</h3>
+              </div>
+              <span class="text-[10px] text-gray-500 font-mono bg-[#0b0f19] px-2 py-1 rounded border border-[#2a2e39]">BTC/USD</span>
             </div>
-            <div class="flex-1 p-0 relative">
+            <div class="flex-1 p-0 relative min-h-[280px]">
               <div class="tradingview-widget-container absolute inset-0">
                 <div class="tradingview-widget-container__widget w-full h-full"></div>
                 <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
@@ -260,7 +344,7 @@
           </button>
 
           <!-- Save Account Card -->
-          <button onclick="saveAccount()" class="btn-action w-full py-3 bg-[#1a2332] hover:bg-[#1e2d40] border border-[#2a3a4f] hover:border-[#2962ff]/40 rounded-lg text-sm font-semibold text-gray-300 hover:text-white transition-colors flex items-center justify-center gap-2">
+          <button id="saveAccountBtnSecondary" onclick="saveAccountDetails()" class="save-account-action btn-action w-full py-3 bg-[#1a2332] hover:bg-[#1e2d40] border border-[#2a3a4f] hover:border-[#2962ff]/40 rounded-lg text-sm font-semibold text-gray-300 hover:text-white transition-colors flex items-center justify-center gap-2">
             <svg class="w-4 h-4 text-[#2962ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
             Save Account to Local Storage
           </button>
@@ -290,6 +374,34 @@
     function formatMoney(num) {
       const n = Number(num || 0);
       return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // --- Welcome Banner State ---
+    function shouldShowWelcomeBanner() {
+      return localStorage.getItem('ts_new_account_created') === 'true' && 
+             localStorage.getItem('ts_welcome_dismissed') !== 'true';
+    }
+
+    function dismissWelcomeBanner() {
+      localStorage.setItem('ts_welcome_dismissed', 'true');
+      localStorage.removeItem('ts_new_account_created');
+      const banner = document.getElementById('welcomeBanner');
+      if (banner) banner.classList.add('hidden');
+    }
+
+    function mailToAdmin() {
+      window.location.href = 'mailto:admin@tradestation.com?subject=Support Request from ' + encodeURIComponent(userName);
+    }
+
+    // --- Save Account State ---
+    function hideSaveAccountButtons() {
+      const buttons = document.querySelectorAll('.save-account-action');
+      buttons.forEach(btn => btn.classList.add('hidden-force'));
+    }
+
+    function markAccountSaved() {
+      localStorage.setItem('ts_account_saved', 'true');
+      hideSaveAccountButtons();
     }
 
     // --- Core Dashboard Update ---
@@ -326,19 +438,23 @@
       const equity = balance + totalUnrealizedPL;
       const margin = totalInvested;
       const freeMargin = equity - margin;
+      const marginLevel = margin > 0 ? ((equity / margin) * 100) : 0;
 
       // Update metrics bar
       document.getElementById('equityBalance').textContent = formatMoney(equity);
       document.getElementById('marginBalance').textContent = formatMoney(margin);
       document.getElementById('freeMarginBalance').textContent = formatMoney(freeMargin);
+      document.getElementById('marginLevel').textContent = marginLevel.toFixed(2) + '%';
 
       // Dynamic color classes
       const eqEl = document.getElementById('equityBalance');
       const fmEl = document.getElementById('freeMarginBalance');
+      const mlEl = document.getElementById('marginLevel');
       if (eqEl) eqEl.className = 'font-mono font-bold text-sm ' + (equity >= balance ? 'text-[#089981]' : 'text-[#f23645]');
       if (fmEl) fmEl.className = 'font-mono font-bold text-sm ' + (freeMargin >= 0 ? 'text-white' : 'text-[#f23645]');
+      if (mlEl) mlEl.className = 'font-mono font-bold text-sm ' + (marginLevel >= 100 ? 'text-[#089981]' : marginLevel >= 50 ? 'text-[#ff9800]' : 'text-[#f23645]');
 
-      // --- Render Ongoing Trades ---
+      // --- Render Ongoing Trades (MT5 Table Style) ---
       document.getElementById('activeTradesCount').textContent = trades.length + ' active';
       const tradesContainer = document.getElementById('ongoingTradesList');
       const tradesLegacy = document.getElementById('trades-list');
@@ -348,7 +464,7 @@
           <div class="text-center py-10 text-gray-500">
             <svg class="w-12 h-12 mx-auto mb-3 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
             <p class="text-sm font-medium">No active trades</p>
-            <button onclick="location.href='order-ticket.html'" class="text-[#2962ff] hover:text-[#5c8aff] mt-2 text-xs font-semibold inline-flex items-center gap-1 transition-colors">
+            <button onclick="location.href='order-ticket.html'" class="text-[#2962ff] hover:text-[#5c8aff] mt-2 text-xs font-bold inline-flex items-center gap-1 transition-colors">
               Start Trading
               <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
@@ -356,40 +472,41 @@
         if (tradesContainer) tradesContainer.innerHTML = emptyState;
         if (tradesLegacy) tradesLegacy.innerHTML = '<div class="panel rounded-lg p-4 text-center text-sm text-gray-500">No active trades</div>';
       } else {
-        const html = trades.slice(0, 5).map(t => {
+        let html = `<table class="mt5-table"><thead><tr>
+          <th>Symbol</th>
+          <th class="col-center">Type</th>
+          <th class="col-right">Volume</th>
+          <th class="col-right">Open Price</th>
+          <th class="col-right">Current</th>
+          <th class="col-right">Profit</th>
+        </tr></thead><tbody>`;
+        
+        html += trades.slice(0, 5).map(t => {
           const amt = Number(t.amount || 0);
           const liveVal = (typeof TS_Invest !== 'undefined') ? TS_Invest.calculateLiveValue(t) : amt;
           const profit = liveVal - amt;
           const isProfit = profit >= 0;
           const color = isProfit ? 'text-[#089981]' : 'text-[#f23645]';
-          const bgIcon = isProfit ? 'bg-[#089981]/10' : 'bg-[#f23645]/10';
+          const typeBadge = (t.direction || '').toUpperCase() === 'BUY' 
+            ? '<span class="mt5-badge mt5-badge-green">Buy</span>' 
+            : '<span class="mt5-badge mt5-badge-red">Sell</span>';
           const sign = isProfit ? '+' : '';
-          return `
-            <div class="trade-row flex items-center justify-between px-4 py-3">
-              <div class="flex items-center gap-3 min-w-0">
-                <div class="w-8 h-8 rounded ${bgIcon} flex items-center justify-center shrink-0 border border-current/10 ${color}">
-                  <svg class="w-4 h-4 ${color}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    ${isProfit 
-                      ? '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline>' 
-                      : '<polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline>'}
-                  </svg>
-                </div>
-                <div class="min-w-0">
-                  <div class="text-sm font-bold text-white truncate">${(t.symbol || 'UNKNOWN').toUpperCase()}</div>
-                  <div class="text-[11px] text-gray-400 truncate">${t.orderType || ''} <span class="text-gray-600">|</span> ${(t.direction || '').toUpperCase()}</div>
-                </div>
-              </div>
-              <div class="text-right shrink-0 pl-3">
-                <div class="text-sm font-mono font-bold text-white">${formatMoney(liveVal)}</div>
-                <div class="text-[11px] font-mono ${color}">${sign}${formatMoney(profit)}</div>
-              </div>
-            </div>`;
+          return `<tr class="trade-row">
+            <td class="font-bold text-white">${(t.symbol || 'UNKNOWN').toUpperCase()}</td>
+            <td class="col-center">${typeBadge}</td>
+            <td class="col-right font-mono text-gray-300">${amt.toFixed(2)}</td>
+            <td class="col-right font-mono text-gray-300">${formatMoney(t.openPrice || amt)}</td>
+            <td class="col-right font-mono text-white">${formatMoney(liveVal)}</td>
+            <td class="col-right font-mono ${color}">${sign}${formatMoney(profit)}</td>
+          </tr>`;
         }).join('');
+        
+        html += `</tbody></table>`;
         if (tradesContainer) tradesContainer.innerHTML = html;
         if (tradesLegacy) tradesLegacy.innerHTML = html;
       }
 
-      // --- Render Active Holdings ---
+      // --- Render Active Holdings (MT5 Table Style) ---
       const holdingsContainer = document.getElementById('holdings-list');
       if (holdings.length === 0) {
         if (holdingsContainer) holdingsContainer.innerHTML = `
@@ -398,22 +515,28 @@
             <p class="text-sm font-medium">No active holdings</p>
           </div>`;
       } else {
-        const html = holdings.slice(0, 5).map(h => {
+        let html = `<table class="mt5-table"><thead><tr>
+          <th>Symbol</th>
+          <th>Plan</th>
+          <th class="col-right">Invested</th>
+          <th class="col-right">Current Value</th>
+          <th class="col-right">Return</th>
+        </tr></thead><tbody>`;
+        
+        html += holdings.slice(0, 5).map(h => {
           const amt = Number(h.amount || 0);
           const liveVal = (typeof TS_Invest !== 'undefined') ? TS_Invest.calculateLiveValue(h) : amt;
           const profit = liveVal - amt;
-          return `
-            <div class="trade-row flex items-center justify-between px-4 py-3">
-              <div class="min-w-0">
-                <div class="text-sm font-bold text-white truncate">${(h.symbol || 'UNKNOWN').toUpperCase()}</div>
-                <div class="text-[11px] text-gray-400 truncate">${h.planName || 'Holding'} <span class="text-gray-600">|</span> ${h.dailyReturnRate || 0}%/day</div>
-              </div>
-              <div class="text-right shrink-0 pl-3">
-                <div class="text-sm font-mono font-bold text-[#089981]">${formatMoney(liveVal)}</div>
-                <div class="text-[11px] font-mono text-[#089981]">+${formatMoney(profit)}</div>
-              </div>
-            </div>`;
+          return `<tr class="trade-row">
+            <td class="font-bold text-white">${(h.symbol || 'UNKNOWN').toUpperCase()}</td>
+            <td class="text-gray-400 text-xs">${h.planName || 'Holding'}</td>
+            <td class="col-right font-mono text-gray-300">${formatMoney(amt)}</td>
+            <td class="col-right font-mono text-[#089981]">${formatMoney(liveVal)}</td>
+            <td class="col-right font-mono text-[#089981]">+${formatMoney(profit)}</td>
+          </tr>`;
         }).join('');
+        
+        html += `</tbody></table>`;
         if (holdingsContainer) holdingsContainer.innerHTML = html;
       }
     }
@@ -436,7 +559,7 @@
       if (routes[pageId]) location.href = routes[pageId];
     }
 
-    // --- Save Functions (Preserved) ---
+    // --- Save Functions (Preserved + Enhanced) ---
     function saveAccount() {
       if (typeof TS_Auth === 'undefined' || typeof TS_DB === 'undefined') return;
       const u = TS_Auth.getUser();
@@ -444,21 +567,32 @@
       const idx = users.findIndex(x => x.userId === u.userId);
       if (idx >= 0) users[idx] = u; else users.push(u);
       TS_DB.set('users', users);
-      if (typeof TS_UI !== 'undefined') TS_UI.showToast('Account saved successfully', 'success');
     }
 
     function saveAccountDetails() {
       saveAccount();
+      markAccountSaved();
+      if (typeof TS_UI !== 'undefined') TS_UI.showToast('Account saved successfully', 'success');
+      else alert('Account saved');
     }
 
-    // --- UI Interactions ---
-    document.querySelector('.ts-dismiss')?.addEventListener('click', function() {
-      const banner = document.getElementById('ts-welcome-banner');
-      if (banner) banner.style.display = 'none';
-    });
+    // --- Boot & State Initialization ---
+    (function initDashboard() {
+      // Welcome banner state
+      if (shouldShowWelcomeBanner()) {
+        const banner = document.getElementById('welcomeBanner');
+        if (banner) banner.classList.remove('hidden');
+      }
+      
+      // Save button state
+      if (localStorage.getItem('ts_account_saved') === 'true') {
+        hideSaveAccountButtons();
+      }
+      
+      // Initial render
+      updateDashboard();
+    })();
 
-    // --- Boot ---
-    updateDashboard();
     setInterval(updateDashboard, 1000);
   </script>
 </body>
