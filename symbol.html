@@ -20,7 +20,7 @@
   </script>
   <style>
     :root {
-      --mt5-bg: #0b0e14;
+      --mt5-bg: #0c0e14;
       --mt5-panel: #11151f;
       --mt5-surface: #161b26;
       --mt5-border: #1e2532;
@@ -29,9 +29,10 @@
       --mt5-text-dim: #6e7f91;
       --mt5-accent: #2563eb;
       --mt5-accent-hover: #1d4ed8;
-      --mt5-up: #00d084;
-      --mt5-down: #ff4d4d;
+      --mt5-up: #2196f3;
+      --mt5-down: #f44336;
       --mt5-warning: #f59e0b;
+      --mt5-grid: #1a1f2e;
     }
     * { scrollbar-width: thin; scrollbar-color: #2a3441 #0b0e14; }
     ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -50,8 +51,8 @@
     .mt5-panel {
       background: var(--mt5-panel);
       border: 1px solid var(--mt5-border);
-      border-radius: 6px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      border-radius: 2px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.45);
     }
     .mt5-toolbar {
       background: linear-gradient(180deg, #131821 0%, #0f131a 100%);
@@ -66,6 +67,7 @@
       align-items: center;
       justify-content: center;
       gap: 4px;
+      border-radius: 2px;
     }
     .mt5-btn:active { transform: translateY(1px); }
     .mt5-btn:hover {
@@ -96,11 +98,12 @@
       border: 1px solid var(--mt5-border-light);
       color: var(--mt5-text);
       transition: all 0.2s;
+      border-radius: 2px;
     }
     .mt5-input:focus {
       border-color: var(--mt5-accent);
       outline: none;
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+      box-shadow: 0 0 0 2px rgba(37,99,235,0.15);
     }
     
     .mt5-table-header {
@@ -112,56 +115,69 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       user-select: none;
+      height: 24px;
+      display: flex;
+      align-items: center;
     }
     .mt5-table-row {
       border-bottom: 1px solid rgba(30,37,50,0.6);
-      transition: background 0.1s ease;
+      transition: background 0.08s ease;
       cursor: pointer;
       user-select: none;
+      height: 28px;
+      display: flex;
+      align-items: center;
     }
-    .mt5-table-row:hover { background: rgba(37,99,235,0.06); }
+    .mt5-table-row:hover { background: rgba(37,99,235,0.08); }
     .mt5-table-row.selected {
-      background: rgba(37,99,235,0.12);
+      background: rgba(37,99,235,0.15);
       border-left: 2px solid var(--mt5-accent);
     }
+    .mt5-table-row.price-up { color: var(--mt5-up); }
+    .mt5-table-row.price-down { color: var(--mt5-down); }
+    .mt5-table-row.price-same { color: var(--mt5-text-dim); }
     
     .mt5-az-btn {
-      min-width: 30px;
-      height: 30px;
+      min-width: 26px;
+      height: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
-      border-radius: 6px;
+      border-radius: 2px;
       background: var(--mt5-surface);
       border: 1px solid var(--mt5-border);
       color: var(--mt5-text-dim);
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.12s;
       flex-shrink: 0;
     }
     .mt5-az-btn:hover, .mt5-az-btn.active {
       background: var(--mt5-accent);
       color: #fff;
       border-color: var(--mt5-accent);
-      box-shadow: 0 0 8px rgba(37,99,235,0.3);
     }
     
     .mt5-category-tab {
-      padding: 8px 14px;
-      font-size: 12px;
+      padding: 6px 14px;
+      font-size: 11px;
       font-weight: 600;
       border-bottom: 2px solid transparent;
       color: var(--mt5-text-dim);
       background: none;
       cursor: pointer;
       white-space: nowrap;
-      transition: all 0.15s;
+      transition: all 0.12s;
     }
     .mt5-category-tab.active {
       color: #fff;
       border-bottom-color: var(--mt5-accent);
+      background: rgba(37,99,235,0.08);
+    }
+    .mt5-category-tab:hover:not(.active) {
+      color: var(--mt5-text);
+      background: rgba(255,255,255,0.02);
     }
     
     .mt5-status-bar {
@@ -169,51 +185,55 @@
       border-top: 1px solid var(--mt5-border);
       font-size: 10px;
       color: var(--mt5-text-dim);
-      height: 24px;
+      height: 22px;
     }
     
-    .mt5-sparkline { width: 90px; height: 28px; }
+    .mt5-sparkline { width: 70px; height: 20px; }
     .mt5-chart-bg {
       background: var(--mt5-bg);
       border: 1px solid var(--mt5-border);
-      border-radius: 4px;
+      border-radius: 2px;
     }
     .mt5-timeframe-btn {
-      padding: 3px 10px;
-      font-size: 11px;
+      padding: 2px 8px;
+      font-size: 10px;
       font-weight: 600;
-      border-radius: 4px;
+      border-radius: 2px;
       background: transparent;
       border: 1px solid transparent;
       color: var(--mt5-text-dim);
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.12s;
     }
     .mt5-timeframe-btn.active {
       background: var(--mt5-surface);
       border-color: var(--mt5-border-light);
       color: #fff;
     }
+    .mt5-timeframe-btn:hover:not(.active) {
+      color: var(--mt5-text);
+      background: rgba(255,255,255,0.03);
+    }
     
     .mt5-news-item {
       border-left: 2px solid transparent;
-      transition: all 0.15s;
+      transition: all 0.12s;
     }
     .mt5-news-item:hover {
       border-left-color: var(--mt5-accent);
       background: rgba(255,255,255,0.03);
     }
     
-    .price-up { color: var(--mt5-up); }
-    .price-down { color: var(--mt5-down); }
+    .price-up { color: var(--mt5-up) !important; }
+    .price-down { color: var(--mt5-down) !important; }
     
     @keyframes pulse-live {
       0%,100%{opacity:1} 50%{opacity:0.4}
     }
     .live-dot { animation: pulse-live 2s infinite; }
-    .fade-in { animation: fadeIn 0.25s ease-out; }
+    .fade-in { animation: fadeIn 0.2s ease-out; }
     @keyframes fadeIn {
-      from { opacity:0; transform:translateY(6px) }
+      from { opacity:0; transform:translateY(4px) }
       to { opacity:1; transform:translateY(0) }
     }
     
@@ -224,6 +244,105 @@
     .mobile-sheet.closed { transform: translateY(110%); }
     
     .svg-icon { display: inline-block; vertical-align: middle; }
+    
+    /* MT5 Specific styling */
+    .mt5-nav-tree-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      font-size: 12px;
+      color: var(--mt5-text-dim);
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.1s;
+    }
+    .mt5-nav-tree-item:hover {
+      background: rgba(37,99,235,0.06);
+      color: var(--mt5-text);
+    }
+    .mt5-nav-tree-item.active {
+      background: rgba(37,99,235,0.12);
+      color: #fff;
+    }
+    
+    .mt5-section-label {
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--mt5-text-dim);
+    }
+    
+    .mt5-data-cell {
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+    
+    .mt5-symbol-badge {
+      width: 18px;
+      height: 18px;
+      border-radius: 3px;
+      background: var(--mt5-surface);
+      border: 1px solid var(--mt5-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 800;
+      color: var(--mt5-text-dim);
+      flex-shrink: 0;
+    }
+    
+    .mt5-separator {
+      width: 1px;
+      height: 14px;
+      background: var(--mt5-border);
+    }
+    
+    .mt5-col-symbol { width: 140px; min-width: 140px; }
+    .mt5-col-bid { width: 80px; min-width: 80px; text-align: right; }
+    .mt5-col-ask { width: 80px; min-width: 80px; text-align: right; }
+    .mt5-col-high { width: 80px; min-width: 80px; text-align: right; }
+    .mt5-col-low { width: 80px; min-width: 80px; text-align: right; }
+    .mt5-col-change { width: 70px; min-width: 70px; text-align: right; }
+    .mt5-col-spread { width: 60px; min-width: 60px; text-align: right; }
+    .mt5-col-volume { width: 90px; min-width: 90px; text-align: right; }
+    .mt5-col-time { width: 60px; min-width: 60px; text-align: center; }
+    .mt5-col-trend { width: 80px; min-width: 80px; text-align: center; }
+    .mt5-col-action { width: 32px; min-width: 32px; text-align: center; }
+    
+    @media (max-width: 1280px) {
+      .mt5-col-high, .mt5-col-low, .mt5-col-volume, .mt5-col-spread { display: none; }
+    }
+    @media (max-width: 1024px) {
+      .mt5-col-change { display: none; }
+    }
+    
+    .mt5-order-btn {
+      height: 26px;
+      border-radius: 2px;
+      font-size: 11px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+    .mt5-order-btn.buy {
+      background: #0d7377;
+      color: #fff;
+    }
+    .mt5-order-btn.buy:hover { background: #0a5c5f; }
+    .mt5-order-btn.sell {
+      background: #c0392b;
+      color: #fff;
+    }
+    .mt5-order-btn.sell:hover { background: #a93226; }
   </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
@@ -235,49 +354,62 @@
   <div class="flex-1 flex flex-col overflow-hidden relative" id="workspace">
     
     <!-- TOP TOOLBAR -->
-    <div class="mt5-toolbar h-11 flex items-center px-3 gap-2 shrink-0 z-20">
+    <div class="mt5-toolbar h-9 flex items-center px-2 gap-2 shrink-0 z-20">
       <!-- Brand / Title -->
       <div class="flex items-center gap-2 mr-2 shrink-0">
-        <svg class="svg-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="2" y="2" width="20" height="20" rx="5" fill="#2563eb" opacity="0.15"/>
-          <path d="M4 18L9 12L13 16L20 8" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M16 8H20V12" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg class="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="20" height="20" rx="3" fill="#2563eb" opacity="0.15"/>
+          <path d="M4 18L9 12L13 16L20 8" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 8H20V12" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span class="font-bold text-sm tracking-wide hidden sm:inline">Market Watch</span>
+        <span class="font-bold text-xs tracking-wide hidden sm:inline text-gray-300">Market Watch</span>
       </div>
       
+      <div class="mt5-separator"></div>
+      
       <!-- View Toggle -->
-      <button class="mt5-btn w-9 h-8 rounded-md" id="view-toggle" onclick="toggleViewMode()" title="Toggle View">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <button class="mt5-btn w-7 h-7 rounded-sm" id="view-toggle" onclick="toggleViewMode()" title="Toggle View">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
           <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
         </svg>
       </button>
       
       <!-- Search -->
-      <div class="relative flex-1 max-w-md">
-        <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-600 svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <div class="relative flex-1 max-w-xs">
+        <svg class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-600 svg-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
         </svg>
         <input type="text" id="search" placeholder="Search symbols A-Z…" 
-               class="mt5-input w-full pl-8 pr-3 py-1.5 rounded-md text-xs font-medium">
+               class="mt5-input w-full pl-7 pr-2 py-1 rounded-sm text-[11px] font-medium">
       </div>
       
+      <div class="mt5-separator"></div>
+      
       <!-- Refresh -->
-      <button class="mt5-btn w-9 h-8 rounded-md" onclick="refreshAllData()" title="Refresh">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <button class="mt5-btn w-7 h-7 rounded-sm" onclick="refreshAllData()" title="Refresh">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
         </svg>
+      </button>
+      
+      <!-- Symbol Sets -->
+      <button class="mt5-btn h-7 px-2 rounded-sm text-[11px] font-semibold gap-1" onclick="showToast('Symbol sets saved', 'success')" title="Save Symbol Set">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+        </svg>
+        <span class="hidden md:inline">Sets</span>
       </button>
     </div>
     
     <!-- A-Z ALPHABET NAVIGATION -->
-    <div class="mt5-toolbar border-t-0 px-3 py-2 flex items-center gap-1 overflow-x-auto shrink-0 z-10" id="az-bar">
+    <div class="mt5-toolbar border-t-0 px-2 py-1.5 flex items-center gap-0.5 overflow-x-auto shrink-0 z-10" id="az-bar">
       <!-- Injected by JS -->
     </div>
     
     <!-- CATEGORY TABS -->
-    <div class="flex items-center px-2 gap-0 overflow-x-auto shrink-0 border-b border-[#1e2532] bg-[#11151f] z-10" id="category-tabs">
+    <div class="flex items-center px-1 gap-0 overflow-x-auto shrink-0 border-b border-[#1e2532] bg-[#11151f] z-10" id="category-tabs">
       <button class="mt5-category-tab active" data-cat="all" onclick="filterCategory('all')">All</button>
       <button class="mt5-category-tab" data-cat="crypto" onclick="filterCategory('crypto')">Crypto</button>
       <button class="mt5-category-tab" data-cat="forex" onclick="filterCategory('forex')">Forex</button>
@@ -291,31 +423,33 @@
     <div class="flex-1 flex overflow-hidden relative">
       
       <!-- LEFT: NAVIGATOR PANEL (Desktop) -->
-      <aside class="w-52 shrink-0 border-r border-[#1e2532] bg-[#11151f] hidden lg:flex flex-col overflow-hidden" id="navigator-panel">
-        <div class="px-3 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 border-b border-[#1e2532]">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <aside class="w-44 shrink-0 border-r border-[#1e2532] bg-[#11151f] hidden lg:flex flex-col overflow-hidden" id="navigator-panel">
+        <div class="px-2 py-1.5 text-[9px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5 border-b border-[#1e2532]">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
           </svg>
           Navigator
         </div>
-        <div class="flex-1 overflow-y-auto p-2 space-y-0.5" id="category-tree">
+        <div class="flex-1 overflow-y-auto p-1 space-y-0.5" id="category-tree">
           <!-- JS injected -->
         </div>
       </aside>
       
       <!-- CENTER: SYMBOL LIST -->
-      <main class="flex-1 flex flex-col overflow-hidden bg-[#0b0e14] relative" id="symbol-panel">
+      <main class="flex-1 flex flex-col overflow-hidden bg-[#0c0e14] relative" id="symbol-panel">
         <!-- Table Header -->
-        <div class="mt5-table-header grid grid-cols-[minmax(0,2fr)_1fr_1fr_1fr_1fr_1fr_80px_40px] gap-2 px-4 py-2 items-center shrink-0">
-          <div class="pl-1">Symbol / Name</div>
-          <div class="text-right">Last</div>
-          <div class="text-right">Change</div>
-          <div class="text-right hidden md:block">High</div>
-          <div class="text-right hidden md:block">Low</div>
-          <div class="text-right hidden lg:block">Volume</div>
-          <div class="text-center">Trend</div>
-          <div></div>
+        <div class="mt5-table-header px-2 gap-1 shrink-0">
+          <div class="mt5-col-symbol pl-1">Symbol</div>
+          <div class="mt5-col-bid">Bid</div>
+          <div class="mt5-col-ask">Ask</div>
+          <div class="mt5-col-high hidden xl:block">High</div>
+          <div class="mt5-col-low hidden xl:block">Low</div>
+          <div class="mt5-col-change">Change</div>
+          <div class="mt5-col-spread hidden xl:block">Spread</div>
+          <div class="mt5-col-volume hidden xl:block">Volume</div>
+          <div class="mt5-col-trend">Trend</div>
+          <div class="mt5-col-action"></div>
         </div>
         <!-- List Container (PRESERVED ID) -->
         <div id="symbol-list" class="flex-1 overflow-y-auto pb-20 lg:pb-0">
@@ -324,51 +458,51 @@
       </main>
       
       <!-- RIGHT: DETAIL PANEL (Desktop) -->
-      <aside class="w-80 shrink-0 border-l border-[#1e2532] bg-[#11151f] hidden xl:flex flex-col overflow-hidden" id="detail-panel">
+      <aside class="w-72 shrink-0 border-l border-[#1e2532] bg-[#11151f] hidden xl:flex flex-col overflow-hidden" id="detail-panel">
         <!-- Symbol Header -->
-        <div class="p-3 border-b border-[#1e2532] shrink-0">
+        <div class="p-2.5 border-b border-[#1e2532] shrink-0">
           <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <div id="detail-icon" class="w-9 h-9 rounded-lg bg-[#161b26] border border-[#1e2532] flex items-center justify-center text-[11px] font-bold shrink-0">BTC</div>
+            <div class="flex items-center gap-2 min-w-0">
+              <div id="detail-icon" class="mt5-symbol-badge">BTC</div>
               <div class="min-w-0">
-                <div id="detail-symbol" class="font-bold text-sm truncate">BTCUSD</div>
-                <div id="detail-name" class="text-[11px] text-gray-500 truncate">Bitcoin / US Dollar</div>
+                <div id="detail-symbol" class="font-bold text-xs truncate">BTCUSD</div>
+                <div id="detail-name" class="text-[10px] text-gray-500 truncate">Bitcoin / US Dollar</div>
               </div>
             </div>
-            <button onclick="addCurrentToWatchlist()" class="mt5-btn w-8 h-8 rounded-md" title="Add to Watchlist">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="wl-star" class="text-gray-400">
+            <button onclick="addCurrentToWatchlist()" class="mt5-btn w-7 h-7 rounded-sm" title="Add to Watchlist">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="wl-star" class="text-gray-400">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
             </button>
           </div>
           <div class="flex items-end justify-between">
-            <div id="detail-price" class="text-xl font-bold font-mono tracking-tight">$--.--</div>
-            <div id="detail-change" class="text-xs font-mono font-semibold px-1.5 py-0.5 rounded bg-[#161b26]">--%</div>
+            <div id="detail-price" class="text-lg font-bold font-mono tracking-tight">$--.--</div>
+            <div id="detail-change" class="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-[#161b26]">--%</div>
           </div>
-          <div class="grid grid-cols-3 gap-2 mt-3">
-            <div class="bg-[#161b26] border border-[#1e2532] rounded-md p-2">
-              <div class="text-[10px] text-gray-500 uppercase font-bold mb-1">Bid</div>
-              <div id="detail-bid" class="text-xs font-mono font-semibold">--</div>
+          <div class="grid grid-cols-3 gap-1.5 mt-2">
+            <div class="bg-[#161b26] border border-[#1e2532] rounded-sm p-1.5">
+              <div class="text-[9px] text-gray-500 uppercase font-bold mb-0.5">Bid</div>
+              <div id="detail-bid" class="text-[11px] font-mono font-semibold">--</div>
             </div>
-            <div class="bg-[#161b26] border border-[#1e2532] rounded-md p-2">
-              <div class="text-[10px] text-gray-500 uppercase font-bold mb-1">Ask</div>
-              <div id="detail-ask" class="text-xs font-mono font-semibold">--</div>
+            <div class="bg-[#161b26] border border-[#1e2532] rounded-sm p-1.5">
+              <div class="text-[9px] text-gray-500 uppercase font-bold mb-0.5">Ask</div>
+              <div id="detail-ask" class="text-[11px] font-mono font-semibold">--</div>
             </div>
-            <div class="bg-[#161b26] border border-[#1e2532] rounded-md p-2">
-              <div class="text-[10px] text-gray-500 uppercase font-bold mb-1">Spread</div>
-              <div id="detail-spread" class="text-xs font-mono font-semibold">--</div>
+            <div class="bg-[#161b26] border border-[#1e2532] rounded-sm p-1.5">
+              <div class="text-[9px] text-gray-500 uppercase font-bold mb-0.5">Spread</div>
+              <div id="detail-spread" class="text-[11px] font-mono font-semibold">--</div>
             </div>
           </div>
           <!-- Order Buttons -->
-          <div class="grid grid-cols-2 gap-2 mt-3">
-            <button class="mt5-btn success h-8 rounded-md text-xs font-bold" onclick="placeOrder('buy')">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+          <div class="grid grid-cols-2 gap-1.5 mt-2">
+            <button class="mt5-order-btn buy" onclick="placeOrder('buy')">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="18 15 12 9 6 15"/>
               </svg>
               Buy
             </button>
-            <button class="mt5-btn danger h-8 rounded-md text-xs font-bold" onclick="placeOrder('sell')">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+            <button class="mt5-order-btn sell" onclick="placeOrder('sell')">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
               Sell
@@ -378,48 +512,48 @@
         
         <!-- Chart Section -->
         <div class="flex-1 flex flex-col min-h-0 border-b border-[#1e2532]">
-          <div class="flex items-center justify-between px-3 py-2 border-b border-[#1e2532] shrink-0">
-            <div class="flex gap-1" id="timeframe-buttons">
+          <div class="flex items-center justify-between px-2 py-1.5 border-b border-[#1e2532] shrink-0">
+            <div class="flex gap-0.5" id="timeframe-buttons">
               <button class="mt5-timeframe-btn active" data-tf="1H" onclick="changeTimeframe('1H')">1H</button>
               <button class="mt5-timeframe-btn" data-tf="4H" onclick="changeTimeframe('4H')">4H</button>
               <button class="mt5-timeframe-btn" data-tf="1D" onclick="changeTimeframe('1D')">1D</button>
               <button class="mt5-timeframe-btn" data-tf="1W" onclick="changeTimeframe('1W')">1W</button>
               <button class="mt5-timeframe-btn" data-tf="1M" onclick="changeTimeframe('1M')">1M</button>
             </div>
-            <div class="flex gap-1">
+            <div class="flex gap-0.5">
               <button class="mt5-timeframe-btn active" onclick="setChartType('candles')" title="Candles">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="4" y="4" width="3" height="16"/><rect x="10" y="8" width="3" height="12"/><rect x="16" y="2" width="3" height="18"/>
                 </svg>
               </button>
               <button class="mt5-timeframe-btn" onclick="setChartType('line')" title="Line">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                 </svg>
               </button>
             </div>
           </div>
-          <div class="flex-1 relative mt5-chart-bg m-2 overflow-hidden">
+          <div class="flex-1 relative mt5-chart-bg m-1.5 overflow-hidden">
             <canvas id="main-chart" class="w-full h-full block"></canvas>
-            <div id="chart-loading" class="absolute inset-0 flex items-center justify-center bg-[#0b0e14]/80 hidden">
-              <svg class="animate-spin h-5 w-5 text-blue-500" viewBox="0 0 24 24" fill="none">
+            <div id="chart-loading" class="absolute inset-0 flex items-center justify-center bg-[#0c0e14]/80 hidden">
+              <svg class="animate-spin h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="none">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
               </svg>
             </div>
-            <div class="absolute top-2 left-2 text-[10px] text-gray-500 font-mono pointer-events-none" id="chart-watermark">TradeStation</div>
+            <div class="absolute top-1.5 left-1.5 text-[9px] text-gray-600 font-mono pointer-events-none" id="chart-watermark">TradeStation</div>
           </div>
         </div>
         
         <!-- News Panel -->
-        <div class="h-44 shrink-0 flex flex-col">
-          <div class="px-3 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2 border-b border-[#1e2532] shrink-0">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <div class="h-40 shrink-0 flex flex-col">
+          <div class="px-2 py-1.5 text-[9px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5 border-b border-[#1e2532] shrink-0">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
               <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
             </svg>
             Market News
           </div>
-          <div id="news-list" class="flex-1 overflow-y-auto p-2 space-y-1">
+          <div id="news-list" class="flex-1 overflow-y-auto p-1.5 space-y-0.5">
             <!-- JS rendered -->
           </div>
         </div>
@@ -427,9 +561,9 @@
     </div>
     
     <!-- STATUS BAR -->
-    <div class="mt5-status-bar flex items-center px-3 gap-4 shrink-0 justify-between z-30">
-      <div class="flex items-center gap-3">
-        <div class="flex items-center gap-1.5">
+    <div class="mt5-status-bar flex items-center px-2 gap-3 shrink-0 justify-between z-30">
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 live-dot"></span>
           <span id="connection-status" class="text-emerald-400 font-medium">Online</span>
         </div>
@@ -438,7 +572,7 @@
         <span class="w-px h-3 bg-[#1e2532] hidden sm:block"></span>
         <span id="api-status" class="hidden sm:inline">Ready</span>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
         <span id="symbol-count">0 symbols</span>
         <span class="w-px h-3 bg-[#1e2532]"></span>
         <span>Trade Station Pro</span>
@@ -447,40 +581,40 @@
   </div>
   
   <!-- MOBILE DETAIL SHEET (Bottom Sheet) -->
-  <div id="mobile-sheet" class="mobile-sheet closed fixed inset-x-0 bottom-0 z-50 bg-[#11151f] border-t border-[#1e2532] rounded-t-2xl shadow-2xl h-[85vh] flex flex-col xl:hidden">
-    <div class="w-12 h-1 bg-gray-700 rounded-full mx-auto mt-2 mb-1 shrink-0"></div>
-    <div class="flex items-center justify-between px-4 py-2 border-b border-[#1e2532] shrink-0">
+  <div id="mobile-sheet" class="mobile-sheet closed fixed inset-x-0 bottom-0 z-50 bg-[#11151f] border-t border-[#1e2532] rounded-t-xl shadow-2xl h-[85vh] flex flex-col xl:hidden">
+    <div class="w-10 h-1 bg-gray-700 rounded-full mx-auto mt-2 mb-1 shrink-0"></div>
+    <div class="flex items-center justify-between px-3 py-2 border-b border-[#1e2532] shrink-0">
       <div class="flex items-center gap-2">
-        <div id="mob-icon" class="w-8 h-8 rounded bg-[#161b26] flex items-center justify-center text-[10px] font-bold">BTC</div>
+        <div id="mob-icon" class="mt5-symbol-badge">BTC</div>
         <div>
-          <div id="mob-symbol" class="font-bold text-sm">BTCUSD</div>
+          <div id="mob-symbol" class="font-bold text-xs">BTCUSD</div>
           <div id="mob-name" class="text-[10px] text-gray-500">Bitcoin / US Dollar</div>
         </div>
       </div>
-      <button onclick="closeMobileSheet()" class="mt5-btn w-8 h-8 rounded-md">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <button onclick="closeMobileSheet()" class="mt5-btn w-7 h-7 rounded-sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <div class="flex-1 overflow-y-auto p-3 space-y-3">
+    <div class="flex-1 overflow-y-auto p-2.5 space-y-2">
       <div class="flex items-end justify-between">
-        <div id="mob-price" class="text-2xl font-bold font-mono">$--.--</div>
-        <div id="mob-change" class="text-sm font-mono font-semibold">--%</div>
+        <div id="mob-price" class="text-xl font-bold font-mono">$--.--</div>
+        <div id="mob-change" class="text-xs font-mono font-semibold">--%</div>
       </div>
-      <div class="grid grid-cols-3 gap-2">
-        <div class="bg-[#161b26] rounded-md p-2 border border-[#1e2532]"><div class="text-[10px] text-gray-500 uppercase font-bold">Bid</div><div id="mob-bid" class="text-xs font-mono font-semibold">--</div></div>
-        <div class="bg-[#161b26] rounded-md p-2 border border-[#1e2532]"><div class="text-[10px] text-gray-500 uppercase font-bold">Ask</div><div id="mob-ask" class="text-xs font-mono font-semibold">--</div></div>
-        <div class="bg-[#161b26] rounded-md p-2 border border-[#1e2532]"><div class="text-[10px] text-gray-500 uppercase font-bold">Spread</div><div id="mob-spread" class="text-xs font-mono font-semibold">--</div></div>
+      <div class="grid grid-cols-3 gap-1.5">
+        <div class="bg-[#161b26] rounded-sm p-2 border border-[#1e2532]"><div class="text-[9px] text-gray-500 uppercase font-bold">Bid</div><div id="mob-bid" class="text-[11px] font-mono font-semibold">--</div></div>
+        <div class="bg-[#161b26] rounded-sm p-2 border border-[#1e2532]"><div class="text-[9px] text-gray-500 uppercase font-bold">Ask</div><div id="mob-ask" class="text-[11px] font-mono font-semibold">--</div></div>
+        <div class="bg-[#161b26] rounded-sm p-2 border border-[#1e2532]"><div class="text-[9px] text-gray-500 uppercase font-bold">Spread</div><div id="mob-spread" class="text-[11px] font-mono font-semibold">--</div></div>
       </div>
-      <div class="mt5-chart-bg h-56 relative">
+      <div class="mt5-chart-bg h-48 relative">
         <canvas id="mob-chart" class="w-full h-full block"></canvas>
       </div>
-      <div class="grid grid-cols-2 gap-2">
-        <button class="mt5-btn success h-10 rounded-md text-sm font-bold" onclick="placeOrder('buy')">Buy</button>
-        <button class="mt5-btn danger h-10 rounded-md text-sm font-bold" onclick="placeOrder('sell')">Sell</button>
+      <div class="grid grid-cols-2 gap-1.5">
+        <button class="mt5-order-btn buy h-9 text-sm" onclick="placeOrder('buy')">Buy</button>
+        <button class="mt5-order-btn sell h-9 text-sm" onclick="placeOrder('sell')">Sell</button>
       </div>
       <div>
-        <div class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Latest News</div>
-        <div id="mob-news" class="space-y-2"></div>
+        <div class="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Latest News</div>
+        <div id="mob-news" class="space-y-1"></div>
       </div>
     </div>
   </div>
@@ -511,10 +645,11 @@
     let currentSymbol = null;
     let currentTimeframe = '1D';
     let currentChartType = 'candles';
-    let viewMode = 'list'; // 'list' | 'grid'
+    let viewMode = 'list';
     let chartCache = {};
     let updateTimer = null;
     let newsData = [];
+    let lastPrices = {};
     
     // ============================================================
     // AUTH GUARD (Original behavior preserved)
@@ -544,16 +679,14 @@
     });
     
     // ============================================================
-    // A-Z NAVIGATION (New Feature — Alphabetical Filter)
+    // A-Z NAVIGATION (Alphabetical Filter)
     // ============================================================
     function initAZBar() {
       const bar = document.getElementById('az-bar');
       const chars = '#ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
       bar.innerHTML = chars.map(c =>
-        `<button class="mt5-az-btn" data-letter="${c==='#'?'':c}" onclick="filterByLetter('${c==='#'?'':c}',this)">${c}</button>`
+        `<button class="mt5-az-btn ${c==='#'?'active':''}" data-letter="${c==='#'?'':c}" onclick="filterByLetter('${c==='#'?'':c}',this)">${c}</button>`
       ).join('');
-      // Default: no letter filter (show all)
-      bar.querySelector('[data-letter=""]').classList.add('active');
     }
     
     function filterByLetter(letter, btn) {
@@ -569,19 +702,20 @@
     function initCategoryTree() {
       const tree = document.getElementById('category-tree');
       const items = [
-        { id:'all',      label:'All Symbols',     icon:'<<path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/>' },
-        { id:'crypto',   label:'Cryptocurrency',    icon:'<<path d="M12 2v20M9 5h6a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h6"/><path d="M9 11h6"/>' },
-        { id:'forex',    label:'Forex',             icon:'<<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>' },
-        { id:'stocks',   label:'Stocks',            icon:'<<path d="M18 20V10M12 20V4M6 20v-6"/>' },
-        { id:'indices',  label:'Indices',           icon:'<<path d="m3 3 18 18M9 9l6 6M9 15l6-6"/>' },
-        { id:'commodities',label:'Commodities',    icon:'<<path d="m12 3-1.5 3L8 4.5 7 7 4 6l2 3-3 1 3 2-1 3 3-1 1 3 2-2 2 2 1-3 3 1-1-3 3-2-3-1 2-3-3 1-1-2.5-2.5L12 3z"/>' },
-        { id:'watchlist',label:'My Watchlist',      icon:'<<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>' }
+        { id:'all',      label:'All Symbols',       icon:'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z' },
+        { id:'crypto',   label:'Cryptocurrency',    icon:'M12 2v20M9 5h6a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h6M9 11h6' },
+        { id:'forex',    label:'Forex',             icon:'M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' },
+        { id:'stocks',   label:'Stocks',            icon:'M18 20V10M12 20V4M6 20v-6' },
+        { id:'indices',  label:'Indices',           icon:'m3 3 18 18M9 9l6 6M9 15l6-6' },
+        { id:'commodities',label:'Commodities',    icon:'m12 3-1.5 3L8 4.5 7 7 4 6l2 3-3 1 3 2-1 3 3-1 1 3 2-2 2 2 1-3 3 1-1-3 3-2-3-1 2-3-3 1-1-2.5-2.5L12 3z' },
+        { id:'watchlist',label:'My Watchlist',      icon:'M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27l6.91-1.01L12 2z' }
       ];
       
       tree.innerHTML = items.map(it => `
-        <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-md cursor-pointer text-[13px] font-medium text-gray-400 hover:bg-[#1a2030] hover:text-gray-200 transition-colors ${it.id==='all'?'bg-[#1a2030] text-white':''}"
-             data-cat="${it.id}" onclick="selectCategory('${it.id}')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${it.icon}</svg>
+        <div class="mt5-nav-tree-item ${it.id==='all'?'active':''}" data-cat="${it.id}" onclick="selectCategory('${it.id}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="${it.icon}"/>
+          </svg>
           <span>${it.label}</span>
         </div>
       `).join('');
@@ -589,14 +723,10 @@
     
     function selectCategory(cat) {
       currentCategory = cat;
-      // Sync desktop tree
-      document.querySelectorAll('#category-tree > div').forEach(el => {
+      document.querySelectorAll('#category-tree .mt5-nav-tree-item').forEach(el => {
         const active = el.dataset.cat === cat;
-        el.classList.toggle('bg-[#1a2030]', active);
-        el.classList.toggle('text-white', active);
-        el.classList.toggle('text-gray-400', !active);
+        el.classList.toggle('active', active);
       });
-      // Sync top tabs
       document.querySelectorAll('.mt5-category-tab').forEach(el => {
         const active = el.dataset.cat === cat;
         el.classList.toggle('active', active);
@@ -613,7 +743,6 @@
       try {
         updateStatus('Loading markets…', 'loading');
         
-        // Parallel fetch from multiple real sources
         const [crypto, forex, stocks] = await Promise.all([
           loadCryptoSymbols(),
           loadForexSymbols(),
@@ -623,11 +752,11 @@
         allSymbols = [...crypto, ...forex, ...stocks];
         allSymbols.sort((a,b) => a.symbol.localeCompare(b.symbol));
         
-        // Ensure sparklines exist
         allSymbols.forEach(s => {
           if (!s.sparkline || !s.sparkline.length) {
             s.sparkline = generateSyntheticSparkline(s.price_change_percentage_24h || 0);
           }
+          lastPrices[s.symbol] = s.current_price;
         });
         
         updateStatus('Markets live', 'ready');
@@ -651,13 +780,12 @@
     }
     
     async function loadCryptoSymbols() {
-      // Primary: CoinGecko real market data
       try {
         const res = await fetch(`${COINGECKO_API}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=true&price_change_percentage=24h`);
         if (!res.ok) throw new Error(`CoinGecko HTTP ${res.status}`);
         const data = await res.json();
         return data.map(c => ({
-          symbol: c.symbol,
+          symbol: c.symbol.toUpperCase(),
           name: c.name,
           category: 'crypto',
           image: c.image,
@@ -670,10 +798,10 @@
           sparkline: c.sparkline_in_7d?.price?.slice(-24) || null,
           bid: c.current_price ? c.current_price * 0.9995 : null,
           ask: c.current_price ? c.current_price * 1.0005 : null,
-          spread: c.current_price ? (c.current_price * 0.001).toFixed(c.current_price < 1 ? 6 : 4) : '--'
+          spread: c.current_price ? (c.current_price * 0.001).toFixed(c.current_price < 1 ? 6 : 4) : '--',
+          digits: c.current_price < 1 ? 6 : 2
         }));
       } catch (e) {
-        // Fallback: try simple CoinGecko list then alert user data is partial
         console.warn('CoinGecko primary failed:', e);
         return [];
       }
@@ -688,7 +816,6 @@
         const majors = ['EUR','GBP','JPY','AUD','CAD','CHF','NZD','CNY','SEK','NOK','MXN','ZAR','SGD','HKD','KRW','INR','RUB','BRL'];
         return majors.map(curr => {
           const rate = rates[curr] || 0;
-          // Simulate realistic intraday change using minor variance (API provides spot only)
           const syntheticChange = ((Math.random() * 1.6) - 0.8);
           return {
             symbol: `USD${curr}`,
@@ -703,7 +830,8 @@
             bid: rate * 0.99995,
             ask: rate * 1.00005,
             spread: (rate * 0.0001).toFixed(5),
-            sparkline: generateSyntheticSparkline(syntheticChange)
+            sparkline: generateSyntheticSparkline(syntheticChange),
+            digits: 5
           };
         });
       } catch (e) {
@@ -741,9 +869,10 @@
             bid: q.c - 0.01,
             ask: q.c + 0.01,
             spread: '0.02',
-            sparkline: generateSyntheticSparkline(change)
+            sparkline: generateSyntheticSparkline(change),
+            digits: 2
           });
-        } catch (e) { /* skip failed individual stock */ }
+        } catch (e) { }
       }
       return results;
     }
@@ -771,7 +900,7 @@
       } catch (e) {
         console.warn('News unavailable:', e);
         document.getElementById('news-list').innerHTML =
-          '<div class="p-3 text-[11px] text-gray-500 text-center">News feed temporarily unavailable</div>';
+          '<div class="p-2 text-[10px] text-gray-500 text-center">News feed temporarily unavailable</div>';
       }
     }
     
@@ -783,12 +912,12 @@
       const html = newsData.map(n => {
         const time = new Date(n.datetime * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         return `
-        <div class="mt5-news-item p-2 rounded cursor-pointer" onclick="window.open('${n.url}','_blank')">
-          <div class="flex items-center gap-1.5 text-[10px] text-gray-500 mb-0.5">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <div class="mt5-news-item p-1.5 rounded cursor-pointer" onclick="window.open('${n.url}','_blank')">
+          <div class="flex items-center gap-1 text-[9px] text-gray-500 mb-0.5">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             ${time} · ${n.source}
           </div>
-          <div class="text-xs font-medium leading-snug line-clamp-2 hover:text-blue-400 transition-colors">${n.headline}</div>
+          <div class="text-[11px] font-medium leading-snug line-clamp-2 hover:text-blue-400 transition-colors">${n.headline}</div>
         </div>`;
       }).join('');
       
@@ -797,7 +926,7 @@
     }
     
     // ============================================================
-    // RENDER SYMBOLS (Enhanced original with A–Z + categories + SVG)
+    // RENDER SYMBOLS (MT5 Market Watch single-line vertical list)
     // ============================================================
     function render(filter = '') { renderSymbols(filter); }
     
@@ -807,7 +936,6 @@
       
       let data = allSymbols;
       
-      // Category filter
       if (currentCategory !== 'all') {
         if (currentCategory === 'watchlist') {
           const wl = (typeof TS_DB !== 'undefined' && TS_DB.get) ? TS_DB.get('watchlist', []) : JSON.parse(localStorage.getItem('watchlist')||'[]');
@@ -817,12 +945,10 @@
         }
       }
       
-      // A-Z letter filter
       if (currentLetter) {
         data = data.filter(s => s.symbol.toUpperCase().startsWith(currentLetter));
       }
       
-      // Text search
       if (filter) {
         const f = filter.toLowerCase();
         data = data.filter(s => s.symbol.toLowerCase().includes(f) || s.name.toLowerCase().includes(f));
@@ -838,40 +964,45 @@
     
     function renderListView(container, data) {
       if (!data.length) {
-        container.innerHTML = '<div class="p-8 text-center text-gray-500 text-sm">No symbols match your filters</div>';
+        container.innerHTML = '<div class="p-6 text-center text-gray-500 text-xs">No symbols match your filters</div>';
         return;
       }
       
       container.innerHTML = data.map((s, idx) => {
         const isUp = (s.price_change_percentage_24h||0) >= 0;
-        const color = isUp ? 'price-up' : 'price-down';
+        const priceClass = isUp ? 'price-up' : 'price-down';
         const sign = isUp ? '+' : '';
+        const prevPrice = lastPrices[s.symbol] || s.current_price;
+        const tickClass = s.current_price > prevPrice ? 'price-up' : s.current_price < prevPrice ? 'price-down' : 'price-same';
+        
         const img = s.image
-          ? `<img src="${s.image}" class="w-6 h-6 rounded-full shrink-0 bg-[#161b26]" onerror="this.style.display='none'" alt="">`
-          : `<div class="w-6 h-6 rounded-full bg-[#161b26] border border-[#1e2532] flex items-center justify-center text-[10px] font-bold shrink-0">${s.symbol.slice(0,2)}</div>`;
+          ? `<img src="${s.image}" class="w-4 h-4 rounded-sm shrink-0 bg-[#161b26]" onerror="this.style.display='none'" alt="">`
+          : `<div class="w-4 h-4 rounded-sm bg-[#161b26] border border-[#1e2532] flex items-center justify-center text-[7px] font-bold shrink-0">${s.symbol.slice(0,2)}</div>`;
         
         return `
-        <div class="mt5-table-row grid grid-cols-[minmax(0,2fr)_1fr_1fr_1fr_1fr_1fr_80px_40px] gap-2 px-4 py-2.5 items-center ${currentSymbol?.symbol===s.symbol?'selected':''}"
-             onclick="selectSymbolByIndex(${idx})">
-          <div class="flex items-center gap-2.5 min-w-0 pl-1">
+        <div class="mt5-table-row px-2 gap-1 ${currentSymbol?.symbol===s.symbol?'selected':''} ${tickClass}"
+             onclick="selectSymbolByIndex(${idx})" data-symbol="${s.symbol}">
+          <div class="mt5-col-symbol flex items-center gap-1.5 min-w-0 pl-1">
             ${img}
             <div class="min-w-0">
-              <div class="text-sm font-bold truncate">${s.symbol.toUpperCase()}</div>
-              <div class="text-[11px] text-gray-500 truncate">${s.name}</div>
+              <div class="text-[11px] font-bold truncate leading-none">${s.symbol}</div>
+              <div class="text-[9px] text-gray-500 truncate leading-none mt-0.5">${s.name}</div>
             </div>
           </div>
-          <div class="text-right font-mono text-sm font-semibold">$${fmtPrice(s.current_price)}</div>
-          <div class="text-right font-mono text-xs ${color}">${sign}${(s.price_change_percentage_24h||0).toFixed(2)}%</div>
-          <div class="text-right font-mono text-xs text-gray-400 hidden md:block">$${fmtPrice(s.high_24h)}</div>
-          <div class="text-right font-mono text-xs text-gray-400 hidden md:block">$${fmtPrice(s.low_24h)}</div>
-          <div class="text-right font-mono text-xs text-gray-400 hidden lg:block">${fmtVol(s.total_volume)}</div>
-          <div class="flex justify-center">
-            <canvas class="mt5-sparkline" id="spark-${s.symbol}" width="90" height="28" data-spark='${JSON.stringify(s.sparkline||[])}'></canvas>
+          <div class="mt5-col-bid mt5-data-cell">${fmtPrice(s.bid || s.current_price, s.digits)}</div>
+          <div class="mt5-col-ask mt5-data-cell">${fmtPrice(s.ask || s.current_price, s.digits)}</div>
+          <div class="mt5-col-high mt5-data-cell hidden xl:block text-gray-400">${fmtPrice(s.high_24h, s.digits)}</div>
+          <div class="mt5-col-low mt5-data-cell hidden xl:block text-gray-400">${fmtPrice(s.low_24h, s.digits)}</div>
+          <div class="mt5-col-change mt5-data-cell ${priceClass}">${sign}${(s.price_change_percentage_24h||0).toFixed(2)}%</div>
+          <div class="mt5-col-spread mt5-data-cell hidden xl:block text-gray-400">${s.spread || '--'}</div>
+          <div class="mt5-col-volume mt5-data-cell hidden xl:block text-gray-400">${fmtVol(s.total_volume)}</div>
+          <div class="mt5-col-trend flex justify-center">
+            <canvas class="mt5-sparkline" id="spark-${s.symbol}" width="70" height="20" data-spark='${JSON.stringify(s.sparkline||[])}'></canvas>
           </div>
-          <div class="flex justify-center">
+          <div class="mt5-col-action flex justify-center">
             <button onclick="event.stopPropagation(); addToWatchlist('${s.symbol}','${s.name.replace(/'/g,"\\'")}',${s.current_price||0})"
-                    class="p-1.5 hover:bg-[#1e2532] rounded-md transition-colors" title="Watchlist">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500 hover:text-yellow-400">
+                    class="p-1 hover:bg-[#1e2532] rounded-sm transition-colors" title="Watchlist">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500 hover:text-yellow-400">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
             </button>
@@ -887,40 +1018,40 @@
     
     function renderGridView(container, data) {
       if (!data.length) {
-        container.innerHTML = '<div class="p-8 text-center text-gray-500 text-sm">No symbols match your filters</div>';
+        container.innerHTML = '<div class="p-6 text-center text-gray-500 text-xs">No symbols match your filters</div>';
         return;
       }
-      container.innerHTML = `<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2.5 p-2.5">${data.map((s, idx) => {
+      container.innerHTML = `<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 p-2">${data.map((s, idx) => {
         const isUp = (s.price_change_percentage_24h||0) >= 0;
         const color = isUp ? 'price-up' : 'price-down';
         const sign = isUp ? '+' : '';
         const img = s.image
-          ? `<img src="${s.image}" class="w-7 h-7 rounded-full bg-[#161b26]" onerror="this.style.display='none'" alt="">`
-          : `<div class="w-7 h-7 rounded-full bg-[#161b26] border border-[#1e2532] flex items-center justify-center text-[10px] font-bold">${s.symbol.slice(0,2)}</div>`;
+          ? `<img src="${s.image}" class="w-6 h-6 rounded-sm bg-[#161b26]" onerror="this.style.display='none'" alt="">`
+          : `<div class="w-6 h-6 rounded-sm bg-[#161b26] border border-[#1e2532] flex items-center justify-center text-[8px] font-bold">${s.symbol.slice(0,2)}</div>`;
         return `
-        <div class="mt5-panel p-3 rounded-lg cursor-pointer hover:border-blue-500/40 transition-all ${currentSymbol?.symbol===s.symbol?'ring-1 ring-blue-500':''}"
+        <div class="mt5-panel p-2.5 rounded-sm cursor-pointer hover:border-blue-500/40 transition-all ${currentSymbol?.symbol===s.symbol?'ring-1 ring-blue-500':''}"
              onclick="selectSymbolByIndex(${idx})">
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2 min-w-0">
+          <div class="flex items-center justify-between mb-1.5">
+            <div class="flex items-center gap-1.5 min-w-0">
               ${img}
               <div class="min-w-0">
-                <div class="font-bold text-sm truncate">${s.symbol.toUpperCase()}</div>
-                <div class="text-[10px] text-gray-500 truncate">${s.name}</div>
+                <div class="font-bold text-[11px] truncate">${s.symbol}</div>
+                <div class="text-[9px] text-gray-500 truncate">${s.name}</div>
               </div>
             </div>
             <button onclick="event.stopPropagation(); addToWatchlist('${s.symbol}','${s.name.replace(/'/g,"\\'")}',${s.current_price||0})"
-                    class="p-1 hover:bg-[#1e2532] rounded">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500 hover:text-yellow-400">
+                    class="p-1 hover:bg-[#1e2532] rounded-sm">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500 hover:text-yellow-400">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
             </button>
           </div>
           <div class="flex items-end justify-between">
             <div>
-              <div class="font-mono font-bold text-base">$${fmtPrice(s.current_price)}</div>
-              <div class="font-mono text-xs ${color}">${sign}${(s.price_change_percentage_24h||0).toFixed(2)}%</div>
+              <div class="font-mono font-bold text-sm">${fmtPrice(s.current_price, s.digits)}</div>
+              <div class="font-mono text-[10px] ${color}">${sign}${(s.price_change_percentage_24h||0).toFixed(2)}%</div>
             </div>
-            <canvas width="70" height="32" id="spark-grid-${s.symbol}" data-spark='${JSON.stringify(s.sparkline||[])}'></canvas>
+            <canvas width="60" height="24" id="spark-grid-${s.symbol}" data-spark='${JSON.stringify(s.sparkline||[])}'></canvas>
           </div>
         </div>`;
       }).join('')}</div>`;
@@ -943,11 +1074,11 @@
       
       const min = Math.min(...data), max = Math.max(...data);
       const range = max - min || 1;
-      const color = isUp ? '#10b981' : '#ef4444';
+      const color = isUp ? '#2196f3' : '#f44336';
       
       ctx.beginPath();
       ctx.strokeStyle = color;
-      ctx.lineWidth = compact ? 1.5 : 2;
+      ctx.lineWidth = compact ? 1.2 : 1.5;
       ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       
       data.forEach((v,i) => {
@@ -957,10 +1088,9 @@
       });
       ctx.stroke();
       
-      // Gradient area
       ctx.lineTo(w-pad, h); ctx.lineTo(pad, h); ctx.closePath();
       const g = ctx.createLinearGradient(0,0,0,h);
-      g.addColorStop(0, isUp ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)');
+      g.addColorStop(0, isUp ? 'rgba(33,150,243,0.1)' : 'rgba(244,67,54,0.1)');
       g.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = g; ctx.fill();
     }
@@ -977,7 +1107,6 @@
     async function selectSymbol(sym) {
       currentSymbol = sym;
       
-      // Desktop detail panel
       const dSymbol = document.getElementById('detail-symbol');
       const dName   = document.getElementById('detail-name');
       const dIcon   = document.getElementById('detail-icon');
@@ -987,24 +1116,24 @@
       const dAsk    = document.getElementById('detail-ask');
       const dSpread = document.getElementById('detail-spread');
       
-      if (dSymbol) dSymbol.textContent = sym.symbol.toUpperCase();
+      if (dSymbol) dSymbol.textContent = sym.symbol;
       if (dName)   dName.textContent = sym.name;
-      if (dIcon)   dIcon.textContent = sym.symbol.slice(0,3).toUpperCase();
-      if (dPrice)  dPrice.textContent = '$' + fmtPrice(sym.current_price);
+      if (dIcon)   dIcon.textContent = sym.symbol.slice(0,3);
+      if (dPrice)  dPrice.textContent = '$' + fmtPrice(sym.current_price, sym.digits);
       
       const isUp = (sym.price_change_percentage_24h||0) >= 0;
       if (dChange) {
         dChange.textContent = (isUp?'+':'') + (sym.price_change_percentage_24h||0).toFixed(2) + '%';
-        dChange.className = 'text-xs font-mono font-semibold px-1.5 py-0.5 rounded bg-[#161b26] ' + (isUp?'price-up':'price-down');
+        dChange.className = 'text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-[#161b26] ' + (isUp?'price-up':'price-down');
       }
-      if (dBid)    dBid.textContent = sym.bid ? fmtPrice(sym.bid) : '--';
-      if (dAsk)    dAsk.textContent = sym.ask ? fmtPrice(sym.ask) : '--';
+      if (dBid)    dBid.textContent = sym.bid ? fmtPrice(sym.bid, sym.digits) : '--';
+      if (dAsk)    dAsk.textContent = sym.ask ? fmtPrice(sym.ask, sym.digits) : '--';
       if (dSpread) dSpread.textContent = sym.spread || '--';
       
-      // Highlight row
       document.querySelectorAll('.mt5-table-row').forEach(r => r.classList.remove('selected'));
+      const selectedRow = document.querySelector(`.mt5-table-row[data-symbol="${sym.symbol}"]`);
+      if (selectedRow) selectedRow.classList.add('selected');
       
-      // Mobile sheet
       if (window.innerWidth < 1280) {
         openMobileSheet(sym);
       }
@@ -1015,22 +1144,21 @@
     
     function openMobileSheet(sym) {
       const sheet = document.getElementById('mobile-sheet');
-      document.getElementById('mob-symbol').textContent = sym.symbol.toUpperCase();
+      document.getElementById('mob-symbol').textContent = sym.symbol;
       document.getElementById('mob-name').textContent = sym.name;
-      document.getElementById('mob-icon').textContent = sym.symbol.slice(0,3).toUpperCase();
-      document.getElementById('mob-price').textContent = '$' + fmtPrice(sym.current_price);
+      document.getElementById('mob-icon').textContent = sym.symbol.slice(0,3);
+      document.getElementById('mob-price').textContent = '$' + fmtPrice(sym.current_price, sym.digits);
       const isUp = (sym.price_change_percentage_24h||0) >= 0;
       const ch = document.getElementById('mob-change');
       ch.textContent = (isUp?'+':'') + (sym.price_change_percentage_24h||0).toFixed(2) + '%';
-      ch.className = 'text-sm font-mono font-semibold ' + (isUp?'price-up':'price-down');
-      document.getElementById('mob-bid').textContent = sym.bid ? fmtPrice(sym.bid) : '--';
-      document.getElementById('mob-ask').textContent = sym.ask ? fmtPrice(sym.ask) : '--';
+      ch.className = 'text-xs font-mono font-semibold ' + (isUp?'price-up':'price-down');
+      document.getElementById('mob-bid').textContent = sym.bid ? fmtPrice(sym.bid, sym.digits) : '--';
+      document.getElementById('mob-ask').textContent = sym.ask ? fmtPrice(sym.ask, sym.digits) : '--';
       document.getElementById('mob-spread').textContent = sym.spread || '--';
       
       sheet.classList.remove('closed');
       sheet.classList.add('open');
       
-      // Draw mobile chart
       requestAnimationFrame(() => {
         const c = document.getElementById('mob-chart');
         if (c && chartCache[sym.symbol]) {
@@ -1058,7 +1186,8 @@
         let data = [];
         if (sym.category === 'crypto') {
           const days = currentTimeframe==='1D'?1 : currentTimeframe==='1W'?7 : currentTimeframe==='1M'?30 : 1;
-          const res = await fetch(`${COINGECKO_API}/coins/${sym.name.toLowerCase().replace(/\s+/g,'-')}/market_chart?vs_currency=usd&days=${days}`);
+          const slug = sym.name.toLowerCase().replace(/\\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+          const res = await fetch(`${COINGECKO_API}/coins/${slug}/market_chart?vs_currency=usd&days=${days}`);
           if (res.ok) {
             const j = await res.json();
             data = j.prices.map(p => ({t:p[0], c:p[1]}));
@@ -1101,7 +1230,6 @@
       const container = canvas.parentElement;
       canvas.width = container.clientWidth;
       canvas.height = container.clientHeight;
-      const ctx = canvas.getContext('2d');
       const data = chartCache[currentSymbol.symbol] || [];
       if (!data.length) return;
       drawChartOnCanvas(canvas, data, currentSymbol.current_price);
@@ -1112,11 +1240,10 @@
       const w = canvas.width, h = canvas.height;
       ctx.clearRect(0,0,w,h);
       
-      const pad = {t:18,r:46,b:22,l:48};
+      const pad = {t:16,r:44,b:20,l:44};
       const pw = w - pad.l - pad.r;
       const ph = h - pad.t - pad.b;
       
-      // Grid
       ctx.strokeStyle = '#161b26'; ctx.lineWidth = 1;
       for (let i=0; i<=6; i++) {
         const y = pad.t + ph*(i/6);
@@ -1132,14 +1259,12 @@
       const max = Math.max(...closes)*1.002;
       const range = max-min || 1;
       
-      // Price labels
-      ctx.fillStyle = '#4b5563'; ctx.font = '10px monospace'; ctx.textAlign = 'right';
+      ctx.fillStyle = '#4b5563'; ctx.font = '9px monospace'; ctx.textAlign = 'right';
       for (let i=0; i<=6; i++) {
         const price = max - range*(i/6);
-        ctx.fillText('$'+price.toFixed(price>100?2:price>1?4:6), pad.l-6, pad.t + ph*(i/6) + 3);
+        ctx.fillText('$'+price.toFixed(price>100?2:price>1?4:6), pad.l-4, pad.t + ph*(i/6) + 3);
       }
       
-      // Time labels
       ctx.textAlign = 'center'; ctx.fillStyle = '#4b5563';
       const tf = currentTimeframe;
       const fmt = (d) => {
@@ -1148,16 +1273,16 @@
         return date.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
       };
       const step = Math.ceil(data.length/6);
-      for (let i=0; i<<data.length; i+=step) {
+      for (let i=0; i<data.length; i+=step) {
         const x = pad.l + (i/(data.length-1))*pw;
-        ctx.fillText(fmt(data[i]), x, h-6);
+        ctx.fillText(fmt(data[i]), x, h-5);
       }
       
       const isUp = closes[closes.length-1] >= closes[0];
-      const color = isUp ? '#10b981' : '#ef4444';
+      const color = isUp ? '#2196f3' : '#f44336';
       
       if (currentChartType === 'line') {
-        ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 1.5;
         data.forEach((d,i) => {
           const x = pad.l + (i/(data.length-1))*pw;
           const y = pad.t + ph - ((d.c-min)/range)*ph;
@@ -1166,12 +1291,11 @@
         ctx.stroke();
         ctx.lineTo(pad.l+pw, h-pad.b); ctx.lineTo(pad.l, h-pad.b); ctx.closePath();
         const g = ctx.createLinearGradient(0,pad.t,0,h-pad.b);
-        g.addColorStop(0, isUp?'rgba(16,185,129,0.18)':'rgba(239,68,68,0.18)');
+        g.addColorStop(0, isUp?'rgba(33,150,243,0.14)':'rgba(244,67,54,0.14)');
         g.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = g; ctx.fill();
       } else {
-        // Candles
-        const cw = Math.max(1, (pw/data.length)*0.65);
+        const cw = Math.max(1, (pw/data.length)*0.6);
         data.forEach((d,i) => {
           const x = pad.l + (i/(data.length-1))*pw;
           const o=d.o||d.c, c=d.c, h_=d.h||Math.max(o,c), l=d.l||Math.min(o,c);
@@ -1179,7 +1303,7 @@
           const yC = pad.t + ph - ((c-min)/range)*ph;
           const yH = pad.t + ph - ((h_-min)/range)*ph;
           const yL = pad.t + ph - ((l-min)/range)*ph;
-          const col = c>=o ? '#10b981' : '#ef4444';
+          const col = c>=o ? '#2196f3' : '#f44336';
           ctx.strokeStyle = col; ctx.lineWidth = 1;
           ctx.beginPath(); ctx.moveTo(x,yH); ctx.lineTo(x,yL); ctx.stroke();
           ctx.fillStyle = col;
@@ -1188,15 +1312,14 @@
         });
       }
       
-      // Last price dashed line
       const last = closes[closes.length-1];
       const ly = pad.t + ph - ((last-min)/range)*ph;
       ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.setLineDash([3,3]);
       ctx.beginPath(); ctx.moveTo(pad.l, ly); ctx.lineTo(w-pad.r, ly); ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = color; ctx.fillRect(w-pad.r+2, ly-8, 44, 16);
-      ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.font = '10px monospace';
-      ctx.fillText('$'+last.toFixed(last>100?2:last>1?4:6), w-pad.r+5, ly+3);
+      ctx.fillStyle = color; ctx.fillRect(w-pad.r+1, ly-7, 42, 14);
+      ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.font = '9px monospace';
+      ctx.fillText('$'+last.toFixed(last>100?2:last>1?4:6), w-pad.r+4, ly+3);
     }
     
     function changeTimeframe(tf) {
@@ -1227,12 +1350,12 @@
         } else {
           localStorage.setItem('watchlist', JSON.stringify(wl));
         }
-        const msg = `${symbol.toUpperCase()} added to watchlist`;
+        const msg = `${symbol} added to watchlist`;
         if (typeof TS_UI !== 'undefined' && TS_UI.showToast) TS_UI.showToast(msg, 'success');
         else showToast(msg, 'success');
         updateWatchlistStar();
       } else {
-        const msg = `${symbol.toUpperCase()} already in watchlist`;
+        const msg = `${symbol} already in watchlist`;
         if (typeof TS_UI !== 'undefined' && TS_UI.showToast) TS_UI.showToast(msg, 'warning');
         else showToast(msg, 'warning');
       }
@@ -1268,7 +1391,7 @@
     
     function placeOrder(side) {
       if (!currentSymbol) return;
-      const msg = `New ${side.toUpperCase()} order opened for ${currentSymbol.symbol.toUpperCase()} @ $${fmtPrice(currentSymbol.current_price)}`;
+      const msg = `New ${side.toUpperCase()} order opened for ${currentSymbol.symbol} @ $${fmtPrice(currentSymbol.current_price, currentSymbol.digits)}`;
       if (typeof TS_UI !== 'undefined' && TS_UI.showToast) TS_UI.showToast(msg, 'success');
       else showToast(msg, 'success');
     }
@@ -1283,8 +1406,9 @@
           if (!res.ok) return;
           const data = await res.json();
           data.forEach(u => {
-            const sym = allSymbols.find(s => s.symbol === u.symbol && s.category === 'crypto');
+            const sym = allSymbols.find(s => s.symbol === u.symbol.toUpperCase() && s.category === 'crypto');
             if (sym) {
+              lastPrices[sym.symbol] = sym.current_price;
               sym.current_price = u.current_price;
               sym.price_change_percentage_24h = u.price_change_percentage_24h;
               sym.high_24h = u.high_24h;
@@ -1301,17 +1425,17 @@
               currentSymbol = updated;
               const dp = document.getElementById('detail-price');
               const dc = document.getElementById('detail-change');
-              if (dp) dp.textContent = '$' + fmtPrice(updated.current_price);
+              if (dp) dp.textContent = '$' + fmtPrice(updated.current_price, updated.digits);
               if (dc) {
                 const up = (updated.price_change_percentage_24h||0) >= 0;
                 dc.textContent = (up?'+':'') + (updated.price_change_percentage_24h||0).toFixed(2) + '%';
-                dc.className = 'text-xs font-mono font-semibold px-1.5 py-0.5 rounded bg-[#161b26] ' + (up?'price-up':'price-down');
+                dc.className = 'text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-[#161b26] ' + (up?'price-up':'price-down');
               }
             }
           }
           const lu = document.getElementById('last-update');
           if (lu) lu.textContent = new Date().toLocaleTimeString();
-        } catch (e) { /* silent on auto-update */ }
+        } catch (e) { }
       }, 30000);
     }
     
@@ -1326,8 +1450,11 @@
     // ============================================================
     // UTILITIES
     // ============================================================
-    function fmtPrice(p) {
+    function fmtPrice(p, digits) {
       if (p === null || p === undefined) return '--';
+      if (digits !== undefined) {
+        return p.toLocaleString('en-US',{minimumFractionDigits:digits,maximumFractionDigits:digits});
+      }
       if (p >= 10000) return p.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
       if (p >= 1) return p.toFixed(2);
       if (p >= 0.01) return p.toFixed(4);
@@ -1348,12 +1475,12 @@
     }
     function showToast(message, type='info') {
       const t = document.createElement('div');
-      t.className = `fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-lg text-xs font-semibold z-[60] shadow-2xl fade-in border border-white/10 ${
-        type==='success'?'bg-emerald-600 text-white':type==='warning'?'bg-amber-600 text-white':'bg-red-600 text-white'
+      t.className = `fixed bottom-20 left-1/2 -translate-x-1/2 px-3 py-2 rounded-sm text-[11px] font-semibold z-[60] shadow-2xl fade-in border border-white/10 ${
+        type==='success'?'bg-emerald-700 text-white':type==='warning'?'bg-amber-700 text-white':'bg-red-700 text-white'
       }`;
       t.textContent = message;
       document.body.appendChild(t);
-      setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 2800);
+      setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 2500);
     }
     
     // Global exposure for app.js compatibility
@@ -1372,4 +1499,3 @@
   </script>
 </body>
 </html>
-
