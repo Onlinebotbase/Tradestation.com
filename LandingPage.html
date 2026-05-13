@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trade Station – Multi‑Asset Investment & Trading Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a5f',
+                            950: '#0f172a',
+                        },
+                        dark: {
+                            800: '#131825',
+                            900: '#0b0f19',
+                            950: '#070a12',
+                        },
+                        surface: {
+                            DEFAULT: 'rgba(255,255,255,0.03)',
+                            hover: 'rgba(255,255,255,0.06)',
+                            border: 'rgba(255,255,255,0.08)',
+                        },
+                        mt5: {
+                            bg: '#0a0e1a',
+                            panel: '#111827',
+                            border: '#1f2937',
+                            accent: '#2563eb',
+                            accent2: '#1d4ed8',
+                            text: '#e5e7eb',
+                            muted: '#9ca3af',
+                        }
+                    },
+                    spacing: {
+                        '18': '4.5rem',
+                        '88': '22rem',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --glass-bg: rgba(11, 15, 25, 0.72);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --mt5-blue: #1e3a5f;
+            --mt5-accent: #2563eb;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #070a12;
+            color: #e2e8f0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--glass-border);
+        }
+
+        .glass-strong {
+            background: rgba(11, 15, 25, 0.88);
+            backdrop-filter: blur(24px) saturate(200%);
+            -webkit-backdrop-filter: blur(24px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .ticker-wrap {
+            overflow: hidden;
+            white-space: nowrap;
+            mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+        }
+
+        .ticker {
+            display: inline-block;
+            animation: ticker 45s linear infinite;
+        }
+
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .hero-bg {
+            background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(30, 58, 95, 0.35) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+                #070a12;
+        }
+
+        .card-hover {
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            border-color: rgba(59, 130, 246, 0.25);
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.08), 0 20px 60px rgba(0, 0, 0, 0.4);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .feature-scroll {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .feature-scroll::-webkit-scrollbar { display: none; }
+
+        .snap-x { scroll-snap-type: x mandatory; }
+        .snap-start { scroll-snap-align: start; }
+
+        .nav-link { position: relative; }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .nav-link:hover::after { width: 100%; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 30px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .badge-live { box-shadow: 0 0 12px rgba(34, 197, 94, 0.4); }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .accordion-content.open { opacity: 1; }
+
+        .accordion-icon { transition: transform 0.3s ease; }
+        .accordion-icon.open { transform: rotate(180deg); }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .metric-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+        }
+
+        .segment-card-retail { border-top: 2px solid #3b82f6; }
+        .segment-card-pro { border-top: 2px solid #8b5cf6; }
+        .segment-card-inst { border-top: 2px solid #f59e0b; }
+
+        .product-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+        }
+
+        .news-card:hover .news-title { color: #60a5fa; }
+        .news-title { transition: color 0.2s ease; }
+
+        .chart-glow { box-shadow: 0 0 80px rgba(59, 130, 246, 0.08); }
+
+        .search-modal {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .search-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .drawer {
+            transform: translateX(-100%);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .drawer.open { transform: translateX(0); }
+
+        .overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Testimonial scroll */
+        .testimonial-track {
+            display: flex;
+            gap: 24px;
+            animation: testimonialScroll 40s linear infinite;
+            width: max-content;
+        }
+
+        .testimonial-track:hover { animation-play-state: paused; }
+
+        @keyframes testimonialScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .testimonial-wrap {
+            overflow: hidden;
+            mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+        }
+
+        .svg-icon { display: inline-block; flex-shrink: 0; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ticker { animation: none; }
+            .reveal { opacity: 1; transform: none; transition: none; }
+            .testimonial-track { animation: none; }
+        }
+
+        /* Glass panel refinements */
+        .panel-glow { position: relative; }
+
+        .panel-glow::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), transparent 50%, rgba(139, 92, 246, 0.1));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .stat-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .testimonial-avatar {
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.08);
+        }
+
+        .blockchain-bg {
+            background: radial-gradient(ellipse at 30% 50%, rgba(59, 130, 246, 0.06), transparent 70%),
+                radial-gradient(ellipse at 70% 50%, rgba(139, 92, 246, 0.04), transparent 70%);
+        }
+
+        .animated-grid {
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(40px, 40px); }
+        }
+
+        /* Symbol Search Dropdown */
+        .symbol-dropdown {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .symbol-dropdown.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0);
+        }
+
+        /* MT5 Style Symbol Row */
+        .symbol-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            gap: 1rem;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.2s ease;
+            cursor: pointer;
+        }
+        .symbol-row:hover { background: rgba(59, 130, 246, 0.06); }
+        .symbol-row.header {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Animated GIF backgrounds */
+        .gif-bg {
+            position: absolute;
+            inset: 0;
+            opacity: 0.15;
+            pointer-events: none;
+            background-size: cover;
+            background-position: center;
+            mix-blend-mode: screen;
+        }
+
+        /* MT5 Panel Style */
+        .mt5-panel {
+            background: linear-gradient(180deg, rgba(17,24,39,0.8) 0%, rgba(10,14,26,0.9) 100%);
+            border: 1px solid rgba(31,41,55,0.8);
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+
+        .mt5-header {
+            background: linear-gradient(90deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+            border-bottom: 1px solid rgba(59,130,246,0.2);
+        }
+
+        /* Scrollbar styling for symbol list */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.3); border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.5); }
+    </style>
+</head>
+<body class="bg-dark-950 text-slate-200 antialiased overflow-x-hidden">
+
+<!-- ===== MOBILE DRAWER OVERLAY ===== -->
+<div id="drawer-overlay" class="overlay fixed inset-0 bg-black/70 z-[60] lg:hidden" onclick="toggleDrawer()"></div>
+
+<!-- ===== MOBILE DRAWER ===== -->
+<aside id="mobile-drawer" class="drawer fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-dark-900 border-r border-white/10 z-[70] lg:hidden flex flex-col">
+    <div class="p-6 border-b border-white/10 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <!-- Trade Station — Layered Block Panel -->
+            <div class="flex items-center gap-2.5">
+                <svg viewBox="0 0 40 40" class="h-9 w-9" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <!-- Trading gradient: Profit green → Digital cyan -->
+                        <linearGradient id="ts-grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#10b981" />
+                            <stop offset="100%" stop-color="#06b6d4" />
+                        </linearGradient>
+
+                        <filter id="ts-glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="2" result="blur"/>
+                            <feFlood flood-color="#10b981" flood-opacity="0.45"/>
+                            <feComposite in2="blur" operator="in"/>
+                            <feMerge>
+                                <feMergeNode/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+
+                        <style>
+                            .ts-stream {
+                                stroke: rgba(16, 185, 129, 0.12);
+                                stroke-width: 0.4;
+                                stroke-dasharray: 2 6;
+                                animation: ts-flow 3s linear infinite;
+                            }
+                            .ts-stream:nth-child(2) { animation-delay: 1s; }
+                            .ts-stream:nth-child(3) { animation-delay: 2s; }
+                            @keyframes ts-flow { to { stroke-dashoffset: -16; } }
+
+                            .ts-pulse {
+                                animation: ts-breathe 2.5s ease-in-out infinite;
+                                transform-origin: 20px 6px;
+                            }
+                            @keyframes ts-breathe {
+                                0%, 100% { opacity: 1; transform: scale(1); }
+                                50% { opacity: 0.75; transform: scale(1.08); }
+                            }
+                        </style>
+                    </defs>
+
+                    <!-- Black panel base -->
+                    <rect x="0" y="0" width="40" height="40" rx="10" fill="#0a0a0a" />
+
+                    <!-- Animated background data streams -->
+                    <path d="M4 12 L36 12" class="ts-stream" />
+                    <path d="M4 20 L36 20" class="ts-stream" />
+                    <path d="M4 28 L36 28" class="ts-stream" />
+
+                    <!-- Subtle inset border -->
+                    <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#ts-grad)" stroke-width="0.5" fill="none" opacity="0.2" />
+
+                    <!-- Layered Stack / Blockchain Core -->
+                    <g filter="url(#ts-glow)">
+                        <!-- Top cap -->
+                        <path d="M20 6 L6 13 L20 20 L34 13 Z" 
+                              stroke="url(#ts-grad)" 
+                              stroke-width="2" 
+                              stroke-linejoin="round"
+                              fill="rgba(16,185,129,0.08)" />
+                        <!-- Mid layer -->
+                        <path d="M6 20 L20 27 L34 20" 
+                              stroke="url(#ts-grad)" 
+                              stroke-width="2" 
+                              stroke-linecap="round" 
+                              stroke-linejoin="round" />
+                        <!-- Base layer -->
+                        <path d="M6 27 L20 34 L34 27" 
+                              stroke="url(#ts-grad)" 
+                              stroke-width="2" 
+                              stroke-linecap="round" 
+                              stroke-linejoin="round" />
+                    </g>
+
+                    <!-- Chain spine / verified nodes -->
+                    <circle cx="20" cy="6" r="1.5" fill="#10b981" class="ts-pulse" />
+                    <circle cx="20" cy="20" r="1.2" fill="#06b6d4" />
+                    <circle cx="20" cy="34" r="1.5" fill="#10b981" />
+
+                    <!-- Side ledger rails (subtle 3D block feel) -->
+                    <path d="M6 13 L6 27" stroke="url(#ts-grad)" stroke-width="1" stroke-linecap="round" opacity="0.25" />
+                    <path d="M34 13 L34 27" stroke="url(#ts-grad)" stroke-width="1" stroke-linecap="round" opacity="0.25" />
+                </svg>
+            </div>
+            <div>
+                <span class="font-bold text-lg tracking-tight text-white">Trade Station</span>
+            </div>
+        </div>
+        <button onclick="toggleDrawer()" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+        <a href="index.html" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-brand-500/10 text-brand-400 font-medium">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            Home
+        </a>
+        <a href="market.html" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-300 font-medium transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            Markets
+        </a>
+        <a href="charts.html" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-300 font-medium transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            Platforms
+        </a>
+        <a href="symbol.html" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-300 font-medium transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+            Tools
+        </a>
+        <a href="news.html" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-300 font-medium transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M18 14h-8"></path><path d="M15 18h-5"></path><path d="M10 6h8v4h-8V6Z"></path></svg>
+            News
+        </a>
+        <a href="mailbox.html" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-300 font-medium transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            Support
+        </a>
+    </nav>
+    <div class="p-4 border-t border-white/10 space-y-3">
+        <button onclick="location.href='login.html'" class="w-full py-3 rounded-xl border border-white/10 text-slate-300 font-semibold hover:bg-white/5 transition-all">Log In</button>
+        <button onclick="location.href='register.html'" class="w-full py-3 rounded-xl btn-primary text-white font-semibold">Create Account</button>
+    </div>
+</aside>
+
+    <!-- ===== SEARCH MODAL ===== -->
+    <div id="search-modal" class="search-modal fixed inset-0 z-[80] flex items-start justify-center pt-24 px-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="toggleSearch()"></div>
+        <div class="relative w-full max-w-2xl glass-strong rounded-2xl p-2 shadow-2xl">
+            <div class="flex items-center gap-3 px-4 py-3">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-slate-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="search-input" placeholder="Search markets, symbols, or tools..." class="flex-1 bg-transparent text-white placeholder-slate-500 outline-none text-base">
+                <kbd class="hidden sm:inline-block px-2 py-1 rounded bg-white/10 text-xs text-slate-400 font-mono border border-white/10">ESC</kbd>
+            </div>
+            <div id="search-results" class="border-t border-white/10 p-4 hidden">
+                <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-3">Quick Access</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <a href="market.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
+                        <div class="w-8 h-8 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-400">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-white">Markets Overview</p>
+                            <p class="text-xs text-slate-500">Live prices & spreads</p>
+                        </div>
+                    </a>
+                    <a href="charts.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
+                        <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-white">Trading Platform</p>
+                            <p class="text-xs text-slate-500">Advanced charts & tools</p>
+                        </div>
+                    </a>
+                    <a href="symbol.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
+                        <div class="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-400">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-white">Trading Tools</p>
+                            <p class="text-xs text-slate-500">Indicators & calculators</p>
+                        </div>
+                    </a>
+                    <a href="news.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
+                        <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-400">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M18 14h-8"></path><path d="M15 18h-5"></path><path d="M10 6h8v4h-8V6Z"></path></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-white">Market News</p>
+                            <p class="text-xs text-slate-500">Latest financial updates</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <!-- Symbol Search Dropdown A-Z -->
+            <div id="symbol-search-dropdown" class="symbol-dropdown border-t border-white/10 p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Symbol Directory A–Z</p>
+                    <span class="text-[10px] text-slate-600 bg-white/5 px-2 py-1 rounded">Live from CoinGecko</span>
+                </div>
+                <div class="symbol-row header">
+                    <span>Symbol</span>
+                    <span class="text-right">Price</span>
+                    <span class="text-right">24h %</span>
+                    <span class="text-right">Volume</span>
+                    <span class="text-right">Market Cap</span>
+                </div>
+                <div id="symbol-list-container" class="max-h-64 overflow-y-auto custom-scroll">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== HEADER ===== -->
+    <header id="landing-header" class="fixed top-0 w-full z-50 transition-all duration-500 border-b border-transparent">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 lg:h-20">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleDrawer()" class="lg:hidden p-2 -ml-2 hover:bg-white/10 rounded-lg transition-colors">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <a href="index.html" class="flex items-center gap-3 group">
+                        <!-- Trade Station — Layered Block Panel -->
+<div class="flex items-center gap-2.5">
+    <svg viewBox="0 0 40 40" class="h-9 w-9" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <!-- Trading gradient: Profit green → Digital cyan -->
+            <linearGradient id="ts-grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#10b981" />
+                <stop offset="100%" stop-color="#06b6d4" />
+            </linearGradient>
+
+            <filter id="ts-glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="2" result="blur"/>
+                <feFlood flood-color="#10b981" flood-opacity="0.45"/>
+                <feComposite in2="blur" operator="in"/>
+                <feMerge>
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+
+            <style>
+                .ts-stream {
+                    stroke: rgba(16, 185, 129, 0.12);
+                    stroke-width: 0.4;
+                    stroke-dasharray: 2 6;
+                    animation: ts-flow 3s linear infinite;
+                }
+                .ts-stream:nth-child(2) { animation-delay: 1s; }
+                .ts-stream:nth-child(3) { animation-delay: 2s; }
+                @keyframes ts-flow { to { stroke-dashoffset: -16; } }
+
+                .ts-pulse {
+                    animation: ts-breathe 2.5s ease-in-out infinite;
+                    transform-origin: 20px 6px;
+                }
+                @keyframes ts-breathe {
+                    0%, 100% { opacity: 1; transform: scale(1); }
+                    50% { opacity: 0.75; transform: scale(1.08); }
+                }
+            </style>
+        </defs>
+
+        <!-- Black panel base -->
+        <rect x="0" y="0" width="40" height="40" rx="10" fill="#0a0a0a" />
+
+        <!-- Animated background data streams -->
+        <path d="M4 12 L36 12" class="ts-stream" />
+        <path d="M4 20 L36 20" class="ts-stream" />
+        <path d="M4 28 L36 28" class="ts-stream" />
+
+        <!-- Subtle inset border -->
+        <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#ts-grad)" stroke-width="0.5" fill="none" opacity="0.2" />
+
+        <!-- Layered Stack / Blockchain Core -->
+        <g filter="url(#ts-glow)">
+            <!-- Top cap -->
+            <path d="M20 6 L6 13 L20 20 L34 13 Z" 
+                  stroke="url(#ts-grad)" 
+                  stroke-width="2" 
+                  stroke-linejoin="round"
+                  fill="rgba(16,185,129,0.08)" />
+            <!-- Mid layer -->
+            <path d="M6 20 L20 27 L34 20" 
+                  stroke="url(#ts-grad)" 
+                  stroke-width="2" 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round" />
+            <!-- Base layer -->
+            <path d="M6 27 L20 34 L34 27" 
+                  stroke="url(#ts-grad)" 
+                  stroke-width="2" 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round" />
+        </g>
+
+        <!-- Chain spine / verified nodes -->
+        <circle cx="20" cy="6" r="1.5" fill="#10b981" class="ts-pulse" />
+        <circle cx="20" cy="20" r="1.2" fill="#06b6d4" />
+        <circle cx="20" cy="34" r="1.5" fill="#10b981" />
+
+        <!-- Side ledger rails (subtle 3D block feel) -->
+        <path d="M6 13 L6 27" stroke="url(#ts-grad)" stroke-width="1" stroke-linecap="round" opacity="0.25" />
+        <path d="M34 13 L34 27" stroke="url(#ts-grad)" stroke-width="1" stroke-linecap="round" opacity="0.25" />
+    </svg>
+                      <div class="flex flex-col">
+                            <span class="text-lg font-bold tracking-tight text-white leading-none">Trade Station</span>
+                            <span class="text-[10px] text-slate-500 font-medium tracking-widest uppercase hidden sm:block">Multi‑Asset Platform</span>
+                        </div>
+                    </a>
+                </div>
+                <nav class="hidden lg:flex items-center gap-8 text-sm font-medium">
+                    <a href="index.html" class="nav-link text-white transition-colors">Home</a>
+                    <a href="market.html" class="nav-link text-slate-400 hover:text-white transition-colors">Markets</a>
+                    <a href="charts.html" class="nav-link text-slate-400 hover:text-white transition-colors">Platforms</a>
+                    <a href="symbol.html" class="nav-link text-slate-400 hover:text-white transition-colors">Tools</a>
+                    <a href="news.html" class="nav-link text-slate-400 hover:text-white transition-colors">News</a>
+                    <a href="mailbox.html" class="nav-link text-slate-400 hover:text-white transition-colors">Support</a>
+                </nav>
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <button onclick="toggleSearch()" class="p-2 hover:bg-white/10 rounded-lg transition-colors text-slate-400 hover:text-white">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </button>
+                    <button onclick="location.href='login.html'" class="hidden sm:block text-sm font-semibold text-slate-300 hover:text-white transition-colors px-3 py-2">Log In</button>
+                <button onclick="location.href='register.html'" class="p-2 btn-primary text-white rounded-lg" aria-label="Create Account">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+    <circle cx="8.5" cy="7" r="4"></circle>
+    <line x1="20" y1="8" x2="20" y2="14"></line>
+    <line x1="23" y1="11" x2="17" y2="11"></line>
+  </svg>
+</button>
+
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== HERO SECTION ===== -->
+    <section class="hero-bg pt-32 pb-16 lg:pt-44 lg:pb-24 relative overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[120px]"></div>
+            <div class="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/8 rounded-full blur-[100px]"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-cyan-500/5 rounded-full blur-[150px]"></div>
+            <!-- Blockchain Animated GIF Background -->
+            <div class="gif-bg" style="background-image: url('https://media.giphy.com/media/3o7WIBndbQSqP2i3pC/giphy.gif'); opacity: 0.08;"></div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                <div class="max-w-2xl">
+                    <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-bold tracking-wide uppercase mb-6">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-green-400 badge-live"></span>
+                        </span>
+                        Live Markets Active
+                    </div>
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 leading-[1.1]">
+                        Trade Smarter with <span class="gradient-text">AI – Institutional Execution</span>
+                    </h1>
+                    <p class="text-base lg:text-lg text-slate-400 mb-8 max-w-xl leading-relaxed">
+                        Real‑time market data, automated strategies, and advanced charts. Multi‑asset trading across crypto, forex, stocks, and commodities with institutional‑grade infrastructure.
+                    </p>
+                    <div class="flex flex-wrap gap-3 sm:gap-4">
+                        <button onclick="location.href='register.html'" class="px-7 py-3.5 btn-primary text-white font-bold rounded-xl text-sm sm:text-base shadow-lg shadow-brand-600/20">
+                            Create Real Account
+                        </button>
+                        <button onclick="location.href='login.html'" class="px-7 py-3.5 btn-secondary text-white font-bold rounded-xl text-sm sm:text-base">
+                            Login to Existing Account
+                        </button>
+                    </div>
+                    <div class="mt-8 flex items-center gap-6 text-xs text-slate-500">
+                        <div class="flex items-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green-400"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Regulated Broker</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green-400"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Segregated Funds</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green-400"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>256‑bit SSL</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative hidden lg:block">
+                    <div class="absolute -inset-4 bg-gradient-to-r from-brand-500/20 to-purple-500/20 rounded-3xl blur-2xl"></div>
+                    <div class="relative glass-strong rounded-2xl overflow-hidden chart-glow border border-white/10 panel-glow">
+                        <div class="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-white/5">
+                            <div class="flex items-center gap-3">
+                                <div class="flex gap-1.5">
+                                    <div class="w-2.5 h-2.5 rounded-full bg-red-400/80"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full bg-yellow-400/80"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full bg-green-400/80"></div>
+                                </div>
+                                <span class="text-xs font-mono text-slate-400">BTCUSD • 1H • Trade Station</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-mono text-green-400">$<span id="hero-btc">--</span></span>
+                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 font-mono">+<span id="hero-btc-ch">--</span>%</span>
+                            </div>
+                        </div>
+                        <div class="h-80 bg-dark-950">
+                            <iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=COINBASE:BTCUSD&interval=60&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=0&saveimage=0&toolbarbg=0b0f19&studies=[]&hideideas=1&theme=dark&style=1&timezone=exchange&studies_overrides={}&overrides={}&enabled_features=[]&disabled_features=[]&locale=en&utm_source=tradestation.com&utm_medium=widget_new&utm_campaign=chart"
+                            style="width:100%;height:100%;border:none;" allowtransparency="true" scrolling="no" allowfullscreen=""></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== LIVE TICKER BAR ===== -->
+    <div class="border-y border-white/5 bg-dark-900/80 backdrop-blur-sm">
+        <div class="ticker-wrap py-3">
+            <div id="hero-ticker" class="ticker text-sm font-mono flex gap-8 items-center">
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-brand-400 font-semibold">BTC/USD</span> <span id="t-btc" class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-brand-400 font-semibold">ETH/USD</span> <span id="t-eth" class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-brand-400 font-semibold">SOL/USD</span> <span id="t-sol" class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-brand-400 font-semibold">BNB/USD</span> <span id="t-bnb" class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-brand-400 font-semibold">DOGE/USD</span> <span id="t-doge" class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-purple-400 font-semibold">EUR/USD</span> <span id="t-eur" class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-purple-400 font-semibold">GBP/USD</span> <span id="t-gbp" class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-purple-400 font-semibold">USD/JPY</span> <span id="t-jpy" class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-orange-400 font-semibold">XAU/USD</span> <span id="t-xau" class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-orange-400 font-semibold">US30</span> <span id="t-us30" class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-brand-400 font-semibold">BTC/USD</span> <span class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-brand-400 font-semibold">ETH/USD</span> <span class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-brand-400 font-semibold">SOL/USD</span> <span class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-brand-400 font-semibold">BNB/USD</span> <span class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-brand-400 font-semibold">DOGE/USD</span> <span class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-purple-400 font-semibold">EUR/USD</span> <span class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-purple-400 font-semibold">GBP/USD</span> <span class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-purple-400 font-semibold">USD/JPY</span> <span class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-orange-400 font-semibold">XAU/USD</span> <span class="text-white">--</span></span>
+                <span class="flex items-center gap-2 text-slate-400"><span class="text-orange-400 font-semibold">US30</span> <span class="text-white">--</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MARKET OVERVIEW WIDGET SECTION (MT5 Style) ===== -->
+    <section id="market-overview" class="py-16 lg:py-24 bg-dark-950 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+        <!-- Global Markets Animated GIF -->
+        <div class="absolute inset-0 pointer-events-none overflow-hidden">
+            <img src="https://media.giphy.com/media/L8K62iTDkzGX6/giphy.gif" alt="Global Markets" class="absolute top-10 right-10 w-64 h-64 object-cover rounded-full opacity-10 blur-sm" />
+            <img src="https://media.giphy.com/media/26tn33aiTi1jkl6H6/giphy.gif" alt="Blockchain" class="absolute bottom-10 left-10 w-48 h-48 object-cover rounded-full opacity-10 blur-sm" />
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="flex items-end justify-between mb-8 lg:mb-10">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-[10px] font-bold uppercase tracking-wider mb-3">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-pulse"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3" fill="currentColor"></circle></svg>
+                        Live Widget
+                    </div>
+                    <h2 class="text-2xl lg:text-3xl font-bold text-white mb-2">Market Overview</h2>
+                    <p class="text-slate-400 text-sm lg:text-base">Real‑time global market indices and instrument performance</p>
+                </div>
+                <a href="market.html" class="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-brand-400 hover:text-brand-300 transition-colors">
+                    View All Markets
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+            </div>
+            <!-- TradingView Market Overview Widget -->
+            <div class="mt5-panel p-1 panel-glow">
+                <div class="bg-dark-900/50 rounded-xl overflow-hidden">
+                    <div class="tradingview-widget-container">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+                        {
+                            "colorTheme": "dark",
+                            "dateRange": "1D",
+                            "showChart": true,
+                            "locale": "en",
+                            "width": "100%",
+                            "height": "500",
+                            "largeChartUrl": "",
+                            "isTransparent": true,
+                            "showSymbolLogo": true,
+                            "showFloatingTooltip": true,
+                            "plotLineColorGrowing": "rgba(34, 197, 94, 1)",
+                            "plotLineColorFalling": "rgba(239, 68, 68, 1)",
+                            "gridLineColor": "rgba(31, 41, 55, 0.5)",
+                            "scaleFontColor": "rgba(156, 163, 175, 1)",
+                            "belowLineFillColorGrowing": "rgba(34, 197, 94, 0.1)",
+                            "belowLineFillColorFalling": "rgba(239, 68, 68, 0.1)",
+                            "belowLineFillColorGrowingBottom": "rgba(34, 197, 94, 0)",
+                            "belowLineFillColorFallingBottom": "rgba(239, 68, 68, 0)",
+                            "symbolActiveColor": "rgba(59, 130, 246, 0.2)",
+                            "tabs": [
+                                {
+                                    "title": "Crypto",
+                                    "symbols": [
+                                        {"s": "COINBASE:BTCUSD", "d": "Bitcoin"},
+                                        {"s": "COINBASE:ETHUSD", "d": "Ethereum"},
+                                        {"s": "COINBASE:SOLUSD", "d": "Solana"},
+                                        {"s": "BINANCE:BNBUSD", "d": "BNB"},
+                                        {"s": "COINBASE:DOGEUSD", "d": "Dogecoin"},
+                                        {"s": "COINBASE:XRPUSD", "d": "Ripple"}
+                                    ]
+                                },
+                                {
+                                    "title": "Forex",
+                                    "symbols": [
+                                        {"s": "FX:EURUSD", "d": "EUR/USD"},
+                                        {"s": "FX:GBPUSD", "d": "GBP/USD"},
+                                        {"s": "FX:USDJPY", "d": "USD/JPY"},
+                                        {"s": "FX:AUDUSD", "d": "AUD/USD"},
+                                        {"s": "FX:USDCAD", "d": "USD/CAD"},
+                                        {"s": "FX:USDCHF", "d": "USD/CHF"}
+                                    ]
+                                },
+                                {
+                                    "title": "Stocks",
+                                    "symbols": [
+                                        {"s": "NASDAQ:AAPL", "d": "Apple"},
+                                        {"s": "NASDAQ:MSFT", "d": "Microsoft"},
+                                        {"s": "NASDAQ:GOOGL", "d": "Alphabet"},
+                                        {"s": "NASDAQ:AMZN", "d": "Amazon"},
+                                        {"s": "NASDAQ:TSLA", "d": "Tesla"},
+                                        {"s": "NASDAQ:NVDA", "d": "NVIDIA"}
+                                    ]
+                                },
+                                {
+                                    "title": "Commodities",
+                                    "symbols": [
+                                        {"s": "TVC:GOLD", "d": "Gold"},
+                                        {"s": "TVC:SILVER", "d": "Silver"},
+                                        {"s": "TVC:USOIL", "d": "Crude Oil"},
+                                        {"s": "TVC:NATGAS", "d": "Natural Gas"},
+                                        {"s": "TVC:COPPER", "d": "Copper"},
+                                        {"s": "TVC:PLATINUM", "d": "Platinum"}
+                                    ]
+                                },
+                                {
+                                    "title": "Indices",
+                                    "symbols": [
+                                        {"s": "FOREXCOM:US30", "d": "Dow Jones"},
+                                        {"s": "FOREXCOM:SPXUSD", "d": "S&P 500"},
+                                        {"s": "FOREXCOM:NSXUSD", "d": "Nasdaq 100"},
+                                        {"s": "INDEX:DEU40", "d": "DAX 40"},
+                                        {"s": "INDEX:UK100", "d": "FTSE 100"},
+                                        {"s": "INDEX:JP225", "d": "Nikkei 225"}
+                                    ]
+                                }
+                            ]
+                        }
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== TRUST GRID ===== -->
+    <section class="py-16 lg:py-24 bg-dark-900 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                <div class="reveal metric-card card-hover rounded-2xl p-6 lg:p-8 text-center group">
+                    <div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-gradient-to-br from-brand-500/20 to-brand-600/5 border border-brand-500/20 flex items-center justify-center text-brand-400 group-hover:scale-110 transition-transform duration-300">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-2">Execution Speed</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">Sub‑millisecond order routing with direct market access infrastructure</p>
+                </div>
+                <div class="reveal metric-card card-hover rounded-2xl p-6 lg:p-8 text-center group" style="transition-delay: 100ms">
+                    <div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/5 border border-green-500/20 flex items-center justify-center text-green-400 group-hover:scale-110 transition-transform duration-300">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-2">Bank‑Grade Security</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">256‑bit encryption, cold storage, and two‑factor authentication</p>
+                </div>
+                <div class="reveal metric-card card-hover rounded-2xl p-6 lg:p-8 text-center group" style="transition-delay: 200ms">
+                    <div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/5 border border-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform duration-300">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-2">Global Markets</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">150+ countries supported with 24/7 market access and local regulation</p>
+                </div>
+                <div class="reveal metric-card card-hover rounded-2xl p-6 lg:p-8 text-center group" style="transition-delay: 300ms">
+                    <div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/5 border border-orange-500/20 flex items-center justify-center text-orange-400 group-hover:scale-110 transition-transform duration-300">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-2">AI Trading Engine</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">Machine learning signals with real‑time risk management protocols</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FEATURE CAROUSEL ===== -->
+    <section class="py-16 lg:py-24 bg-dark-950 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-end justify-between mb-8 lg:mb-10">
+                <div>
+                    <h2 class="text-2xl lg:text-3xl font-bold text-white mb-2">Platform Features</h2>
+                    <p class="text-slate-400 text-sm lg:text-base">Professional tools designed for modern market conditions</p>
+                </div>
+                <div class="hidden sm:flex gap-2">
+                    <button onclick="scrollFeatures(-1)" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
+                    <button onclick="scrollFeatures(1)" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="feature-carousel" class="flex gap-4 lg:gap-6 overflow-x-auto feature-scroll pb-4 snap-x snap-mandatory -mx-4 px-4 lg:-mx-0 lg:px-0">
+                <div class="snap-start min-w-[300px] lg:min-w-[340px] product-card card-hover rounded-2xl p-6 lg:p-8 group cursor-pointer" onclick="location.href='feature-detail.html'">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/5 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-5 group-hover:scale-110 transition-transform">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 16v-4m0-4h.01"></path></svg>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-2">AI Trading Tools</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-4">Machine learning algorithms analyze market patterns in real‑time to generate actionable trading signals with probability scoring.</p>
+                    <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-400 group-hover:gap-2.5 transition-all">
+                        Explore Features
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </span>
+                </div>
+                <div class="snap-start min-w-[300px] lg:min-w-[340px] product-card card-hover rounded-2xl p-6 lg:p-8 group cursor-pointer" onclick="location.href='feature-detail.html'">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/5 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-5 group-hover:scale-110 transition-transform">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-2">MT5 Integration</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-4">Full MetaTrader 5 bridge with advanced charting, 80+ technical indicators, and automated Expert Advisor capabilities.</p>
+                    <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-purple-400 group-hover:gap-2.5 transition-all">
+                        Explore Features
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </span>
+                </div>
+                <div class="snap-start min-w-[300px] lg:min-w-[340px] product-card card-hover rounded-2xl p-6 lg:p-8 group cursor-pointer" onclick="location.href='feature-detail.html'">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/5 border border-green-500/20 flex items-center justify-center text-green-400 mb-5 group-hover:scale-110 transition-transform">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-2">Crypto Markets</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-4">Trade 100+ cryptocurrencies with deep liquidity, tight spreads from 0.1 pips, and instant execution across major pairs.</p>
+                    <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-green-400 group-hover:gap-2.5 transition-all">
+                        Explore Features
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </span>
+                </div>
+                <div class="snap-start min-w-[300px] lg:min-w-[340px] product-card card-hover rounded-2xl p-6 lg:p-8 group cursor-pointer" onclick="location.href='feature-detail.html'">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/5 border border-orange-500/20 flex items-center justify-center text-orange-400 mb-5 group-hover:scale-110 transition-transform">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-2">Forex Engine</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-4">Access 80+ currency pairs with raw spreads from 0.0 pips, institutional pricing, and micro-lot precision.</p>
+                    <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-400 group-hover:gap-2.5 transition-all">
+                        Explore Features
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </span>
+                </div>
+                <div class="snap-start min-w-[300px] lg:min-w-[340px] product-card card-hover rounded-2xl p-6 lg:p-8 group cursor-pointer" onclick="location.href='feature-detail.html'">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500/20 to-red-600/5 border border-red-500/20 flex items-center justify-center text-red-400 mb-5 group-hover:scale-110 transition-transform">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-2">Institutional Liquidity</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-4">Direct market access to tier‑1 liquidity providers for seamless large‑volume execution without slippage.</p>
+                    <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-red-400 group-hover:gap-2.5 transition-all">
+                        Explore Features
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== AWARDS SECTION ===== -->
+    <section class="py-12 lg:py-16 bg-dark-900 border-y border-white/5 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-xs text-slate-500 uppercase tracking-[0.2em] font-bold mb-8">Recognized Global Broker</p>
+            <div class="flex flex-wrap justify-center gap-8 lg:gap-16 items-center">
+                <div class="flex flex-col items-center gap-3 group cursor-pointer" onclick="location.href='awards.html'">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 border border-yellow-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-400"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-bold text-white text-sm">Best Broker 2024</p>
+                        <p class="text-xs text-slate-500">Global Forex Awards</p>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center gap-3 group cursor-pointer" onclick="location.href='awards.html'">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500/10 to-brand-600/5 border border-brand-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-brand-400"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-bold text-white text-sm">Top Execution</p>
+                        <p class="text-xs text-slate-500">Finance Magnates</p>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center gap-3 group cursor-pointer" onclick="location.href='awards.html'">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-purple-400"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-bold text-white text-sm">Most Trusted</p>
+                        <p class="text-xs text-slate-500">Investor Chronicle</p>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center gap-3 group cursor-pointer" onclick="location.href='awards.html'">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500/10 to-green-600/5 border border-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-green-400"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-bold text-white text-sm">Excellence Award</p>
+                        <p class="text-xs text-slate-500">World Finance</p>
+                    </div>
+                </div>
+            </div>
+            <button onclick="location.href='awards.html'" class="mt-8 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold text-slate-300 hover:text-white transition-all">
+                View All Awards
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+        </div>
+    </section>
+
+    <!-- ===== USER SEGMENTS ===== -->
+    <section class="py-16 lg:py-24 bg-dark-950 relative">
+        <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 lg:mb-16">
+                <h2 class="text-2xl lg:text-3xl font-bold text-white mb-3">Built for Every Trader</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Tailored account types and platforms designed to match your experience level and trading objectives.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6 lg:gap-8">
+                <div class="reveal segment-card-retail card-hover rounded-2xl p-6 lg:p-8 bg-gradient-to-b from-white/[0.04] to-transparent group cursor-pointer" onclick="location.href='retail-onboarding.html'">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-5">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Retail Traders</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-6">Intuitive interface, comprehensive educational resources, and low minimum deposits to help you start your trading journey with confidence.</p>
+                    <div class="flex items-center gap-3 text-sm">
+                        <span class="text-blue-400 font-semibold">Get Started</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-blue-400 group-hover:translate-x-1 transition-transform"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                </div>
+                <div class="reveal segment-card-pro card-hover rounded-2xl p-6 lg:p-8 bg-gradient-to-b from-white/[0.04] to-transparent group cursor-pointer" onclick="location.href='pro-dashboard.html'">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-5">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Professional Traders</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-6">Advanced order types, full REST API access, custom indicators, and priority execution for sophisticated trading strategies.</p>
+                    <div class="flex items-center gap-3 text-sm">
+                        <span class="text-purple-400 font-semibold">Open Pro Account</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-purple-400 group-hover:translate-x-1 transition-transform"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                </div>
+                <div class="reveal segment-card-inst card-hover rounded-2xl p-6 lg:p-8 bg-gradient-to-b from-white/[0.04] to-transparent group cursor-pointer" onclick="location.href='institutional-suite.html'">
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-5">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Institutions</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-6">Prime brokerage services, white‑label solutions, FIX API connectivity, and dedicated relationship management for enterprise clients.</p>
+                    <div class="flex items-center gap-3 text-sm">
+                        <span class="text-amber-400 font-semibold">Contact Sales</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-amber-400 group-hover:translate-x-1 transition-transform"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== TESTIMONIALS SECTION ===== -->
+    <section class="py-16 lg:py-24 bg-dark-900 relative overflow-hidden">
+        <div class="absolute inset-0 blockchain-bg animated-grid opacity-30"></div>
+        <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="text-center mb-10 lg:mb-14">
+                <h2 class="text-2xl lg:text-3xl font-bold text-white mb-3">What Our Investors Say</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Real stories from traders around the world who trust Trade Station for their investment journey.</p>
+            </div>
+            <div class="testimonial-wrap">
+                <div class="testimonial-track">
+                    <!-- Testimonial 1 -->
+                    <div class="w-[320px] sm:w-[360px] flex-shrink-0 stat-panel rounded-2xl p-6 panel-glow">
+                        <div class="flex items-center gap-4 mb-4">
+                            <img src="https://i.pravatar.cc/120?img=1" alt="Investor" class="w-12 h-12 rounded-full testimonial-avatar object-cover">
+                            <div>
+                                <p class="font-bold text-white text-sm">Michael Chen</p>
+                                <p class="text-xs text-slate-500">Forex Trader, Singapore</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">"The execution speed on Trade Station is unmatched. I've been trading for 8 years and the MT5 integration with AI signals has completely transformed my strategy."</p>
+                        <div class="mt-3 flex items-center gap-1 text-amber-400">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </div>
+                    </div>
+                    <!-- Testimonial 2 -->
+                    <div class="w-[320px] sm:w-[360px] flex-shrink-0 stat-panel rounded-2xl p-6 panel-glow">
+                        <div class="flex items-center gap-4 mb-4">
+                            <img src="https://i.pravatar.cc/120?img=5" alt="Investor" class="w-12 h-12 rounded-full testimonial-avatar object-cover">
+                            <div>
+                                <p class="font-bold text-white text-sm">Sarah Okafor</p>
+                                <p class="text-xs text-slate-500">Crypto Investor, Nigeria</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">"The AI trading engine has been a game-changer for my portfolio. Trade Station offers the best spreads and the most reliable execution I've experienced."</p>
+                        <div class="mt-3 flex items-center gap-1 text-amber-400">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </div>
+                    </div>
+                    <!-- Testimonial 3 -->
+                    <div class="w-[320px] sm:w-[360px] flex-shrink-0 stat-panel rounded-2xl p-6 panel-glow">
+                        <div class="flex items-center gap-4 mb-4">
+                            <img src="https://i.pravatar.cc/120?img=8" alt="Investor" class="w-12 h-12 rounded-full testimonial-avatar object-cover">
+                            <div>
+                                <p class="font-bold text-white text-sm">David Kowalski</p>
+                                <p class="text-xs text-slate-500">Institutional Trader, UK</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">"We moved our entire institutional flow to Trade Station because of their liquidity depth and transparent pricing. The FIX API is rock solid."</p>
+                        <div class="mt-3 flex items-center gap-1 text-amber-400">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </div>
+                    </div>
+                    <!-- Testimonial 4 -->
+                    <div class="w-[320px] sm:w-[360px] flex-shrink-0 stat-panel rounded-2xl p-6 panel-glow">
+                        <div class="flex items-center gap-4 mb-4">
+                            <img src="https://i.pravatar.cc/120?img=11" alt="Investor" class="w-12 h-12 rounded-full testimonial-avatar object-cover">
+                            <div>
+                                <p class="font-bold text-white text-sm">Aisha Patel</p>
+                                <p class="text-xs text-slate-500">Commodities Trader, UAE</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">"Trade Station's commodity execution is exceptional. The deep liquidity and low slippage have made a real difference to my day-trading results."</p>
+                        <div class="mt-3 flex items-center gap-1 text-amber-400">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </div>
+                    </div>
+                    <!-- Testimonial 5 -->
+                    <div class="w-[320px] sm:w-[360px] flex-shrink-0 stat-panel rounded-2xl p-6 panel-glow">
+                        <div class="flex items-center gap-4 mb-4">
+                            <img src="https://i.pravatar.cc/120?img=15" alt="Investor" class="w-12 h-12 rounded-full testimonial-avatar object-cover">
+                            <div>
+                                <p class="font-bold text-white text-sm">James O'Brien</p>
+                                <p class="text-xs text-slate-500">Multi-Asset Investor, Ireland</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">"The platform's AI-driven signals have consistently outperformed my manual analysis. The risk management tools are world-class."</p>
+                        <div class="mt-3 flex items-center gap-1 text-amber-400">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </div>
+                    </div>
+                    <!-- Testimonial 6 (duplicate for seamless loop) -->
+                    <div class="w-[320px] sm:w-[360px] flex-shrink-0 stat-panel rounded-2xl p-6 panel-glow">
+                        <div class="flex items-center gap-4 mb-4">
+                            <img src="https://i.pravatar.cc/120?img=1" alt="Investor" class="w-12 h-12 rounded-full testimonial-avatar object-cover">
+                            <div>
+                                <p class="font-bold text-white text-sm">Michael Chen</p>
+                                <p class="text-xs text-slate-500">Forex Trader, Singapore</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">"The execution speed on Trade Station is unmatched. I've been trading for 8 years and the MT5 integration with AI signals has completely transformed my strategy."</p>
+                        <div class="mt-3 flex items-center gap-1 text-amber-400">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </div>
+                    </div>
+                    <!-- Testimonial 7 (duplicate) -->
+                    <div class="w-[320px] sm:w-[360px] flex-shrink-0 stat-panel rounded-2xl p-6 panel-glow">
+                        <div class="flex items-center gap-4 mb-4">
+                            <img src="https://i.pravatar.cc/120?img=5" alt="Investor" class="w-12 h-12 rounded-full testimonial-avatar object-cover">
+                            <div>
+                                <p class="font-bold text-white text-sm">Sarah Okafor</p>
+                                <p class="text-xs text-slate-500">Crypto Investor, Nigeria</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">"The AI trading engine has been a game-changer for my portfolio. Trade Station offers the best spreads and the most reliable execution I've experienced."</p>
+                        <div class="mt-3 flex items-center gap-1 text-amber-400">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-center gap-2 text-xs text-slate-500">
+                <span class="relative flex h-1.5 w-1.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand-400"></span>
+                </span>
+                <span>Real investor testimonials — scrolls automatically</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PRODUCT GRID ===== -->
+    <section class="py-16 lg:py-24 bg-dark-950 relative">
+        <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-end justify-between mb-8 lg:mb-10">
+                <div>
+                    <h2 class="text-2xl lg:text-3xl font-bold text-white mb-2">Trading Products</h2>
+                    <p class="text-slate-400 text-sm lg:text-base">Complete ecosystem for multi‑asset execution</p>
+                </div>
+            </div>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                <div class="reveal product-card card-hover rounded-2xl p-6 lg:p-8 group">
+                    <div class="flex items-start justify-between mb-5">
+                        <div class="w-11 h-11 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                        </div>
+                        <span class="px-2 py-1 rounded-md bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-wider border border-green-500/20">Live</span>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-2">Web Trader</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-5">Browser‑based platform with full functionality. No downloads required. Access from any device with real‑time synchronization.</p>
+                    <div class="flex items-center gap-3">
+                        <a href="dashboard.html" class="text-sm font-semibold text-blue-400 hover:text-blue-300 transition-colors">Launch Platform</a>
+                        <span class="text-slate-600">|</span>
+                        <a href="product-detail.html" class="text-sm font-medium text-slate-500 hover:text-slate-300 transition-colors">Learn More</a>
+                    </div>
+                </div>
+                <div class="reveal product-card card-hover rounded-2xl p-6 lg:p-8 group" style="transition-delay: 100ms">
+                    <div class="flex items-start justify-between mb-5">
+                        <div class="w-11 h-11 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                        </div>
+                        <span class="px-2 py-1 rounded-md bg-slate-500/10 text-slate-400 text-[10px] font-bold uppercase tracking-wider border border-slate-500/20">iOS & Android</span>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-2">Mobile App</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-5">Native iOS and Android applications with biometric authentication, push notifications, and one‑tap trading execution.</p>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-semibold text-slate-500">Coming Soon</span>
+                    </div>
+                </div>
+                <div class="reveal product-card card-hover rounded-2xl p-6 lg:p-8 group" style="transition-delay: 200ms">
+                    <div class="flex items-start justify-between mb-5">
+                        <div class="w-11 h-11 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 16v-4m0-4h.01"></path></svg>
+                        </div>
+                        <span class="px-2 py-1 rounded-md bg-brand-500/10 text-brand-400 text-[10px] font-bold uppercase tracking-wider border border-brand-500/20">AI Powered</span>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-2">AI Signals Engine</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-5">Real‑time buy/sell signals powered by transformer models trained on historical market data and order flow analysis.</p>
+                    <div class="flex items-center gap-3">
+                        <a href="market.html" class="text-sm font-semibold text-cyan-400 hover:text-cyan-300 transition-colors">View Signals</a>
+                        <span class="text-slate-600">|</span>
+                        <a href="product-detail.html" class="text-sm font-medium text-slate-500 hover:text-slate-300 transition-colors">Learn More</a>
+                    </div>
+                </div>
+                <div class="reveal product-card card-hover rounded-2xl p-6 lg:p-8 group" style="transition-delay: 0ms">
+                    <div class="flex items-start justify-between mb-5">
+                        <div class="w-11 h-11 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 5-5v-5z"></path></svg>
+                        </div>
+                        <span class="px-2 py-1 rounded-md bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-wider border border-green-500/20">Active</span>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-2">MT5 Bridge System</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-5">Seamless integration with MetaTrader 5 for automated trading, custom indicators, and EA deployment in the cloud.</p>
+                    <div class="flex items-center gap-3">
+                        <a href="charts.html" class="text-sm font-semibold text-orange-400 hover:text-orange-300 transition-colors">Open Charts</a>
+                        <span class="text-slate-600">|</span>
+                        <a href="product-detail.html" class="text-sm font-medium text-slate-500 hover:text-slate-300 transition-colors">Learn More</a>
+                    </div>
+                </div>
+                <div class="reveal product-card card-hover rounded-2xl p-6 lg:p-8 group" style="transition-delay: 100ms">
+                    <div class="flex items-start justify-between mb-5">
+                        <div class="w-11 h-11 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                        </div>
+                        <span class="px-2 py-1 rounded-md bg-slate-500/10 text-slate-400 text-[10px] font-bold uppercase tracking-wider border border-slate-500/20">REST & FIX</span>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-2">API Trading</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-5">RESTful and FIX APIs for algorithmic trading, portfolio management, and custom third‑party integrations with 99.9% uptime.</p>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-semibold text-green-400">Documentation</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green-400"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                    </div>
+                </div>
+                <div class="reveal product-card card-hover rounded-2xl p-6 lg:p-8 group" style="transition-delay: 200ms">
+                    <div class="flex items-start justify-between mb-5">
+                        <div class="w-11 h-11 rounded-lg bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </div>
+                        <span class="px-2 py-1 rounded-md bg-slate-500/10 text-slate-400 text-[10px] font-bold uppercase tracking-wider border border-slate-500/20">Beta</span>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-2">Copy Trading</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed mb-5">Follow and replicate top‑performing traders automatically. Full transparency with historical performance metrics and risk scores.</p>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-semibold text-slate-500">Coming Soon</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== MARKET NEWS ===== -->
+    <section class="py-16 lg:py-24 bg-dark-950 relative">
+        <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8 lg:mb-10">
+                <div>
+                    <h2 class="text-2xl lg:text-3xl font-bold text-white mb-2">Market News</h2>
+                    <p class="text-slate-400 text-sm">Live financial updates from global sources</p>
+                </div>
+                <a href="news.html" class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-400 hover:text-brand-300 transition-colors">
+                    View All
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+            </div>
+            <div id="news-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                <div class="rounded-2xl border border-white/5 p-6 shimmer h-36 flex items-center justify-center">
+                    <div class="flex items-center gap-2 text-slate-600 text-sm">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>
+                        Loading live news...
+                    </div>
+                </div>
+                <div class="rounded-2xl border border-white/5 p-6 shimmer h-36 hidden sm:flex items-center justify-center">
+                    <div class="flex items-center gap-2 text-slate-600 text-sm">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>
+                        Loading live news...
+                    </div>
+                </div>
+                <div class="rounded-2xl border border-white/5 p-6 shimmer h-36 hidden lg:flex items-center justify-center">
+                    <div class="flex items-center gap-2 text-slate-600 text-sm">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>
+                        Loading live news...
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 flex items-center gap-2 text-xs text-slate-500">
+                <span class="relative flex h-1.5 w-1.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400"></span>
+                </span>
+                Auto‑refreshing every 60 seconds via Finnhub API
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PLATFORM CTA BANNER ===== -->
+    <section class="py-16 lg:py-24 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-brand-900 via-brand-700 to-purple-900"></div>
+        <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg width=\'80\' height=\'80\' viewBox=\'0 0 80 80\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.08\'%3E%3Cpath d=\'M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10-10-4.477-10-10zm0-40c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10-10-4.477-10-10zM10 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10-10-4.477-10-10zm0-40c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10-10-4.477-10-10z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"></div>
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-400/20 rounded-full blur-[100px]"></div>
+        <!-- Trading GIF -->
+        <img src="https://media.giphy.com/media/3o7WIBndbQSqP2i3pC/giphy.gif" alt="Trading" class="absolute top-10 right-10 w-32 h-32 object-cover rounded-full opacity-10 blur-sm" />
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+            <h2 class="text-3xl lg:text-5xl font-extrabold text-white mb-4 tracking-tight">Start Trading Today</h2>
+            <p class="text-base lg:text-lg text-blue-100/80 mb-8 max-w-xl mx-auto">Join 500,000+ traders worldwide. Free account setup in under 2 minutes with instant verification and same‑day funding.</p>
+            <div class="flex flex-wrap justify-center gap-3 sm:gap-4">
+                <button onclick="location.href='register.html'" class="px-8 py-4 bg-white text-brand-700 font-bold rounded-xl shadow-xl hover:bg-blue-50 transition-all text-sm sm:text-base">
+                    Create Real Account
+                </button>
+                <button onclick="location.href='login.html'" class="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl border border-white/30 transition-all text-sm sm:text-base backdrop-blur-sm">
+                    Login Existing Account
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="bg-dark-900 border-t border-white/5 pt-12 lg:pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 mb-12">
+                <div class="lg:col-span-4">
+                    <a href="index.html" class="flex items-center gap-3 mb-5">
+                        <svg viewBox="0 0 40 40" class="h-10 w-10" fill="none">
+                            <defs>
+                                <linearGradient id="footer-logo-grad" x1="0" y1="0" x2="40" y2="40">
+                                    <stop offset="0%" stop-color="#3b82f6" />
+                                    <stop offset="100%" stop-color="#1d4ed8" />
+                                </linearGradient>
+                            </defs>
+                            <rect x="2" y="2" width="36" height="36" rx="8" fill="url(#footer-logo-grad)" />
+                            <path d="M10 28L16 18L22 24L30 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                            <circle cx="30" cy="10" r="2" fill="white" />
+                        </svg>
+                        <div>
+                            <span class="text-lg font-bold text-white tracking-tight block leading-none">Trade Station</span>
+                            <span class="text-[10px] text-slate-500 tracking-widest uppercase">Multi‑Asset Platform</span>
+                        </div>
+                    </a>
+                    <p class="text-sm text-slate-400 leading-relaxed max-w-xs mb-6">Multi‑asset trading platform providing institutional‑grade execution, advanced analytics, and secure custody across global markets.</p>
+                    <div class="flex items-center gap-3">
+                        <a href="#" class="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm3 8h-1.35c-.538 0-.65.221-.65.778v1.222h2l-.209 2h-1.791v7h-3v-7h-2v-2h2v-2.308c0-1.769.931-2.692 3.029-2.692 1.197 0 1.791.521 1.791.521v1.979z"/></svg>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.372-12 12 0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146 1.124.345 2.317.535 3.554.535 6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/></svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <button onclick="toggleAccordion('footer-company')" class="w-full flex items-center justify-between text-white font-semibold mb-4 lg:mb-5 lg:cursor-default">
+                        Company
+                        <svg id="icon-footer-company" class="accordion-icon lg:hidden text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div id="footer-company" class="accordion-content lg:!max-h-none lg:!opacity-100">
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="#" class="text-slate-400 hover:text-white transition-colors">About Us</a></li>
+                            <li><a href="#" class="text-slate-400 hover:text-white transition-colors">Careers</a></li>
+                            <li><a href="#" class="text-slate-400 hover:text-white transition-colors">Press Center</a></li>
+                            <li><a href="#" class="text-slate-400 hover:text-white transition-colors">Partners</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <button onclick="toggleAccordion('footer-markets')" class="w-full flex items-center justify-between text-white font-semibold mb-4 lg:mb-5 lg:cursor-default">
+                        Markets
+                        <svg id="icon-footer-markets" class="accordion-icon lg:hidden text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div id="footer-markets" class="accordion-content lg:!max-h-none lg:!opacity-100">
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="market.html" class="text-slate-400 hover:text-white transition-colors">Cryptocurrency</a></li>
+                            <li><a href="market.html" class="text-slate-400 hover:text-white transition-colors">Forex</a></li>
+                            <li><a href="market.html" class="text-slate-400 hover:text-white transition-colors">Stocks & ETFs</a></li>
+                            <li><a href="market.html" class="text-slate-400 hover:text-white transition-colors">Commodities</a></li>
+                            <li><a href="market.html" class="text-slate-400 hover:text-white transition-colors">Indices</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <button onclick="toggleAccordion('footer-platforms')" class="w-full flex items-center justify-between text-white font-semibold mb-4 lg:mb-5 lg:cursor-default">
+                        Platforms
+                        <svg id="icon-footer-platforms" class="accordion-icon lg:hidden text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div id="footer-platforms" class="accordion-content lg:!max-h-none lg:!opacity-100">
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="dashboard.html" class="text-slate-400 hover:text-white transition-colors">Web Trader</a></li>
+                            <li><a href="charts.html" class="text-slate-400 hover:text-white transition-colors">MT5 Bridge</a></li>
+                            <li><a href="symbol.html" class="text-slate-400 hover:text-white transition-colors">Trading Tools</a></li>
+                            <li><a href="#" class="text-slate-400 hover:text-white transition-colors">API Docs</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <button onclick="toggleAccordion('footer-legal')" class="w-full flex items-center justify-between text-white font-semibold mb-4 lg:mb-5 lg:cursor-default">
+                        Legal
+                        <svg id="icon-footer-legal" class="accordion-icon lg:hidden text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div id="footer-legal" class="accordion-content lg:!max-h-none lg:!opacity-100">
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="#" class="text-slate-400 hover:text-white transition-colors">Privacy Policy</a></li>
+                            <li><a href="#" class="text-slate-400 hover:text-white transition-colors">Terms of Service</a></li>
+                            <li><a href="#" class="text-slate-400 hover:text-white transition-colors">Cookie Policy</a></li>
+                            <li><a href="#" class="text-slate-400 hover:text-white transition-colors">Risk Disclosure</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-xs text-slate-500 text-center sm:text-left">Trade Station. All rights reserved. Trading involves risk. Trade responsibly.</p>
+                <div class="flex items-center gap-4 text-xs text-slate-500">
+                    <span class="flex items-center gap-1.5">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        SSL Secured
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        Regulated
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        // ============================================================
+        // API CONFIGURATION
+        // ============================================================
+        const COINGECKO_API = 'https://api.coingecko.com/api/v3';
+        const EXCHANGE_API = 'https://v6.exchangerate-api.com/v6/45602791eb9f29e022a7ce3f/latest/USD';
+        const ALPHAVANTAGE_API = 'https://www.alphavantage.co/query';
+        const ALPHAVANTAGE_KEY = '3A3XN5PXKW8DG38L';
+        const FINNHUB_API = 'https://finnhub.io/api/v1/news?category=general&token=d7cq1t9r01qv03eta4rgd7cq1t9r01qv03eta4s0';
+
+        // ============================================================
+        // 1. HEADER SCROLL EFFECT
+        // ============================================================
+        const header = document.getElementById('landing-header');
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.scrollY;
+            if (currentScroll > 50) {
+                header.classList.add('bg-dark-950/85', 'backdrop-blur-xl', 'border-white/10', 'shadow-lg', 'shadow-black/20');
+                header.classList.remove('border-transparent');
+                if (currentScroll > lastScroll && currentScroll > 200) {
+                    header.style.transform = 'translateY(-100%)';
+                } else {
+                    header.style.transform = 'translateY(0)';
+                }
+            } else {
+                header.classList.remove('bg-dark-950/85', 'backdrop-blur-xl', 'border-white/10', 'shadow-lg', 'shadow-black/20');
+                header.classList.add('border-transparent');
+                header.style.transform = 'translateY(0)';
+            }
+            lastScroll = currentScroll;
+        }, { passive: true });
+
+        // ============================================================
+        // 2. MOBILE DRAWER
+        // ============================================================
+        function toggleDrawer() {
+            const drawer = document.getElementById('mobile-drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            drawer.classList.toggle('open');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = drawer.classList.contains('open') ? 'hidden' : '';
+        }
+
+        // ============================================================
+        // 3. SEARCH MODAL & SYMBOL DROPDOWN
+        // ============================================================
+        function toggleSearch() {
+            const modal = document.getElementById('search-modal');
+            const input = document.getElementById('search-input');
+            const dropdown = document.getElementById('symbol-search-dropdown');
+            modal.classList.toggle('active');
+            if (modal.classList.contains('active')) {
+                setTimeout(() => input.focus(), 100);
+                document.body.style.overflow = 'hidden';
+                dropdown.classList.remove('active');
+            } else {
+                document.body.style.overflow = '';
+                dropdown.classList.remove('active');
+            }
+        }
+
+        // Symbol Search A-Z Dropdown
+        const searchInput = document.getElementById('search-input');
+        const symbolDropdown = document.getElementById('symbol-search-dropdown');
+        const symbolListContainer = document.getElementById('symbol-list-container');
+        let symbolDataCache = [];
+
+        async function loadSymbolList() {
+            try {
+                const res = await fetch(`${COINGECKO_API}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false`);
+                const data = await res.json();
+                symbolDataCache = data.sort((a, b) => a.symbol.localeCompare(b.symbol));
+                renderSymbolList(symbolDataCache);
+            } catch (e) {
+                console.warn('Symbol list fetch error:', e);
+                symbolListContainer.innerHTML = '<div class="p-4 text-center text-sm text-slate-500">Unable to load symbols. Please try again.</div>';
+            }
+        }
+
+        function renderSymbolList(symbols) {
+            symbolListContainer.innerHTML = symbols.map(coin => {
+                const changeColor = (coin.price_change_percentage_24h || 0) >= 0 ? 'text-green-400' : 'text-red-400';
+                const changeSign = (coin.price_change_percentage_24h || 0) >= 0 ? '+' : '';
+                return `
+                    <div class="symbol-row" onclick="window.location.href='market.html?symbol=${coin.id}'">
+                        <div class="flex items-center gap-3">
+                            <img src="${coin.image}" alt="${coin.name}" class="w-6 h-6 rounded-full">
+                            <div>
+                                <p class="text-sm font-semibold text-white">${coin.symbol.toUpperCase()}</p>
+                                <p class="text-[10px] text-slate-500">${coin.name}</p>
+                            </div>
+                        </div>
+                        <span class="text-right text-sm text-white font-mono">$${coin.current_price?.toLocaleString() || '--'}</span>
+                        <span class="text-right text-sm ${changeColor} font-mono">${changeSign}${coin.price_change_percentage_24h?.toFixed(2) || '--'}%</span>
+                        <span class="text-right text-xs text-slate-400 font-mono">$${(coin.total_volume / 1e9).toFixed(2)}B</span>
+                        <span class="text-right text-xs text-slate-400 font-mono">$${(coin.market_cap / 1e9).toFixed(2)}B</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            if (val.length > 0) {
+                symbolDropdown.classList.add('active');
+                const filtered = symbolDataCache.filter(c => 
+                    c.symbol.toLowerCase().includes(val) || 
+                    c.name.toLowerCase().includes(val)
+                );
+                renderSymbolList(filtered);
+            } else {
+                symbolDropdown.classList.remove('active');
+            }
+        });
+
+        searchInput.addEventListener('focus', () => {
+            if (symbolDataCache.length === 0) loadSymbolList();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('search-modal').classList.remove('active');
+                document.getElementById('mobile-drawer').classList.remove('open');
+                document.getElementById('drawer-overlay').classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                toggleSearch();
+            }
+        });
+
+        // ============================================================
+        // 4. FOOTER ACCORDION
+        // ============================================================
+        function toggleAccordion(id) {
+            if (window.innerWidth >= 1024) return;
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            const isOpen = content.classList.contains('open');
+            document.querySelectorAll('.accordion-content').forEach(el => {
+                el.classList.remove('open');
+                el.style.maxHeight = '0';
+            });
+            document.querySelectorAll('.accordion-icon').forEach(el => el.classList.remove('open'));
+            if (!isOpen) {
+                content.classList.add('open');
+                content.style.maxHeight = content.scrollHeight + 'px';
+                icon.classList.add('open');
+            }
+        }
+
+        // ============================================================
+        // 5. FEATURE CAROUSEL
+        // ============================================================
+        function scrollFeatures(direction) {
+            const container = document.getElementById('feature-carousel');
+            const scrollAmount = 360;
+            container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        }
+
+        // ============================================================
+        // 6. INTERSECTION OBSERVER (REVEAL)
+        // ============================================================
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+        // ============================================================
+        // 7. COINGECKO — LIVE CRYPTO PRICES
+        // ============================================================
+        async function updateTicker() {
+            try {
+                const res = await fetch(
+                    `${COINGECKO_API}/simple/price?ids=bitcoin,ethereum,solana,binancecoin,dogecoin&vs_currencies=usd&include_24hr_change=true`
+                );
+                const data = await res.json();
+                if (data.bitcoin) {
+                    document.getElementById('t-btc').textContent = '$' + data.bitcoin.usd.toLocaleString();
+                    const heroBtc = document.getElementById('hero-btc');
+                    const heroBtcCh = document.getElementById('hero-btc-ch');
+                    if (heroBtc) heroBtc.textContent = data.bitcoin.usd.toLocaleString();
+                    if (heroBtcCh) heroBtcCh.textContent = (data.bitcoin.usd_24h_change || 0).toFixed(2);
+                }
+                if (data.ethereum) document.getElementById('t-eth').textContent = '$' + data.ethereum.usd.toLocaleString();
+                if (data.solana) document.getElementById('t-sol').textContent = '$' + data.solana.usd.toLocaleString();
+                if (data.binancecoin) document.getElementById('t-bnb').textContent = '$' + data.binancecoin.usd.toLocaleString();
+                if (data.dogecoin) document.getElementById('t-doge').textContent = '$' + data.dogecoin.usd.toFixed(4);
+            } catch (e) {
+                console.warn('CoinGecko fetch error:', e);
+            }
+        }
+        updateTicker();
+        setInterval(updateTicker, 30000);
+
+        // ============================================================
+        // 8. EXCHANGE RATE API — FOREX
+        // ============================================================
+        async function updateForex() {
+            try {
+                const res = await fetch(EXCHANGE_API);
+                const data = await res.json();
+                if (data.conversion_rates) {
+                    const r = data.conversion_rates;
+                    const eur = document.getElementById('t-eur');
+                    const gbp = document.getElementById('t-gbp');
+                    const jpy = document.getElementById('t-jpy');
+                    if (eur) eur.textContent = r.EUR?.toFixed(4) || '--';
+                    if (gbp) gbp.textContent = r.GBP?.toFixed(4) || '--';
+                    if (jpy) jpy.textContent = r.JPY?.toFixed(3) || '--';
+                }
+            } catch (e) {
+                console.warn('ExchangeRate fetch error:', e);
+            }
+        }
+        updateForex();
+        setInterval(updateForex, 60000);
+
+        // ============================================================
+        // 9. FINNHUB — LIVE NEWS
+        // ============================================================
+        async function loadNews() {
+            try {
+                const res = await fetch(FINNHUB_API);
+                const news = await res.json();
+                const container = document.getElementById('news-grid');
+                if (!Array.isArray(news) || news.length === 0) throw new Error('No news');
+                container.innerHTML = news.slice(0, 6).map((item, i) => {
+                    const date = new Date(item.datetime * 1000);
+                    const timeStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    return `
+                        <a href="${item.url}" target="_blank" rel="noopener" class="news-card reveal rounded-2xl border border-white/5 bg-gradient-to-b from-white/[0.03] to-transparent p-5 lg:p-6 card-hover block group" style="transition-delay: ${i * 100}ms">
+                          <div class="flex items-center justify-between mb-3">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-brand-400 bg-brand-500/10 px-2 py-1 rounded-md border border-brand-500/20">${item.source || 'News'}</span>
+                            <span class="text-[10px] text-slate-500 font-mono">${timeStr}</span>
+                          </div>
+                          <h3 class="news-title font-bold text-white text-sm lg:text-base mb-2 line-clamp-2 leading-snug">${item.headline}</h3>
+                          <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">${item.summary || ''}</p>
+                        </a>
+                      `;
+                }).join('');
+                document.querySelectorAll('#news-grid .reveal').forEach(el => revealObserver.observe(el));
+            } catch (e) {
+                const container = document.getElementById('news-grid');
+                container.innerHTML = `
+                      <div class="col-span-full rounded-2xl border border-white/5 bg-white/[0.02] p-8 text-center">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-slate-600 mx-auto mb-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <p class="text-sm text-slate-500">Unable to load live news. Please check your connection or try again later.</p>
+                      </div>
+                    `;
+            }
+        }
+        loadNews();
+        setInterval(loadNews, 60000);
+
+        // ============================================================
+        // 10. ALPHA VANTAGE — (optional extra data, kept ready)
+        // ============================================================
+        // Reserved for future use; can fetch additional market data as needed.
+
+        console.log('🚀 Trade Station — Multi‑Asset Trading Platform');
+        console.log('📊 Live data powered by CoinGecko, ExchangeRate API, and Finnhub');
+        console.log('🔐 All connections secured with 256‑bit SSL');
+    </script>
+
+</body>
+</html>
