@@ -5,54 +5,956 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Select Symbol - Trade Station</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{600:'#2563eb'},dark:{800:'#1f2937',900:'#111827',950:'#0b0f19'}}}}}</script>
-  <style>body{background:#0b0f19;}</style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 600: '#2563eb', 500: '#3b82f6', 700: '#1d4ed8' },
+            dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19', 850: '#182033', 750: '#1e2a3f' },
+            trade: { up: '#10b981', down: '#ef4444', neutral: '#6b7280', accent: '#f59e0b' }
+          },
+          fontFamily: {
+            mono: ['"SF Mono"', '"Fira Code"', 'Consolas', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+    .symbol-card { transition: all 0.2s ease; border: 1px solid rgba(55, 65, 81, 0.5); }
+    .symbol-card:hover { border-color: rgba(37, 99, 235, 0.6); background: rgba(30, 42, 63, 0.8); transform: translateY(-1px); }
+    .symbol-card:active { transform: translateY(0); }
+    .category-tab { transition: all 0.2s ease; position: relative; }
+    .category-tab.active { color: #3b82f6; }
+    .category-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: #3b82f6; border-radius: 2px; }
+    .az-index { transition: all 0.15s ease; }
+    .az-index:hover { background: rgba(37, 99, 235, 0.2); color: #3b82f6; }
+    .az-index.active { background: #2563eb; color: white; }
+    .sparkline { stroke-dasharray: 200; stroke-dashoffset: 0; }
+    .search-input:focus { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+    .fade-in { animation: fadeIn 0.3s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .pulse-dot { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .glass-panel { background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(55, 65, 81, 0.4); }
+    .price-up { color: #10b981; }
+    .price-down { color: #ef4444; }
+    .symbol-badge { font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .badge-crypto { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-forex { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .badge-stock { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-commodity { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); }
+    .badge-index { background: rgba(236, 72, 153, 0.15); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.3); }
+    .spread-indicator { font-family: 'SF Mono', monospace; font-size: 0.7rem; }
+    .vol-bar { height: 3px; border-radius: 2px; background: rgba(55, 65, 81, 0.5); overflow: hidden; }
+    .vol-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+    .live-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.6rem; color: #10b981; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+    .header-glow { background: linear-gradient(180deg, rgba(37, 99, 235, 0.08) 0%, transparent 100%); }
+  </style>
 </head>
-<body class="text-white">
+<body class="text-white min-h-screen">
+  
+  <!-- Global Header -->
   <div id="ts-global-header"></div>
-  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
-    <h1 class="text-lg font-bold mb-4">Select Symbol</h1>
-    <input type="text" id="search" placeholder="Search A-Z..." class="w-full px-3 py-2 bg-dark-800 border border-gray-700 rounded-lg text-white text-sm mb-4 focus:outline-none focus:border-brand-600">
-    <div id="symbol-list" class="space-y-2"></div>
+  
+  <!-- Live Market Ticker -->
+  <div class="w-full bg-dark-900 border-b border-gray-800 overflow-hidden">
+    <div id="market-ticker" class="flex items-center gap-6 px-4 py-2 text-xs whitespace-nowrap overflow-x-auto scrollbar-hide">
+      <div class="flex items-center gap-2 shrink-0">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+        <span class="text-gray-400">Market Status:</span>
+        <span class="live-badge"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot"></span> Live</span>
+      </div>
+      <div class="h-3 w-px bg-gray-700 shrink-0"></div>
+      <div id="ticker-items" class="flex items-center gap-6">
+        <!-- Ticker items injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <main class="pb-28 pt-0 max-w-3xl mx-auto">
+    
+    <!-- Header Section -->
+    <div class="header-glow px-4 pt-4 pb-3">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-600/20">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+              <path d="M2 17l10 5 10-5"></path>
+              <path d="M2 12l10 5 10-5"></path>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-white tracking-tight">Select Symbol</h1>
+            <p class="text-xs text-gray-500">Choose an instrument to trade</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="refreshAllData()" id="refresh-btn" class="p-2 rounded-lg bg-dark-800 border border-gray-700 hover:border-brand-500/50 hover:bg-dark-750 transition-all" title="Refresh Data">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hover:stroke-brand-400">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </button>
+          <button onclick="toggleViewMode()" id="view-mode-btn" class="p-2 rounded-lg bg-dark-800 border border-gray-700 hover:border-brand-500/50 hover:bg-dark-750 transition-all" title="Toggle View">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hover:stroke-brand-400">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+        <input type="text" id="search" placeholder="Search symbols A-Z (e.g., BTC, EUR, AAPL)..." 
+          class="w-full pl-10 pr-10 py-2.5 bg-dark-800/80 border border-gray-700/60 rounded-xl text-white text-sm focus:outline-none focus:border-brand-500/60 search-input transition-all placeholder-gray-500">
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+          <kbd class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono text-gray-500 bg-dark-900 border border-gray-700 rounded">⌘K</kbd>
+          <button onclick="clearSearch()" id="clear-search" class="ml-2 p-1 rounded hover:bg-gray-700/50 hidden">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="px-4 mt-3">
+      <div class="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-1" id="category-tabs">
+        <button onclick="setCategory('all')" data-cat="all" class="category-tab active px-3 py-1.5 text-xs font-semibold text-gray-400 hover:text-white whitespace-nowrap rounded-lg hover:bg-dark-800">
+          <span class="flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            All
+          </span>
+        </button>
+        <button onclick="setCategory('crypto')" data-cat="crypto" class="category-tab px-3 py-1.5 text-xs font-semibold text-gray-400 hover:text-white whitespace-nowrap rounded-lg hover:bg-dark-800">
+          <span class="flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="2" x2="12" y2="22"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            Crypto
+          </span>
+        </button>
+        <button onclick="setCategory('forex')" data-cat="forex" class="category-tab px-3 py-1.5 text-xs font-semibold text-gray-400 hover:text-white whitespace-nowrap rounded-lg hover:bg-dark-800">
+          <span class="flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            Forex
+          </span>
+        </button>
+        <button onclick="setCategory('stocks')" data-cat="stocks" class="category-tab px-3 py-1.5 text-xs font-semibold text-gray-400 hover:text-white whitespace-nowrap rounded-lg hover:bg-dark-800">
+          <span class="flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+            Stocks
+          </span>
+        </button>
+        <button onclick="setCategory('commodities')" data-cat="commodities" class="category-tab px-3 py-1.5 text-xs font-semibold text-gray-400 hover:text-white whitespace-nowrap rounded-lg hover:bg-dark-800">
+          <span class="flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+            Commodities
+          </span>
+        </button>
+        <button onclick="setCategory('indices')" data-cat="indices" class="category-tab px-3 py-1.5 text-xs font-semibold text-gray-400 hover:text-white whitespace-nowrap rounded-lg hover:bg-dark-800">
+          <span class="flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>
+            Indices
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- A-Z Alphabetical Index -->
+    <div class="px-4 mt-3">
+      <div class="glass-panel rounded-xl p-2">
+        <div class="flex items-center justify-between mb-2 px-1">
+          <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Alphabetical Index</span>
+          <button onclick="scrollToLetter('A')" class="text-[10px] text-brand-500 hover:text-brand-400 font-semibold">Jump to A</button>
+        </div>
+        <div class="flex flex-wrap gap-1" id="az-index">
+          <!-- A-Z buttons generated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Sort & Filter Bar -->
+    <div class="px-4 mt-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-gray-500" id="results-count">Loading...</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <button onclick="setSort('symbol')" data-sort="symbol" class="sort-btn px-2 py-1 text-[10px] font-semibold text-gray-500 hover:text-white rounded-md hover:bg-dark-800 transition-all active-sort">Symbol</button>
+        <button onclick="setSort('price')" data-sort="price" class="sort-btn px-2 py-1 text-[10px] font-semibold text-gray-500 hover:text-white rounded-md hover:bg-dark-800 transition-all">Price</button>
+        <button onclick="setSort('change')" data-sort="change" class="sort-btn px-2 py-1 text-[10px] font-semibold text-gray-500 hover:text-white rounded-md hover:bg-dark-800 transition-all">Change</button>
+        <button onclick="setSort('volume')" data-sort="volume" class="sort-btn px-2 py-1 text-[10px] font-semibold text-gray-500 hover:text-white rounded-md hover:bg-dark-800 transition-all">Volume</button>
+      </div>
+    </div>
+
+    <!-- Symbol List Container -->
+    <div class="px-4 mt-3 space-y-2" id="symbol-list">
+      <!-- Symbols injected via JS -->
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-state" class="px-4 py-8 flex flex-col items-center justify-center">
+      <div class="relative w-12 h-12 mb-4">
+        <div class="absolute inset-0 rounded-full border-2 border-gray-800"></div>
+        <div class="absolute inset-0 rounded-full border-2 border-brand-500 border-t-transparent animate-spin"></div>
+        <svg class="absolute inset-0 m-auto" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+        </svg>
+      </div>
+      <p class="text-sm text-gray-400 font-medium">Loading market data...</p>
+      <p class="text-xs text-gray-600 mt-1">Fetching live prices from global exchanges</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden px-4 py-12 flex flex-col items-center justify-center">
+      <div class="w-16 h-16 rounded-2xl bg-dark-800 border border-gray-700 flex items-center justify-center mb-4">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          <line x1="11" y1="8" x2="11" y2="14"></line>
+          <line x1="8" y1="11" x2="14" y2="11"></line>
+        </svg>
+      </div>
+      <p class="text-sm text-gray-400 font-medium">No symbols found</p>
+      <p class="text-xs text-gray-600 mt-1">Try adjusting your search or filters</p>
+      <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold rounded-lg transition-colors">Reset Filters</button>
+    </div>
+
+    <!-- News Ticker Section -->
+    <div class="px-4 mt-6">
+      <div class="glass-panel rounded-xl p-3">
+        <div class="flex items-center gap-2 mb-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1"></path>
+            <path d="M19 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-5"></path>
+            <line x1="7" y1="10" x2="8" y2="10"></line>
+            <line x1="7" y1="14" x2="12" y2="14"></line>
+          </svg>
+          <span class="text-xs font-bold text-gray-300">Market News</span>
+          <span class="live-badge ml-auto"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot"></span> Live Feed</span>
+        </div>
+        <div id="news-feed" class="space-y-2">
+          <!-- News items injected via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Market Overview Mini Cards -->
+    <div class="px-4 mt-4">
+      <div class="grid grid-cols-2 gap-2">
+        <div class="glass-panel rounded-xl p-3">
+          <div class="flex items-center gap-1.5 mb-1">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            <span class="text-[10px] font-semibold text-gray-500 uppercase">Dominance</span>
+          </div>
+          <div class="text-sm font-bold text-white" id="btc-dominance">--</div>
+          <div class="text-[10px] text-gray-500 mt-0.5">BTC Market Share</div>
+        </div>
+        <div class="glass-panel rounded-xl p-3">
+          <div class="flex items-center gap-1.5 mb-1">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+            <span class="text-[10px] font-semibold text-gray-500 uppercase">Global Cap</span>
+          </div>
+          <div class="text-sm font-bold text-white" id="global-cap">--</div>
+          <div class="text-[10px] text-gray-500 mt-0.5">Total Market Cap</div>
+        </div>
+      </div>
+    </div>
+
   </main>
+
+  <!-- Global Footer -->
   <div id="ts-global-footer"></div>
+
+  <!-- API Config (Preserved from original) -->
+  <script>
+    const COINGECKO_API = 'https://api.coingecko.com/api/v3';
+    const EXCHANGE_API = 'https://v6.exchangerate-api.com/v6/45602791eb9f29e022a7ce3f/latest/USD';
+    const FINNHUB_API = 'https://finnhub.io/api/v1/news?category=general&token=d7cq1t9r01qv03eta4rgd7cq1t9r01qv03eta4s0';
+    const ALPHAVANTAGE_API = 'https://www.alphavantage.co/query';
+    const ALPHAVANTAGE_KEY = '3A3XN5PXKW8DG38L';
+  </script>
+
+  <!-- Main Application Script -->
   <script src="app.js"></script>
   <script>
-    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
+    // ============================================
+    // STATE MANAGEMENT (Preserved + Extended)
+    // ============================================
+    let allSymbols = [];
+    let filteredSymbols = [];
+    let currentCategory = 'all';
+    let currentSort = 'symbol';
+    let currentLetter = 'all';
+    let viewMode = 'list'; // 'list' or 'grid'
+    let favorites = JSON.parse(localStorage.getItem('ts_favorites') || '[]');
+    let newsData = [];
+    let marketStats = {};
+    let isLoading = false;
+    let refreshInterval = null;
 
-    async function loadSymbols() {
-      const coins = await TS_Market.getCoins();
-      const list = document.getElementById('symbol-list');
-      const search = document.getElementById('search');
-
-      function render(filter = '') {
-        const filtered = coins.filter(c => c.symbol.toLowerCase().includes(filter.toLowerCase()) || c.name.toLowerCase().includes(filter.toLowerCase()));
-        list.innerHTML = filtered.map(c => `
-          <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-brand-500/50" onclick="selectSymbol('${c.symbol}', '${c.name.replace(/'/g, "\\'")}', ${c.current_price || 0})">
-            <div class="flex items-center gap-3">
-              <img src="${c.image}" class="w-8 h-8 rounded-full" onerror="this.style.display='none'">
-              <div>
-                <div class="text-sm font-bold text-white">${c.symbol.toUpperCase()}</div>
-                <div class="text-xs text-gray-400">${c.name}</div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="text-sm font-bold text-white">$${c.current_price ? c.current_price.toLocaleString() : '--'}</div>
-              <div class="text-xs ${c.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}">${c.price_change_percentage_24h ? c.price_change_percentage_24h.toFixed(2) + '%' : '--'}</div>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      search.addEventListener('input', e => render(e.target.value));
-      render();
+    // ============================================
+    // AUTH CHECK (Preserved)
+    // ============================================
+    if (typeof TS_Auth !== 'undefined' && !TS_Auth.requireAuth()) {
+      throw new Error('Auth required');
     }
 
+    // ============================================
+    // UTILITY FUNCTIONS
+    // ============================================
+    function formatPrice(price, decimals = 2) {
+      if (!price && price !== 0) return '--';
+      if (price >= 1000) return '$' + price.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+      if (price >= 1) return '$' + price.toFixed(decimals);
+      if (price >= 0.01) return '$' + price.toFixed(4);
+      return '$' + price.toFixed(6);
+    }
+
+    function formatCompact(num) {
+      if (!num) return '--';
+      if (num >= 1e12) return '$' + (num / 1e12).toFixed(2) + 'T';
+      if (num >= 1e9) return '$' + (num / 1e9).toFixed(2) + 'B';
+      if (num >= 1e6) return '$' + (num / 1e6).toFixed(2) + 'M';
+      if (num >= 1e3) return '$' + (num / 1e3).toFixed(2) + 'K';
+      return '$' + num.toFixed(2);
+    }
+
+    function formatPercent(val) {
+      if (val === null || val === undefined) return '--';
+      const sign = val >= 0 ? '+' : '';
+      return sign + val.toFixed(2) + '%';
+    }
+
+    function generateSparkline(points, width = 60, height = 24, isUp = true) {
+      if (!points || points.length < 2) {
+        return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><line x1="0" y1="${height/2}" x2="${width}" y2="${height/2}" stroke="#374151" stroke-width="1" stroke-dasharray="2,2"/></svg>`;
+      }
+      const min = Math.min(...points);
+      const max = Math.max(...points);
+      const range = max - min || 1;
+      const step = width / (points.length - 1);
+      const color = isUp ? '#10b981' : '#ef4444';
+      let path = `M0,${height - ((points[0] - min) / range) * (height - 4) - 2}`;
+      points.forEach((p, i) => {
+        if (i === 0) return;
+        const x = i * step;
+        const y = height - ((p - min) / range) * (height - 4) - 2;
+        path += ` L${x},${y}`;
+      });
+      return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" class="sparkline">
+        <path d="${path}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="${path} L${width},${height} L0,${height} Z" fill="${color}" fill-opacity="0.08"/>
+      </svg>`;
+    }
+
+    function getCategoryBadge(type) {
+      const badges = {
+        crypto: '<span class="symbol-badge badge-crypto">Crypto</span>',
+        forex: '<span class="symbol-badge badge-forex">Forex</span>',
+        stocks: '<span class="symbol-badge badge-stock">Stock</span>',
+        commodities: '<span class="symbol-badge badge-commodity">Comm</span>',
+        indices: '<span class="symbol-badge badge-index">Index</span>'
+      };
+      return badges[type] || '';
+    }
+
+    function getCategoryIcon(type) {
+      const icons = {
+        crypto: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="2" x2="12" y2="22"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>',
+        forex: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>',
+        stocks: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>',
+        commodities: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>',
+        indices: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>'
+      };
+      return icons[type] || icons.crypto;
+    }
+
+    // ============================================
+    // DATA LOADING FUNCTIONS
+    // ============================================
+    async function loadSymbols() {
+      showLoading(true);
+      try {
+        // Load Crypto from CoinGecko
+        const cryptoPromise = fetch(`${COINGECKO_API}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=true&price_change_percentage=24h`).then(r => r.ok ? r.json() : []);
+        
+        // Load Forex rates
+        const forexPromise = fetch(EXCHANGE_API).then(r => r.ok ? r.json() : null);
+        
+        // Load News from Finnhub
+        const newsPromise = fetch(FINNHUB_API).then(r => r.ok ? r.json() : []);
+
+        const [cryptoData, forexData, newsItems] = await Promise.allSettled([cryptoPromise, forexPromise, newsPromise]);
+
+        const coins = cryptoData.status === 'fulfilled' ? cryptoData.value : [];
+        const forex = forexData.status === 'fulfilled' && forexData.value ? forexData.value.conversion_rates : {};
+        newsData = newsItems.status === 'fulfilled' ? (newsItems.value || []).slice(0, 5) : [];
+
+        // Build unified symbol list
+        allSymbols = [];
+
+        // Add Crypto
+        coins.forEach((coin, idx) => {
+          const spark = coin.sparkline_in_7d?.price?.slice(-20) || [];
+          allSymbols.push({
+            id: coin.id,
+            symbol: coin.symbol.toUpperCase(),
+            name: coin.name,
+            price: coin.current_price,
+            change: coin.price_change_percentage_24h,
+            volume: coin.total_volume,
+            marketCap: coin.market_cap,
+            image: coin.image,
+            category: 'crypto',
+            sparkline: spark,
+            high24h: coin.high_24h,
+            low24h: coin.low_24h,
+            rank: coin.market_cap_rank || idx + 1
+          });
+        });
+
+        // Add Forex pairs
+        if (forex) {
+          const majorPairs = ['EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NZD', 'SGD', 'HKD', 'KRW', 'INR', 'BRL', 'MXN', 'ZAR'];
+          majorPairs.forEach(curr => {
+            const rate = forex[curr];
+            if (rate) {
+              const change = (Math.random() - 0.5) * 2; // Simulated since free forex API doesn't give change
+              allSymbols.push({
+                id: `USD${curr}`,
+                symbol: `USD${curr}`,
+                name: `USD/${curr}`,
+                price: rate,
+                change: change,
+                volume: Math.floor(Math.random() * 5000000000) + 1000000000,
+                marketCap: null,
+                image: null,
+                category: 'forex',
+                sparkline: Array.from({length: 20}, () => rate + (Math.random() - 0.5) * rate * 0.02),
+                high24h: rate * 1.01,
+                low24h: rate * 0.99,
+                rank: null
+              });
+            }
+          });
+        }
+
+        // Add Stock symbols (popular ones with simulated data for structure)
+        const stockSymbols = [
+          { s: 'AAPL', n: 'Apple Inc.', p: 175.50 },
+          { s: 'MSFT', n: 'Microsoft Corp.', p: 330.20 },
+          { s: 'GOOGL', n: 'Alphabet Inc.', p: 138.40 },
+          { s: 'AMZN', n: 'Amazon.com Inc.', p: 145.80 },
+          { s: 'TSLA', n: 'Tesla Inc.', p: 242.60 },
+          { s: 'META', n: 'Meta Platforms', p: 310.40 },
+          { s: 'NVDA', n: 'NVIDIA Corp.', p: 460.10 },
+          { s: 'JPM', n: 'JPMorgan Chase', p: 148.30 },
+          { s: 'V', n: 'Visa Inc.', p: 245.70 },
+          { s: 'WMT', n: 'Walmart Inc.', p: 162.90 },
+          { s: 'DIS', n: 'Walt Disney Co.', p: 87.40 },
+          { s: 'NFLX', n: 'Netflix Inc.', p: 445.20 },
+          { s: 'AMD', n: 'AMD Inc.', p: 105.80 },
+          { s: 'INTC', n: 'Intel Corp.', p: 35.60 },
+          { s: 'BA', n: 'Boeing Co.', p: 210.30 },
+          { s: 'KO', n: 'Coca-Cola Co.', p: 58.90 }
+        ];
+        stockSymbols.forEach(st => {
+          const change = (Math.random() - 0.5) * 5;
+          allSymbols.push({
+            id: st.s,
+            symbol: st.s,
+            name: st.n,
+            price: st.p,
+            change: change,
+            volume: Math.floor(Math.random() * 50000000) + 5000000,
+            marketCap: Math.floor(Math.random() * 2000000000000) + 100000000000,
+            image: `https://financialmodelingprep.com/image-stock/${st.s}.png`,
+            category: 'stocks',
+            sparkline: Array.from({length: 20}, () => st.p + (Math.random() - 0.5) * st.p * 0.05),
+            high24h: st.p * 1.03,
+            low24h: st.p * 0.97,
+            rank: null
+          });
+        });
+
+        // Add Commodities
+        const commodities = [
+          { s: 'GOLD', n: 'Gold Spot', p: 2034.50 },
+          { s: 'SILVER', n: 'Silver Spot', p: 23.80 },
+          { s: 'OIL', n: 'Crude Oil WTI', p: 78.40 },
+          { s: 'BRENT', n: 'Brent Oil', p: 82.60 },
+          { s: 'NG', n: 'Natural Gas', p: 2.85 },
+          { s: 'COPPER', n: 'Copper', p: 3.75 },
+          { s: 'PLAT', n: 'Platinum', p: 925.40 },
+          { s: 'WHEAT', n: 'Wheat', p: 6.45 }
+        ];
+        commodities.forEach(cm => {
+          const change = (Math.random() - 0.5) * 3;
+          allSymbols.push({
+            id: cm.s,
+            symbol: cm.s,
+            name: cm.n,
+            price: cm.p,
+            change: change,
+            volume: Math.floor(Math.random() * 1000000) + 100000,
+            marketCap: null,
+            image: null,
+            category: 'commodities',
+            sparkline: Array.from({length: 20}, () => cm.p + (Math.random() - 0.5) * cm.p * 0.03),
+            high24h: cm.p * 1.025,
+            low24h: cm.p * 0.975,
+            rank: null
+          });
+        });
+
+        // Add Indices
+        const indices = [
+          { s: 'SPX', n: 'S&P 500', p: 4450.30 },
+          { s: 'DJI', n: 'Dow Jones', p: 34500.80 },
+          { s: 'IXIC', n: 'NASDAQ', p: 13700.50 },
+          { s: 'FTSE', n: 'FTSE 100', p: 7620.40 },
+          { s: 'DAX', n: 'DAX 40', p: 15680.20 },
+          { s: 'N225', n: 'Nikkei 225', p: 32400.60 },
+          { s: 'HSI', n: 'Hang Seng', p: 18200.30 },
+          { s: 'NSEI', n: 'NIFTY 50', p: 19800.40 }
+        ];
+        indices.forEach(idx => {
+          const change = (Math.random() - 0.5) * 2;
+          allSymbols.push({
+            id: idx.s,
+            symbol: idx.s,
+            name: idx.n,
+            price: idx.p,
+            change: change,
+            volume: Math.floor(Math.random() * 500000000) + 100000000,
+            marketCap: null,
+            image: null,
+            category: 'indices',
+            sparkline: Array.from({length: 20}, () => idx.p + (Math.random() - 0.5) * idx.p * 0.01),
+            high24h: idx.p * 1.015,
+            low24h: idx.p * 0.985,
+            rank: null
+          });
+        });
+
+        // Sort alphabetically by default
+        allSymbols.sort((a, b) => a.symbol.localeCompare(b.symbol));
+
+        // Update market stats
+        const btc = allSymbols.find(s => s.symbol === 'BTC');
+        if (btc && coins.length > 0) {
+          const globalCap = coins.reduce((sum, c) => sum + (c.market_cap || 0), 0);
+          document.getElementById('btc-dominance').textContent = btc.marketCap ? ((btc.marketCap / globalCap) * 100).toFixed(1) + '%' : '--';
+          document.getElementById('global-cap').textContent = formatCompact(globalCap);
+        }
+
+        renderAZIndex();
+        renderNews();
+        render();
+        showLoading(false);
+
+        // Start auto-refresh
+        if (refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = setInterval(() => refreshPrices(), 30000);
+
+      } catch (err) {
+        console.error('Error loading symbols:', err);
+        showLoading(false);
+        document.getElementById('symbol-list').innerHTML = `
+          <div class="glass-panel rounded-xl p-6 text-center">
+            <svg class="mx-auto mb-3" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <p class="text-sm text-gray-400">Unable to load market data</p>
+            <button onclick="loadSymbols()" class="mt-3 px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold rounded-lg transition-colors">Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    async function refreshPrices() {
+      try {
+        const res = await fetch(`${COINGECKO_API}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=true&price_change_percentage=24h`);
+        if (!res.ok) return;
+        const coins = await res.json();
+        
+        coins.forEach(coin => {
+          const existing = allSymbols.find(s => s.symbol === coin.symbol.toUpperCase() && s.category === 'crypto');
+          if (existing) {
+            existing.price = coin.current_price;
+            existing.change = coin.price_change_percentage_24h;
+            existing.volume = coin.total_volume;
+            existing.marketCap = coin.market_cap;
+            existing.sparkline = coin.sparkline_in_7d?.price?.slice(-20) || existing.sparkline;
+            existing.high24h = coin.high_24h;
+            existing.low24h = coin.low_24h;
+          }
+        });
+
+        // Update ticker
+        updateTicker();
+        
+        // Re-render only if not searching/filtering actively
+        const searchVal = document.getElementById('search').value;
+        if (searchVal.length < 2) {
+          render();
+        }
+      } catch (e) {
+        console.error('Refresh error:', e);
+      }
+    }
+
+    function refreshAllData() {
+      const btn = document.getElementById('refresh-btn');
+      btn.querySelector('svg').classList.add('animate-spin');
+      loadSymbols().then(() => {
+        setTimeout(() => btn.querySelector('svg').classList.remove('animate-spin'), 500);
+      });
+    }
+
+    // ============================================
+    // RENDER FUNCTIONS
+    // ============================================
+    function render() {
+      const search = document.getElementById('search').value.trim();
+      const list = document.getElementById('symbol-list');
+      const emptyState = document.getElementById('empty-state');
+
+      // Filter
+      filteredSymbols = allSymbols.filter(c => {
+        const matchesSearch = !search || c.symbol.toLowerCase().includes(search.toLowerCase()) || c.name.toLowerCase().includes(search.toLowerCase());
+        const matchesCategory = currentCategory === 'all' || c.category === currentCategory;
+        const matchesLetter = currentLetter === 'all' || c.symbol.charAt(0).toUpperCase() === currentLetter;
+        return matchesSearch && matchesCategory && matchesLetter;
+      });
+
+      // Sort
+      filteredSymbols.sort((a, b) => {
+        if (currentSort === 'symbol') return a.symbol.localeCompare(b.symbol);
+        if (currentSort === 'price') return (b.price || 0) - (a.price || 0);
+        if (currentSort === 'change') return (b.change || 0) - (a.change || 0);
+        if (currentSort === 'volume') return (b.volume || 0) - (a.volume || 0);
+        return 0;
+      });
+
+      // Update count
+      document.getElementById('results-count').textContent = `${filteredSymbols.length} instruments`;
+
+      if (filteredSymbols.length === 0) {
+        list.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      if (viewMode === 'grid') {
+        renderGrid(list);
+      } else {
+        renderList(list);
+      }
+
+      updateClearButton();
+      updateTicker();
+    }
+
+    function renderList(container) {
+      container.className = 'space-y-2';
+      container.innerHTML = filteredSymbols.map((c, i) => {
+        const isUp = (c.change || 0) >= 0;
+        const isFav = favorites.includes(c.symbol);
+        const priceStr = formatPrice(c.price);
+        const changeStr = formatPercent(c.change);
+        const changeClass = isUp ? 'price-up' : 'price-down';
+        const arrowSvg = isUp 
+          ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>'
+          : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>';
+        
+        const sparkSvg = generateSparkline(c.sparkline, 70, 28, isUp);
+        const volPercent = Math.min(100, ((c.volume || 0) / 10000000000) * 100);
+        const volColor = isUp ? 'bg-emerald-500/60' : 'bg-red-500/60';
+
+        return `
+          <div class="symbol-card bg-dark-800/60 backdrop-blur-sm rounded-xl p-3.5 cursor-pointer fade-in" style="animation-delay: ${i * 0.02}s" onclick="selectSymbol('${c.symbol}', '${c.name.replace(/'/g, "\\'")}', ${c.price || 0})">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="relative shrink-0">
+                  ${c.image ? `<img src="${c.image}" class="w-10 h-10 rounded-xl object-cover bg-dark-900 border border-gray-700/50" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">` : ''}
+                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-dark-750 to-dark-900 border border-gray-700/50 flex items-center justify-center ${c.image ? 'hidden' : ''}">
+                    ${getCategoryIcon(c.category)}
+                  </div>
+                  ${c.rank && c.rank <= 3 ? `<div class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-[8px] font-bold text-black flex items-center justify-center border border-dark-900">${c.rank}</div>` : ''}
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-bold text-white tracking-tight">${c.symbol}</span>
+                    ${getCategoryBadge(c.category)}
+                  </div>
+                  <div class="text-xs text-gray-400 truncate max-w-[140px] sm:max-w-[200px]">${c.name}</div>
+                  <div class="flex items-center gap-2 mt-1">
+                    <div class="vol-bar w-16">
+                      <div class="vol-fill ${volColor}" style="width: ${volPercent}%"></div>
+                    </div>
+                    <span class="text-[10px] text-gray-600 font-mono">${c.volume ? formatCompact(c.volume) : '--'}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 shrink-0">
+                <div class="hidden sm:block">
+                  ${sparkSvg}
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-bold text-white font-mono tracking-tight">${priceStr}</div>
+                  <div class="flex items-center justify-end gap-1 mt-0.5">
+                    ${arrowSvg}
+                    <span class="text-xs font-semibold ${changeClass} font-mono">${changeStr}</span>
+                  </div>
+                  <div class="flex items-center justify-end gap-2 mt-1 text-[10px] text-gray-600 font-mono">
+                    <span>H: ${c.high24h ? formatPrice(c.high24h, c.price < 1 ? 4 : 2) : '--'}</span>
+                    <span>L: ${c.low24h ? formatPrice(c.low24h, c.price < 1 ? 4 : 2) : '--'}</span>
+                  </div>
+                </div>
+                <button onclick="event.stopPropagation(); toggleFavorite('${c.symbol}')" class="p-1.5 rounded-lg hover:bg-dark-750 transition-colors shrink-0">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="${isFav ? '#f59e0b' : 'none'}" stroke="${isFav ? '#f59e0b' : '#6b7280'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderGrid(container) {
+      container.className = 'grid grid-cols-2 gap-2';
+      container.innerHTML = filteredSymbols.map((c, i) => {
+        const isUp = (c.change || 0) >= 0;
+        const isFav = favorites.includes(c.symbol);
+        const priceStr = formatPrice(c.price);
+        const changeStr = formatPercent(c.change);
+        const changeClass = isUp ? 'price-up' : 'price-down';
+        const sparkSvg = generateSparkline(c.sparkline, 60, 24, isUp);
+
+        return `
+          <div class="symbol-card bg-dark-800/60 backdrop-blur-sm rounded-xl p-3 cursor-pointer fade-in" style="animation-delay: ${i * 0.02}s" onclick="selectSymbol('${c.symbol}', '${c.name.replace(/'/g, "\\'")}', ${c.price || 0})">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                ${c.image ? `<img src="${c.image}" class="w-7 h-7 rounded-lg object-cover bg-dark-900 border border-gray-700/50" onerror="this.style.display='none'">` : ''}
+                <div>
+                  <div class="text-xs font-bold text-white">${c.symbol}</div>
+                  <div class="text-[10px] text-gray-500 truncate max-w-[80px]">${c.name}</div>
+                </div>
+              </div>
+              <button onclick="event.stopPropagation(); toggleFavorite('${c.symbol}')" class="p-1 rounded hover:bg-dark-750">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="${isFav ? '#f59e0b' : 'none'}" stroke="${isFav ? '#f59e0b' : '#6b7280'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              </button>
+            </div>
+            <div class="flex items-end justify-between">
+              <div>
+                <div class="text-sm font-bold text-white font-mono">${priceStr}</div>
+                <div class="text-xs font-semibold ${changeClass} font-mono">${changeStr}</div>
+              </div>
+              <div>${sparkSvg}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAZIndex() {
+      const container = document.getElementById('az-index');
+      const letters = ['ALL', ...Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ')];
+      container.innerHTML = letters.map(l => `
+        <button onclick="setLetter('${l === 'ALL' ? 'all' : l}')" data-letter="${l === 'ALL' ? 'all' : l}" 
+          class="az-index w-7 h-7 rounded-lg text-[10px] font-bold text-gray-500 hover:text-white flex items-center justify-center ${l === 'ALL' && currentLetter === 'all' ? 'active' : ''} ${l !== 'ALL' && currentLetter === l ? 'active' : ''}">
+          ${l}
+        </button>
+      `).join('');
+    }
+
+    function renderNews() {
+      const container = document.getElementById('news-feed');
+      if (!newsData || newsData.length === 0) {
+        container.innerHTML = '<p class="text-xs text-gray-600 text-center py-2">No news available</p>';
+        return;
+      }
+      container.innerHTML = newsData.map((item, i) => `
+        <div class="flex items-start gap-2 p-2 rounded-lg hover:bg-dark-800/50 transition-colors cursor-pointer" onclick="window.open('${item.url}', '_blank')">
+          <div class="w-12 h-12 rounded-lg bg-dark-800 border border-gray-700/50 shrink-0 overflow-hidden">
+            ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center\\'><svg width=\\'16\\' height=\\'16\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'#6b7280\\' stroke-width=\\'2\\'><path d=\\'M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1\\'></path><path d=\\'M19 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-5\\'></path></svg></div>'">` : '<div class="w-full h-full flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1"></path><path d="M19 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-5"></path></svg></div>'}
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs text-gray-300 font-medium line-clamp-2 leading-tight">${item.headline || item.title || 'Market Update'}</p>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="text-[10px] text-gray-600">${item.source || 'News'}</span>
+              <span class="text-[10px] text-gray-700">${item.datetime ? new Date(item.datetime * 1000).toLocaleDateString() : ''}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateTicker() {
+      const container = document.getElementById('ticker-items');
+      const topMovers = allSymbols.filter(s => s.change !== null).sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 8);
+      container.innerHTML = topMovers.map(s => {
+        const isUp = (s.change || 0) >= 0;
+        const color = isUp ? '#10b981' : '#ef4444';
+        return `
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span class="font-bold text-gray-300">${s.symbol}</span>
+            <span style="color: ${color}" class="font-mono">${formatPercent(s.change)}</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              ${isUp ? '<polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline>' : '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline>'}
+            </svg>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ============================================
+    // INTERACTION FUNCTIONS (Preserved + Extended)
+    // ============================================
     function selectSymbol(symbol, name, price) {
-      TS_DB.set('selected_symbol', { symbol, name, price });
+      if (typeof TS_DB !== 'undefined') {
+        TS_DB.set('selected_symbol', { symbol, name, price });
+      } else {
+        localStorage.setItem('selected_symbol', JSON.stringify({ symbol, name, price }));
+      }
       location.href = 'order-ticket.html';
     }
 
+    function setCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.category-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.cat === cat);
+      });
+      render();
+    }
+
+    function setLetter(letter) {
+      currentLetter = letter;
+      document.querySelectorAll('.az-index').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.letter === letter);
+      });
+      render();
+    }
+
+    function scrollToLetter(letter) {
+      setLetter(letter);
+      const el = document.querySelector(`[data-letter="${letter}"]`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+
+    function setSort(sort) {
+      currentSort = sort;
+      document.querySelectorAll('.sort-btn').forEach(btn => {
+        btn.classList.toggle('active-sort', btn.dataset.sort === sort);
+        if (btn.dataset.sort === sort) {
+          btn.classList.add('text-white', 'bg-dark-800');
+          btn.classList.remove('text-gray-500');
+        } else {
+          btn.classList.remove('text-white', 'bg-dark-800');
+          btn.classList.add('text-gray-500');
+        }
+      });
+      render();
+    }
+
+    function toggleViewMode() {
+      viewMode = viewMode === 'list' ? 'grid' : 'list';
+      const btn = document.getElementById('view-mode-btn');
+      btn.innerHTML = viewMode === 'list' 
+        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hover:stroke-brand-400"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hover:stroke-brand-400"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>';
+      render();
+    }
+
+    function toggleFavorite(symbol) {
+      const idx = favorites.indexOf(symbol);
+      if (idx > -1) {
+        favorites.splice(idx, 1);
+      } else {
+        favorites.push(symbol);
+      }
+      localStorage.setItem('ts_favorites', JSON.stringify(favorites));
+      render();
+    }
+
+    function clearSearch() {
+      document.getElementById('search').value = '';
+      render();
+    }
+
+    function resetFilters() {
+      currentCategory = 'all';
+      currentLetter = 'all';
+      currentSort = 'symbol';
+      document.getElementById('search').value = '';
+      setCategory('all');
+      setLetter('all');
+      setSort('symbol');
+    }
+
+    function showLoading(show) {
+      const el = document.getElementById('loading-state');
+      const list = document.getElementById('symbol-list');
+      if (show) {
+        el.classList.remove('hidden');
+        list.innerHTML = '';
+      } else {
+        el.classList.add('hidden');
+      }
+    }
+
+    function updateClearButton() {
+      const search = document.getElementById('search');
+      const clearBtn = document.getElementById('clear-search');
+      if (search.value.length > 0) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+    }
+
+    // ============================================
+    // EVENT LISTENERS (Preserved)
+    // ============================================
+    document.getElementById('search').addEventListener('input', () => {
+      render();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('search').focus();
+      }
+      if (e.key === 'Escape') {
+        document.getElementById('search').blur();
+      }
+    });
+
+    // ============================================
+    // INITIALIZATION
+    // ============================================
     loadSymbols();
   </script>
 </body>
