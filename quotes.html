@@ -5,71 +5,934 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Quotes - Trade Station</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config = { darkMode: 'class', theme: { extend: { colors: { brand: { 600: '#2563eb' }, dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19' } } } } }</script>
-  <style>body { background: #0b0f19; }</style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 600: '#2563eb', 500: '#3b82f6' },
+            dark: { 950: '#0b0f19', 900: '#111827', 800: '#1f2937', 700: '#374151' },
+            bid: '#3b82f6',
+            ask: '#ef4444',
+            up: '#22c55e',
+            down: '#ef4444'
+          },
+          fontFamily: {
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { background: #0b0f19; font-family: 'Inter', system-ui, sans-serif; overscroll-behavior-y: contain; }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 2px; }
+    
+    /* Price superscript styling */
+    .price-main { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+    .price-super { font-size: 0.65em; vertical-align: super; line-height: 0; margin-left: 1px; font-weight: 600; }
+    
+    /* Animations */
+    @keyframes flashGreen { 0% { background-color: rgba(34,197,94,0.15); } 100% { background-color: transparent; } }
+    @keyframes flashRed { 0% { background-color: rgba(239,68,68,0.15); } 100% { background-color: transparent; } }
+    @keyframes pulseDot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    .flash-up { animation: flashGreen 0.4s ease-out; }
+    .flash-down { animation: flashRed 0.4s ease-out; }
+    .animate-slide-in { animation: slideIn 0.3s ease-out forwards; }
+    .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
+    .pulse-dot { animation: pulseDot 2s ease-in-out infinite; }
+    
+    /* Row styling */
+    .quote-row {
+      transition: all 0.15s ease;
+      border-bottom: 1px solid rgba(55,65,81,0.4);
+    }
+    .quote-row:active { transform: scale(0.995); background: rgba(31,41,55,0.6); }
+    .quote-row:last-child { border-bottom: none; }
+    
+    /* Modal backdrop */
+    .modal-backdrop {
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+    }
+    
+    /* Search input */
+    .search-input {
+      background: #111827;
+      border: 1px solid #1f2937;
+      transition: all 0.2s;
+    }
+    .search-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+      outline: none;
+    }
+    
+    /* Toggle switch */
+    .view-toggle-btn {
+      transition: all 0.2s;
+      position: relative;
+    }
+    .view-toggle-btn.active {
+      color: #3b82f6;
+      font-weight: 600;
+    }
+    .view-toggle-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 16px;
+      height: 2px;
+      background: #3b82f6;
+      border-radius: 1px;
+    }
+    
+    /* Sort dropdown */
+    .sort-menu {
+      transform-origin: top right;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Connection bar */
+    .conn-bar {
+      background: linear-gradient(90deg, rgba(34,197,94,0.1) 0%, transparent 100%);
+      border-left: 2px solid #22c55e;
+    }
+    
+    /* SVG Icon sizing */
+    .icon-svg { display: inline-block; flex-shrink: 0; }
+    
+    /* Monospace price blocks */
+    .price-block { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    
+    /* Advanced view grid */
+    .adv-header {
+      border-bottom: 1px solid #1f2937;
+      background: rgba(17,24,39,0.8);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(8px);
+    }
+    
+    /* Symbol badge */
+    .sym-badge {
+      background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+      border: 1px solid #374151;
+    }
+    
+    /* Custom checkbox for edit mode */
+    .edit-checkbox {
+      accent-color: #3b82f6;
+    }
+  </style>
 </head>
-<body class="text-white">
+<body class="text-white antialiased">
+  
+  <!-- Global Header -->
   <div id="ts-global-header"></div>
-  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
-    <h1 class="text-lg font-bold mb-4">Quotes</h1>
-    <div id="quotes-search" class="mb-4">
-      <input type="text" id="search-input" placeholder="Search symbols..." class="w-full px-3 py-2 bg-dark-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:border-brand-600">
+  
+  <!-- Main Quotes Interface -->
+  <main class="pb-28 pt-0 max-w-lg mx-auto min-h-screen">
+    
+    <!-- Top Navigation Bar -->
+    <div class="sticky top-0 z-40 bg-dark-950/95 backdrop-blur-md border-b border-dark-800">
+      <div class="flex items-center justify-between px-4 h-14">
+        <!-- Left: Menu + Logo -->
+        <div class="flex items-center gap-3">
+          <button onclick="TS_UI.toggleMenu()" class="p-2 -ml-2 rounded-lg hover:bg-dark-800 transition-colors" aria-label="Menu">
+            <svg class="icon-svg w-5 h-5 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M3 12h18M3 6h18M3 18h18"/>
+            </svg>
+          </button>
+          <div class="flex items-center gap-2">
+            <!-- MT5 Logo SVG -->
+            <svg class="icon-svg w-6 h-6" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="6" fill="#3b82f6"/>
+              <path d="M8 24V8h4l4 8 4-8h4v16h-3.5V13.5L14 22l-4.5-8.5V24H8z" fill="white"/>
+              <circle cx="24" cy="8" r="3" fill="#22c55e"/>
+            </svg>
+            <span class="text-sm font-bold tracking-tight text-white">Quotes</span>
+          </div>
+        </div>
+        
+        <!-- Right: Actions -->
+        <div class="flex items-center gap-1">
+          <!-- Refresh Button -->
+          <button onclick="refreshQuotes()" id="refresh-btn" class="p-2 rounded-lg hover:bg-dark-800 transition-colors" aria-label="Refresh">
+            <svg class="icon-svg w-5 h-5 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+          </button>
+          <!-- Add Symbol -->
+          <button onclick="location.href='symbol.html'" class="p-2 rounded-lg hover:bg-dark-800 transition-colors" aria-label="Add Symbol">
+            <svg class="icon-svg w-5 h-5 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+          <!-- Edit Mode Toggle -->
+          <button onclick="toggleEditMode()" id="edit-mode-btn" class="p-2 rounded-lg hover:bg-dark-800 transition-colors" aria-label="Edit Watchlist">
+            <svg class="icon-svg w-5 h-5 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Connection Status Bar -->
+      <div id="conn-status" class="conn-bar px-4 py-1 flex items-center gap-2">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500 pulse-dot"></span>
+        </span>
+        <span class="text-[10px] font-medium text-green-400 uppercase tracking-wider">Live Quotes Connected</span>
+        <span id="last-update" class="text-[10px] text-gray-500 ml-auto font-mono">--:--:--</span>
+      </div>
     </div>
-    <div id="quotes-list" class="space-y-2"></div>
-    <div id="no-quotes" class="hidden text-center py-8 text-gray-500 text-sm">
-      <p>No symbols in watchlist.</p>
-      <button onclick="location.href='symbol.html'" class="mt-2 text-brand-400 text-sm font-semibold">Add Symbols</button>
+    
+    <!-- View Mode Toggle & Sort -->
+    <div class="px-4 pt-3 pb-2 flex items-center justify-between">
+      <div class="flex items-center gap-4 bg-dark-900/60 rounded-lg p-1">
+        <button onclick="setViewMode('simple')" id="view-simple" class="view-toggle-btn active px-3 py-1.5 text-xs rounded-md text-gray-300 hover:text-white transition-all">
+          <span class="flex items-center gap-1.5">
+            <svg class="icon-svg w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            Simple
+          </span>
+        </button>
+        <button onclick="setViewMode('advanced')" id="view-advanced" class="view-toggle-btn px-3 py-1.5 text-xs rounded-md text-gray-400 hover:text-white transition-all">
+          <span class="flex items-center gap-1.5">
+            <svg class="icon-svg w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"/>
+              <line x1="8" y1="12" x2="21" y2="12"/>
+              <line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/>
+              <line x1="3" y1="12" x2="3.01" y2="12"/>
+              <line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+            Advanced
+          </span>
+        </button>
+      </div>
+      
+      <!-- Sort & More -->
+      <div class="flex items-center gap-1">
+        <button onclick="toggleSortMenu()" class="p-2 rounded-lg hover:bg-dark-800 transition-colors" aria-label="Sort">
+          <svg class="icon-svg w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 5h10M11 9h7M11 13h4M3 17l5 5 5-5M3 12l5-5 5 5"/>
+          </svg>
+        </button>
+        <div id="sort-menu" class="sort-menu hidden absolute right-4 top-24 bg-dark-800 border border-dark-700 rounded-lg shadow-xl shadow-black/40 z-50 w-40 overflow-hidden">
+          <div class="px-3 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-dark-700">Sort By</div>
+          <button onclick="sortQuotes('symbol')" class="w-full text-left px-3 py-2.5 text-xs text-gray-300 hover:bg-dark-700 hover:text-white transition-colors flex items-center gap-2">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15h13M4 9h16M4 12h10"/></svg>
+            Symbol Name
+          </button>
+          <button onclick="sortQuotes('bid')" class="w-full text-left px-3 py-2.5 text-xs text-gray-300 hover:bg-dark-700 hover:text-white transition-colors flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 text-bid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            Bid Price
+          </button>
+          <button onclick="sortQuotes('change')" class="w-full text-left px-3 py-2.5 text-xs text-gray-300 hover:bg-dark-700 hover:text-white transition-colors flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 text-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 6l-9.5 9.5-5-5L1 18"/></svg>
+            Daily Change
+          </button>
+          <button onclick="sortQuotes('spread')" class="w-full text-left px-3 py-2.5 text-xs text-gray-300 hover:bg-dark-700 hover:text-white transition-colors flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+            Spread
+          </button>
+        </div>
+      </div>
     </div>
+    
+    <!-- Search Section -->
+    <div id="quotes-search" class="px-4 mb-3">
+      <div class="relative">
+        <svg class="icon-svg absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="search-input" placeholder="Search symbols..." 
+          class="search-input w-full pl-10 pr-10 py-2.5 rounded-xl text-sm text-white placeholder-gray-500"
+          autocomplete="off">
+        <button onclick="clearSearch()" id="clear-search" class="hidden absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-dark-700 transition-colors">
+          <svg class="icon-svg w-4 h-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Watchlist Tabs -->
+    <div id="watchlist-tabs" class="px-4 mb-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
+      <button onclick="switchWatchlist('main')" data-watchlist="main" class="watchlist-tab active whitespace-nowrap px-3 py-1.5 text-xs font-medium rounded-full bg-brand-600 text-white transition-all">
+        Main
+      </button>
+      <button onclick="switchWatchlist('forex')" data-watchlist="forex" class="watchlist-tab whitespace-nowrap px-3 py-1.5 text-xs font-medium rounded-full bg-dark-800 text-gray-400 border border-dark-700 hover:border-dark-600 transition-all">
+        Forex
+      </button>
+      <button onclick="switchWatchlist('crypto')" data-watchlist="crypto" class="watchlist-tab whitespace-nowrap px-3 py-1.5 text-xs font-medium rounded-full bg-dark-800 text-gray-400 border border-dark-700 hover:border-dark-600 transition-all">
+        Crypto
+      </button>
+      <button onclick="switchWatchlist('stocks')" data-watchlist="stocks" class="watchlist-tab whitespace-nowrap px-3 py-1.5 text-xs font-medium rounded-full bg-dark-800 text-gray-400 border border-dark-700 hover:border-dark-600 transition-all">
+        Stocks
+      </button>
+    </div>
+    
+    <!-- Quotes List Container -->
+    <div class="px-2">
+      <!-- Simple View -->
+      <div id="quotes-list-simple" class="space-y-0"></div>
+      
+      <!-- Advanced View -->
+      <div id="quotes-list-advanced" class="hidden rounded-xl border border-dark-700 overflow-hidden">
+        <div class="adv-header grid grid-cols-12 gap-1 px-3 py-2 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+          <div class="col-span-3">Symbol</div>
+          <div class="col-span-2 text-right">Bid</div>
+          <div class="col-span-2 text-right">Ask</div>
+          <div class="col-span-2 text-right">High</div>
+          <div class="col-span-2 text-right">Low</div>
+          <div class="col-span-1 text-right">Chg%</div>
+        </div>
+        <div id="advanced-rows" class="divide-y divide-dark-800"></div>
+      </div>
+      
+      <!-- Empty State -->
+      <div id="no-quotes" class="hidden flex flex-col items-center justify-center py-16 px-4">
+        <svg class="w-16 h-16 mb-4 text-dark-700" viewBox="0 0 64 64" fill="none">
+          <rect x="8" y="12" width="48" height="40" rx="4" stroke="currentColor" stroke-width="2"/>
+          <line x1="8" y1="24" x2="56" y2="24" stroke="currentColor" stroke-width="2"/>
+          <line x1="20" y1="36" x2="28" y2="36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="20" y1="42" x2="36" y2="42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="44" cy="18" r="2" fill="currentColor"/>
+        </svg>
+        <p class="text-gray-500 text-sm font-medium mb-1">No symbols in watchlist</p>
+        <p class="text-gray-600 text-xs mb-4 text-center">Add instruments to track live market prices and execute trades instantly.</p>
+        <button onclick="location.href='symbol.html'" class="flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-lg shadow-brand-600/20">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Symbols
+        </button>
+      </div>
+    </div>
+    
+    <!-- Edit Mode Action Bar -->
+    <div id="edit-bar" class="hidden fixed bottom-20 left-0 right-0 max-w-lg mx-auto px-4 z-30">
+      <div class="bg-dark-800 border border-dark-700 rounded-xl p-3 shadow-2xl shadow-black/50 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="select-all" onchange="toggleSelectAll()" class="edit-checkbox w-4 h-4 rounded border-dark-600 bg-dark-900">
+          <label for="select-all" class="text-xs text-gray-400">Select All</label>
+        </div>
+        <button onclick="deleteSelected()" class="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-semibold rounded-lg transition-colors">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Remove Selected
+        </button>
+      </div>
+    </div>
+    
   </main>
+  
+  <!-- Global Footer / Bottom Nav -->
   <div id="ts-global-footer"></div>
+  
+  <!-- Symbol Action Modal -->
+  <div id="quote-modal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-end justify-center sm:items-center">
+    <div class="bg-dark-900 w-full max-w-lg sm:rounded-2xl rounded-t-2xl border border-dark-700 shadow-2xl shadow-black/60 animate-slide-in overflow-hidden">
+      <!-- Modal Handle -->
+      <div class="flex justify-center pt-3 pb-1">
+        <div class="w-10 h-1 bg-dark-700 rounded-full"></div>
+      </div>
+      
+      <!-- Modal Header -->
+      <div class="px-5 pb-3 border-b border-dark-800 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div id="modal-icon" class="sym-badge w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white">
+            <!-- Dynamic SVG icon -->
+          </div>
+          <div>
+            <h3 id="modal-title" class="text-base font-bold text-white">SYMBOL</h3>
+            <p id="modal-subtitle" class="text-xs text-gray-400">Full Name</p>
+          </div>
+        </div>
+        <button onclick="closeModal()" class="p-2 rounded-lg hover:bg-dark-800 transition-colors">
+          <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      
+      <!-- Live Price Display in Modal -->
+      <div class="px-5 py-4 bg-dark-950/50">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="flex flex-col">
+              <span class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Bid</span>
+              <span id="modal-bid" class="text-lg font-bold text-bid price-block">0.00000</span>
+            </div>
+            <div class="w-px h-8 bg-dark-700"></div>
+            <div class="flex flex-col">
+              <span class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Ask</span>
+              <span id="modal-ask" class="text-lg font-bold text-ask price-block">0.00000</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <div id="modal-spread" class="text-xs font-mono text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded-md inline-block">Spread: 0.0</div>
+            <div id="modal-change" class="text-xs mt-1 font-medium">+0.00%</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="p-3 grid grid-cols-2 gap-2">
+        <button onclick="modalAction('order')" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm transition-all active:scale-95">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          New Order
+        </button>
+        <button onclick="modalAction('chart')" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-dark-800 hover:bg-dark-700 text-white font-semibold text-sm transition-all active:scale-95 border border-dark-700">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+          Chart
+        </button>
+        <button onclick="modalAction('dom')" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-dark-800 hover:bg-dark-700 text-white font-semibold text-sm transition-all active:scale-95 border border-dark-700">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg>
+          Depth of Market
+        </button>
+        <button onclick="modalAction('stats')" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-dark-800 hover:bg-dark-700 text-white font-semibold text-sm transition-all active:scale-95 border border-dark-700">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+          Market Stats
+        </button>
+      </div>
+      
+      <!-- Secondary Actions -->
+      <div class="px-3 pb-4 pt-1 border-t border-dark-800">
+        <button onclick="modalAction('properties')" class="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-dark-800 text-gray-300 text-sm transition-colors text-left">
+          <svg class="w-4 h-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 5 15.34a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Symbol Properties
+        </button>
+        <button onclick="modalAction('remove')" class="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-red-500/10 text-red-400 text-sm transition-colors text-left">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Remove from Watchlist
+        </button>
+      </div>
+    </div>
+  </div>
+  
   <script src="app.js"></script>
   <script>
+    // ========== AUTH & STATE ==========
     if (!TS_Auth.requireAuth()) throw new Error('Auth required');
-    const quotes = TS_DB.get('watchlist', []);
-    const list = document.getElementById('quotes-list');
+    
+    let quotes = TS_DB.get('watchlist', []);
+    let coins = [];
+    let viewMode = TS_DB.get('quotes_view_mode', 'simple');
+    let currentWatchlist = TS_DB.get('quotes_active_watchlist', 'main');
+    let editMode = false;
+    let selectedSymbols = new Set();
+    let sortBy = 'symbol';
+    let sortDir = 1;
+    let priceCache = {};
+    let updateInterval = null;
+    let modalSymbol = null;
+    let modalName = null;
+    
+    const listSimple = document.getElementById('quotes-list-simple');
+    const listAdvanced = document.getElementById('quotes-list-advanced');
+    const advancedRows = document.getElementById('advanced-rows');
     const noQuotes = document.getElementById('no-quotes');
-
+    const searchInput = document.getElementById('search-input');
+    const clearSearchBtn = document.getElementById('clear-search');
+    const connStatus = document.getElementById('conn-status');
+    const lastUpdate = document.getElementById('last-update');
+    const editBar = document.getElementById('edit-bar');
+    const editModeBtn = document.getElementById('edit-mode-btn');
+    
+    // ========== SVG ICON HELPERS ==========
+    function getSymbolIcon(symbol) {
+      const s = symbol.toUpperCase();
+      if (s.includes('EUR') || s.includes('USD') || s.includes('GBP') || s.includes('JPY') || s.includes('CHF') || s.includes('CAD') || s.includes('AUD') || s.includes('NZD')) {
+        return `<svg viewBox="0 0 32 32" class="w-full h-full"><circle cx="16" cy="16" r="14" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1.5"/><text x="16" y="20" text-anchor="middle" fill="#60a5fa" font-size="10" font-weight="bold" font-family="monospace">FX</text></svg>`;
+      }
+      if (s.includes('BTC') || s.includes('ETH') || s.includes('CRYPTO') || s.includes('COIN')) {
+        return `<svg viewBox="0 0 32 32" class="w-full h-full"><circle cx="16" cy="16" r="14" fill="#3f2e18" stroke="#f59e0b" stroke-width="1.5"/><text x="16" y="20" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="bold" font-family="monospace">₿</text></svg>`;
+      }
+      if (s.includes('GOLD') || s.includes('XAU') || s.includes('SILVER') || s.includes('XAG')) {
+        return `<svg viewBox="0 0 32 32" class="w-full h-full"><circle cx="16" cy="16" r="14" fill="#3f3f18" stroke="#eab308" stroke-width="1.5"/><text x="16" y="20" text-anchor="middle" fill="#facc15" font-size="10" font-weight="bold" font-family="monospace">Au</text></svg>`;
+      }
+      if (s.includes('OIL') || s.includes('GAS') || s.includes('WTI') || s.includes('BRENT')) {
+        return `<svg viewBox="0 0 32 32" class="w-full h-full"><circle cx="16" cy="16" r="14" fill="#1f2937" stroke="#6b7280" stroke-width="1.5"/><text x="16" y="20" text-anchor="middle" fill="#9ca3af" font-size="10" font-weight="bold" font-family="monospace">En</text></svg>`;
+      }
+      return `<svg viewBox="0 0 32 32" class="w-full h-full"><circle cx="16" cy="16" r="14" fill="#1f2937" stroke="#4b5563" stroke-width="1.5"><text x="16" y="20" text-anchor="middle" fill="#9ca3af" font-size="12" font-weight="bold">${s[0]}</text></circle></svg>`;
+    }
+    
+    // ========== PRICE FORMATTING ==========
+    function formatPriceSuperscript(price, decimals = 5) {
+      if (!price && price !== 0) return '<span class="text-gray-600">--.--</span>';
+      const fixed = price.toFixed(decimals);
+      const parts = fixed.split('.');
+      const main = parts[0] + '.' + parts[1].slice(0, decimals - 1);
+      const superDigit = parts[1].slice(decimals - 1);
+      return `<span class="price-main">${main}</span><span class="price-super">${superDigit}</span>`;
+    }
+    
+    function formatPriceRaw(price, decimals = 5) {
+      if (!price && price !== 0) return '--.-----';
+      return price.toFixed(decimals);
+    }
+    
+    function calculateSpread(bid, ask) {
+      if (!bid || !ask) return 0;
+      return Math.abs(ask - bid);
+    }
+    
+    function generateMockQuoteData(q, coin) {
+      const basePrice = coin ? coin.current_price : (q.price || 1.0);
+      const volatility = basePrice * 0.001;
+      const bid = basePrice - (volatility * 0.3);
+      const ask = basePrice + (volatility * 0.3);
+      const high = basePrice + (volatility * 2);
+      const low = basePrice - (volatility * 2);
+      const change = coin ? coin.price_change_percentage_24h : ((Math.random() - 0.5) * 2);
+      const pointsChange = (basePrice * (change / 100));
+      const spread = calculateSpread(bid, ask);
+      const tickCount = Math.floor(Math.random() * 500) + 1;
+      const now = new Date();
+      const timeStr = now.toTimeString().slice(0, 8);
+      
+      return { bid, ask, high, low, change, pointsChange, spread, tickCount, timeStr, basePrice };
+    }
+    
+    // ========== RENDER FUNCTIONS ==========
     async function renderQuotes(filter = '') {
-      let display = quotes;
-      if (filter) display = quotes.filter(q => q.symbol.toLowerCase().includes(filter.toLowerCase()) || q.name.toLowerCase().includes(filter.toLowerCase()));
-      if (display.length === 0) { list.innerHTML = ''; noQuotes.classList.remove('hidden'); return; }
+      coins = await TS_Market.getCoins();
+      let display = [...quotes];
+      
+      // Filter by watchlist category (mock logic)
+      if (currentWatchlist !== 'main') {
+        display = display.filter(q => {
+          const s = q.symbol.toLowerCase();
+          if (currentWatchlist === 'forex') return /eur|usd|gbp|jpy|chf|cad|aud|nzd/.test(s);
+          if (currentWatchlist === 'crypto') return /btc|eth|coin|crypto|usdt|bnb|sol|xrp/.test(s);
+          if (currentWatchlist === 'stocks') return /aapl|msft|goog|amzn|tsla|nvda|meta/.test(s);
+          return true;
+        });
+      }
+      
+      // Text filter
+      if (filter) {
+        const f = filter.toLowerCase();
+        display = display.filter(q => (q.symbol || '').toLowerCase().includes(f) || (q.name || '').toLowerCase().includes(f));
+      }
+      
+      // Sort
+      display.sort((a, b) => {
+        const ca = coins.find(c => c.symbol.toLowerCase() === (a.symbol || '').toLowerCase());
+        const cb = coins.find(c => c.symbol.toLowerCase() === (b.symbol || '').toLowerCase());
+        let va, vb;
+        switch(sortBy) {
+          case 'bid': va = ca ? ca.current_price : 0; vb = cb ? cb.current_price : 0; break;
+          case 'change': va = ca ? ca.price_change_percentage_24h : 0; vb = cb ? cb.price_change_percentage_24h : 0; break;
+          case 'spread': 
+            const pa = generateMockQuoteData(a, ca); 
+            const pb = generateMockQuoteData(b, cb); 
+            va = pa.spread; vb = pb.spread; 
+            break;
+          default: va = (a.symbol || '').toLowerCase(); vb = (b.symbol || '').toLowerCase();
+        }
+        if (va < vb) return -1 * sortDir;
+        if (va > vb) return 1 * sortDir;
+        return 0;
+      });
+      
+      if (display.length === 0) {
+        listSimple.innerHTML = '';
+        advancedRows.innerHTML = '';
+        noQuotes.classList.remove('hidden');
+        listAdvanced.classList.add('hidden');
+        return;
+      }
+      
       noQuotes.classList.add('hidden');
       
-      const coins = await TS_Market.getCoins();
-      list.innerHTML = display.map(q => {
-        const coin = coins.find(c => c.symbol.toLowerCase() === q.symbol.toLowerCase());
-        const price = coin ? coin.current_price : q.price || 0;
-        const change = coin ? coin.price_change_percentage_24h : 0;
-        const color = change >= 0 ? 'text-green-400' : 'text-red-400';
+      if (viewMode === 'simple') {
+        listAdvanced.classList.add('hidden');
+        listSimple.classList.remove('hidden');
+        renderSimpleView(display);
+      } else {
+        listSimple.classList.add('hidden');
+        listAdvanced.classList.remove('hidden');
+        renderAdvancedView(display);
+      }
+      
+      updateTimestamp();
+    }
+    
+    function renderSimpleView(display) {
+      listSimple.innerHTML = display.map((q, idx) => {
+        const coin = coins.find(c => c.symbol.toLowerCase() === (q.symbol || '').toLowerCase());
+        const data = generateMockQuoteData(q, coin);
+        const price = coin ? coin.current_price : (q.price || 0);
+        const change = data.change;
+        const isUp = change >= 0;
+        const colorClass = isUp ? 'text-up' : 'text-down';
+        const arrowSvg = isUp 
+          ? '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>'
+          : '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+        const iconHtml = coin?.image 
+          ? `<img src="${coin.image}" class="w-9 h-9 rounded-full object-cover ring-1 ring-dark-700" alt="${q.symbol}" loading="lazy">`
+          : `<div class="w-9 h-9 rounded-full overflow-hidden ring-1 ring-dark-700">${getSymbolIcon(q.symbol)}</div>`;
+        
+        const rowId = `quote-row-${q.symbol}`;
+        const prev = priceCache[q.symbol];
+        let flashClass = '';
+        if (prev && price !== prev) {
+          flashClass = price > prev ? 'flash-up' : 'flash-down';
+        }
+        priceCache[q.symbol] = price;
+        
         return `
-          <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-3 flex items-center justify-between cursor-pointer" onclick="showQuoteMenu('${q.symbol}', '${q.name || q.symbol}')">
-            <div class="flex items-center gap-3">
-              ${coin?.image ? `<img src="${coin.image}" class="w-8 h-8 rounded-full">` : '<div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-xs font-bold">' + q.symbol[0].toUpperCase() + '</div>'}
-              <div>
-                <div class="text-sm font-bold text-white">${q.symbol.toUpperCase()}</div>
-                <div class="text-xs text-gray-400">${q.name || q.symbol}</div>
+          <div id="${rowId}" class="quote-row ${flashClass} bg-dark-900/40 hover:bg-dark-800/60 px-4 py-3 cursor-pointer relative overflow-hidden" 
+               onclick="handleRowClick('${q.symbol}', '${(q.name || q.symbol).replace(/'/g, "\\'")}')">
+            ${editMode ? `<div class="absolute left-2 top-1/2 -translate-y-1/2 z-10"><input type="checkbox" class="edit-checkbox w-4 h-4 rounded" onchange="toggleSelect('${q.symbol}')" ${selectedSymbols.has(q.symbol) ? 'checked' : ''} onclick="event.stopPropagation()"></div>` : ''}
+            <div class="flex items-center justify-between ${editMode ? 'pl-6' : ''}">
+              <!-- Left: Symbol Info -->
+              <div class="flex items-center gap-3 min-w-0 flex-1">
+                ${iconHtml}
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-sm font-bold text-white tracking-tight">${(q.symbol || '').toUpperCase()}</span>
+                    <span class="flex items-center gap-0.5 text-[10px] font-bold ${colorClass} bg-dark-800/80 px-1 py-0.5 rounded">
+                      ${arrowSvg}
+                      ${isUp ? '+' : ''}${data.pointsChange >= 0 ? '+' : ''}${data.pointsChange.toFixed(data.pointsChange > 100 ? 2 : (data.pointsChange > 1 ? 4 : 5))}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="text-[10px] text-gray-500 font-mono flex items-center gap-1">
+                      <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      ${data.timeStr}
+                    </span>
+                    <span class="text-[10px] text-gray-600 font-mono">H ${data.tickCount}</span>
+                    <span class="text-[10px] ${colorClass} font-mono">${isUp ? '+' : ''}${change ? change.toFixed(2) : '0.00'}%</span>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="text-right">
-              <div class="text-sm font-bold text-white">$${price ? price.toLocaleString() : '--'}</div>
-              <div class="text-xs ${color}">${change >= 0 ? '+' : ''}${change ? change.toFixed(2) : '0.00'}%</div>
+              
+              <!-- Right: Prices -->
+              <div class="text-right ml-3 shrink-0">
+                <div class="flex items-center gap-2 justify-end">
+                  <div class="flex flex-col items-end">
+                    <span class="text-[10px] text-bid font-semibold uppercase tracking-wider leading-none mb-0.5">Bid</span>
+                    <span class="text-sm font-bold text-bid price-block leading-tight">${formatPriceSuperscript(data.bid, 5)}</span>
+                  </div>
+                  <div class="flex flex-col items-end">
+                    <span class="text-[10px] text-ask font-semibold uppercase tracking-wider leading-none mb-0.5">Ask</span>
+                    <span class="text-sm font-bold text-ask price-block leading-tight">${formatPriceSuperscript(data.ask, 5)}</span>
+                  </div>
+                </div>
+                <div class="flex items-center justify-end gap-2 mt-1">
+                  <span class="text-[10px] text-gray-600 font-mono">L: ${data.low.toFixed(5)}</span>
+                  <span class="text-[10px] text-gray-600 font-mono">H: ${data.high.toFixed(5)}</span>
+                </div>
+              </div>
             </div>
           </div>
         `;
       }).join('');
     }
-
-    function showQuoteMenu(symbol, name) {
-      TS_UI.showModal(symbol.toUpperCase(), 'Choose an action:', [
-        { text: 'New Order', primary: true, onClick: () => { TS_DB.set('selected_symbol', { symbol, name }); location.href = 'order-ticket.html'; } },
-        { text: 'Chart', onClick: () => { TS_DB.set('chart_symbol', symbol); location.href = 'charts.html'; } },
-        { text: 'Market Stats', onClick: () => { TS_DB.set('stats_symbol', symbol); location.href = 'market-statistics.html'; } },
-        { text: 'Remove', onClick: () => { const wl = TS_DB.get('watchlist', []).filter(x => x.symbol !== symbol); TS_DB.set('watchlist', wl); renderQuotes(); } }
-      ]);
+    
+    function renderAdvancedView(display) {
+      advancedRows.innerHTML = display.map((q, idx) => {
+        const coin = coins.find(c => c.symbol.toLowerCase() === (q.symbol || '').toLowerCase());
+        const data = generateMockQuoteData(q, coin);
+        const change = data.change;
+        const isUp = change >= 0;
+        const colorClass = isUp ? 'text-up' : 'text-down';
+        const iconHtml = coin?.image
+          ? `<img src="${coin.image}" class="w-6 h-6 rounded-full object-cover ring-1 ring-dark-700" alt="${q.symbol}" loading="lazy">`
+          : `<div class="w-6 h-6 rounded-full overflow-hidden ring-1 ring-dark-700">${getSymbolIcon(q.symbol)}</div>`;
+        
+        return `
+          <div class="quote-row grid grid-cols-12 gap-1 px-3 py-2.5 items-center cursor-pointer hover:bg-dark-800/40" 
+               onclick="handleRowClick('${q.symbol}', '${(q.name || q.symbol).replace(/'/g, "\\'")}')">
+            <div class="col-span-3 flex items-center gap-2 min-w-0">
+              ${iconHtml}
+              <div class="min-w-0">
+                <div class="text-xs font-bold text-white truncate">${(q.symbol || '').toUpperCase()}</div>
+                <div class="text-[10px] text-gray-500 truncate">${q.name || q.symbol}</div>
+              </div>
+            </div>
+            <div class="col-span-2 text-right">
+              <div class="text-xs font-bold text-bid price-block">${formatPriceRaw(data.bid, 5)}</div>
+            </div>
+            <div class="col-span-2 text-right">
+              <div class="text-xs font-bold text-ask price-block">${formatPriceRaw(data.ask, 5)}</div>
+              <div class="text-[9px] text-yellow-500/80 font-mono">${data.spread.toFixed(1)}</div>
+            </div>
+            <div class="col-span-2 text-right">
+              <div class="text-xs text-gray-300 price-block">${data.high.toFixed(5)}</div>
+            </div>
+            <div class="col-span-2 text-right">
+              <div class="text-xs text-gray-300 price-block">${data.low.toFixed(5)}</div>
+            </div>
+            <div class="col-span-1 text-right">
+              <div class="text-xs font-bold ${colorClass}">${isUp ? '+' : ''}${change ? change.toFixed(2) : '0.00'}%</div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
-
-    document.getElementById('search-input').addEventListener('input', e => renderQuotes(e.target.value));
+    
+    // ========== INTERACTION HANDLERS ==========
+    function handleRowClick(symbol, name) {
+      if (editMode) {
+        toggleSelect(symbol);
+        renderQuotes(searchInput.value);
+        return;
+      }
+      showQuoteMenu(symbol, name);
+    }
+    
+    function showQuoteMenu(symbol, name) {
+      modalSymbol = symbol;
+      modalName = name;
+      const coin = coins.find(c => c.symbol.toLowerCase() === symbol.toLowerCase());
+      const data = generateMockQuoteData({ symbol, name }, coin);
+      
+      document.getElementById('modal-title').textContent = symbol.toUpperCase();
+      document.getElementById('modal-subtitle').textContent = name || symbol;
+      document.getElementById('modal-bid').innerHTML = formatPriceSuperscript(data.bid, 5);
+      document.getElementById('modal-ask').innerHTML = formatPriceSuperscript(data.ask, 5);
+      document.getElementById('modal-spread').textContent = `Spread: ${data.spread.toFixed(1)}`;
+      const chg = document.getElementById('modal-change');
+      chg.textContent = `${data.change >= 0 ? '+' : ''}${data.change ? data.change.toFixed(2) : '0.00'}%`;
+      chg.className = `text-xs mt-1 font-medium ${data.change >= 0 ? 'text-up' : 'text-down'}`;
+      
+      const iconDiv = document.getElementById('modal-icon');
+      if (coin?.image) {
+        iconDiv.innerHTML = `<img src="${coin.image}" class="w-full h-full object-cover">`;
+      } else {
+        iconDiv.innerHTML = getSymbolIcon(symbol);
+      }
+      
+      document.getElementById('quote-modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function closeModal() {
+      document.getElementById('quote-modal').classList.add('hidden');
+      document.body.style.overflow = '';
+      modalSymbol = null;
+      modalName = null;
+    }
+    
+    function modalAction(action) {
+      if (!modalSymbol) return;
+      const symbol = modalSymbol;
+      const name = modalName;
+      closeModal();
+      
+      switch(action) {
+        case 'order':
+          TS_DB.set('selected_symbol', { symbol, name });
+          location.href = 'order-ticket.html';
+          break;
+        case 'chart':
+          TS_DB.set('chart_symbol', symbol);
+          location.href = 'charts.html';
+          break;
+        case 'dom':
+          TS_DB.set('dom_symbol', symbol);
+          location.href = 'depth-of-market.html';
+          break;
+        case 'stats':
+          TS_DB.set('stats_symbol', symbol);
+          location.href = 'market-statistics.html';
+          break;
+        case 'properties':
+          TS_DB.set('properties_symbol', symbol);
+          location.href = 'symbol-properties.html';
+          break;
+        case 'remove':
+          const wl = TS_DB.get('watchlist', []).filter(x => x.symbol !== symbol);
+          TS_DB.set('watchlist', wl);
+          quotes = wl;
+          renderQuotes(searchInput.value);
+          break;
+      }
+    }
+    
+    // Close modal on backdrop click
+    document.getElementById('quote-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+    
+    // ========== VIEW MODE ==========
+    function setViewMode(mode) {
+      viewMode = mode;
+      TS_DB.set('quotes_view_mode', mode);
+      document.getElementById('view-simple').classList.toggle('active', mode === 'simple');
+      document.getElementById('view-advanced').classList.toggle('active', mode === 'advanced');
+      renderQuotes(searchInput.value);
+    }
+    
+    // ========== WATCHLIST TABS ==========
+    function switchWatchlist(name) {
+      currentWatchlist = name;
+      TS_DB.set('quotes_active_watchlist', name);
+      document.querySelectorAll('.watchlist-tab').forEach(btn => {
+        const isActive = btn.dataset.watchlist === name;
+        btn.classList.toggle('active', isActive);
+        btn.classList.toggle('bg-brand-600', isActive);
+        btn.classList.toggle('text-white', isActive);
+        btn.classList.toggle('bg-dark-800', !isActive);
+        btn.classList.toggle('text-gray-400', !isActive);
+      });
+      renderQuotes(searchInput.value);
+    }
+    
+    // ========== EDIT MODE ==========
+    function toggleEditMode() {
+      editMode = !editMode;
+      selectedSymbols.clear();
+      editBar.classList.toggle('hidden', !editMode);
+      editModeBtn.innerHTML = editMode 
+        ? `<svg class="icon-svg w-5 h-5 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>`
+        : `<svg class="icon-svg w-5 h-5 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+      renderQuotes(searchInput.value);
+    }
+    
+    function toggleSelect(symbol) {
+      if (selectedSymbols.has(symbol)) selectedSymbols.delete(symbol);
+      else selectedSymbols.add(symbol);
+      updateEditBar();
+    }
+    
+    function toggleSelectAll() {
+      const all = TS_DB.get('watchlist', []);
+      if (selectedSymbols.size === all.length) selectedSymbols.clear();
+      else all.forEach(q => selectedSymbols.add(q.symbol));
+      renderQuotes(searchInput.value);
+      updateEditBar();
+    }
+    
+    function updateEditBar() {
+      const all = TS_DB.get('watchlist', []);
+      document.getElementById('select-all').checked = selectedSymbols.size === all.length && all.length > 0;
+    }
+    
+    function deleteSelected() {
+      if (selectedSymbols.size === 0) return;
+      const wl = TS_DB.get('watchlist', []).filter(x => !selectedSymbols.has(x.symbol));
+      TS_DB.set('watchlist', wl);
+      quotes = wl;
+      selectedSymbols.clear();
+      renderQuotes(searchInput.value);
+    }
+    
+    // ========== SORT ==========
+    function toggleSortMenu() {
+      const menu = document.getElementById('sort-menu');
+      menu.classList.toggle('hidden');
+    }
+    
+    function sortQuotes(field) {
+      if (sortBy === field) sortDir *= -1;
+      else { sortBy = field; sortDir = 1; }
+      toggleSortMenu();
+      renderQuotes(searchInput.value);
+    }
+    
+    // Close sort menu on outside click
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('sort-menu');
+      const btn = e.target.closest('button[onclick="toggleSortMenu()"]');
+      if (!btn && !menu.contains(e.target)) menu.classList.add('hidden');
+    });
+    
+    // ========== SEARCH ==========
+    function clearSearch() {
+      searchInput.value = '';
+      clearSearchBtn.classList.add('hidden');
+      renderQuotes('');
+    }
+    
+    searchInput.addEventListener('input', e => {
+      clearSearchBtn.classList.toggle('hidden', !e.target.value);
+      renderQuotes(e.target.value);
+    });
+    
+    // ========== REFRESH & LIVE UPDATES ==========
+    function refreshQuotes() {
+      const btn = document.getElementById('refresh-btn');
+      btn.style.transform = 'rotate(360deg)';
+      btn.style.transition = 'transform 0.6s ease';
+      setTimeout(() => { btn.style.transform = ''; btn.style.transition = ''; }, 600);
+      renderQuotes(searchInput.value);
+    }
+    
+    function updateTimestamp() {
+      const now = new Date();
+      lastUpdate.textContent = now.toTimeString().slice(0, 8);
+    }
+    
+    function startLiveUpdates() {
+      updateInterval = setInterval(() => {
+        // Simulate micro price changes for visual effect
+        if (quotes.length > 0 && Math.random() > 0.6) {
+          renderQuotes(searchInput.value);
+        }
+        updateTimestamp();
+      }, 2000);
+    }
+    
+    function stopLiveUpdates() {
+      if (updateInterval) clearInterval(updateInterval);
+    }
+    
+    // ========== INIT ==========
+    // Initialize view mode UI
+    setViewMode(viewMode);
+    switchWatchlist(currentWatchlist);
+    
+    // Initial render
     renderQuotes();
+    
+    // Start live updates
+    startLiveUpdates();
+    
+    // Handle visibility change
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stopLiveUpdates();
+      else startLiveUpdates();
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        if (!document.getElementById('quote-modal').classList.contains('hidden')) {
+          closeModal();
+        }
+      }
+      if (e.key === '/' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    });
   </script>
 </body>
-</html>
+</html>  
