@@ -1350,7 +1350,7 @@
                     <h3 class="font-bold text-white text-lg mb-2">Mobile App</h3>
                     <p class="text-sm text-slate-400 leading-relaxed mb-5">Native iOS and Android applications with biometric authentication, push notifications, and one‑tap trading execution.</p>
                     <div class="flex items-center gap-3">
-                        <span class="text-sm font-semibold text-slate-500">Coming Soon</span>
+                        <span class="text-sm font-semibold text-slate-500">Soon</span>
                     </div>
                 </div>
                 <div class="reveal product-card card-hover rounded-2xl p-6 lg:p-8 group" style="transition-delay: 200ms">
@@ -1407,7 +1407,7 @@
                     <h3 class="font-bold text-white text-lg mb-2">Copy Trading</h3>
                     <p class="text-sm text-slate-400 leading-relaxed mb-5">Follow and replicate top‑performing traders automatically. Full transparency with historical performance metrics and risk scores.</p>
                     <div class="flex items-center gap-3">
-                        <span class="text-sm font-semibold text-slate-500">Coming Soon</span>
+                        <span class="text-sm font-semibold text-slate-500">Join</span>
                     </div>
                 </div>
             </div>
@@ -1453,7 +1453,7 @@
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400"></span>
                 </span>
-                Auto‑refreshing every 60 seconds via Finnhub API
+                Auto‑refreshing
             </div>
         </div>
     </section>
@@ -1486,17 +1486,90 @@
             <div class="grid sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 mb-12">
                 <div class="lg:col-span-4">
                     <a href="index.html" class="flex items-center gap-3 mb-5">
-                        <svg viewBox="0 0 40 40" class="h-10 w-10" fill="none">
-                            <defs>
-                                <linearGradient id="footer-logo-grad" x1="0" y1="0" x2="40" y2="40">
-                                    <stop offset="0%" stop-color="#3b82f6" />
-                                    <stop offset="100%" stop-color="#1d4ed8" />
-                                </linearGradient>
-                            </defs>
-                            <rect x="2" y="2" width="36" height="36" rx="8" fill="url(#footer-logo-grad)" />
-                            <path d="M10 28L16 18L22 24L30 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                            <circle cx="30" cy="10" r="2" fill="white" />
-                        </svg>
+                        <!-- Trade Station — Layered Block Panel -->
+<div class="flex items-center gap-2.5">
+    <svg viewBox="0 0 40 40" class="h-9 w-9" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <!-- Trading gradient: Profit green → Digital cyan -->
+            <linearGradient id="ts-grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#10b981" />
+                <stop offset="100%" stop-color="#06b6d4" />
+            </linearGradient>
+
+            <filter id="ts-glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="2" result="blur"/>
+                <feFlood flood-color="#10b981" flood-opacity="0.45"/>
+                <feComposite in2="blur" operator="in"/>
+                <feMerge>
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+
+            <style>
+                .ts-stream {
+                    stroke: rgba(16, 185, 129, 0.12);
+                    stroke-width: 0.4;
+                    stroke-dasharray: 2 6;
+                    animation: ts-flow 3s linear infinite;
+                }
+                .ts-stream:nth-child(2) { animation-delay: 1s; }
+                .ts-stream:nth-child(3) { animation-delay: 2s; }
+                @keyframes ts-flow { to { stroke-dashoffset: -16; } }
+
+                .ts-pulse {
+                    animation: ts-breathe 2.5s ease-in-out infinite;
+                    transform-origin: 20px 6px;
+                }
+                @keyframes ts-breathe {
+                    0%, 100% { opacity: 1; transform: scale(1); }
+                    50% { opacity: 0.75; transform: scale(1.08); }
+                }
+            </style>
+        </defs>
+
+        <!-- Black panel base -->
+        <rect x="0" y="0" width="40" height="40" rx="10" fill="#0a0a0a" />
+
+        <!-- Animated background data streams -->
+        <path d="M4 12 L36 12" class="ts-stream" />
+        <path d="M4 20 L36 20" class="ts-stream" />
+        <path d="M4 28 L36 28" class="ts-stream" />
+
+        <!-- Subtle inset border -->
+        <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#ts-grad)" stroke-width="0.5" fill="none" opacity="0.2" />
+
+        <!-- Layered Stack / Blockchain Core -->
+        <g filter="url(#ts-glow)">
+            <!-- Top cap -->
+            <path d="M20 6 L6 13 L20 20 L34 13 Z" 
+                  stroke="url(#ts-grad)" 
+                  stroke-width="2" 
+                  stroke-linejoin="round"
+                  fill="rgba(16,185,129,0.08)" />
+            <!-- Mid layer -->
+            <path d="M6 20 L20 27 L34 20" 
+                  stroke="url(#ts-grad)" 
+                  stroke-width="2" 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round" />
+            <!-- Base layer -->
+            <path d="M6 27 L20 34 L34 27" 
+                  stroke="url(#ts-grad)" 
+                  stroke-width="2" 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round" />
+        </g>
+
+        <!-- Chain spine / verified nodes -->
+        <circle cx="20" cy="6" r="1.5" fill="#10b981" class="ts-pulse" />
+        <circle cx="20" cy="20" r="1.2" fill="#06b6d4" />
+        <circle cx="20" cy="34" r="1.5" fill="#10b981" />
+
+        <!-- Side ledger rails (subtle 3D block feel) -->
+        <path d="M6 13 L6 27" stroke="url(#ts-grad)" stroke-width="1" stroke-linecap="round" opacity="0.25" />
+        <path d="M34 13 L34 27" stroke="url(#ts-grad)" stroke-width="1" stroke-linecap="round" opacity="0.25" />
+       </svg>
                         <div>
                             <span class="text-lg font-bold text-white tracking-tight block leading-none">Trade Station</span>
                             <span class="text-[10px] text-slate-500 tracking-widest uppercase">Multi‑Asset Platform</span>
