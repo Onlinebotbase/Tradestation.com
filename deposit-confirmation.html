@@ -85,13 +85,6 @@
       border: 1px solid rgba(255,23,68,0.2);
       backdrop-filter: blur(12px);
     }
-    .timer-ring {
-      transform: rotate(-90deg);
-      transform-origin: 50% 50%;
-    }
-    .timer-ring-circle {
-      transition: stroke-dashoffset 1s linear;
-    }
     .code-input {
       letter-spacing: 0.5em;
       font-variant-numeric: tabular-nums;
@@ -135,29 +128,6 @@
         <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="1.5"/>
         <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
-    </div>
-
-    <!-- Timer Indicator (15s delay) -->
-    <div id="timer-panel" class="mt5-card rounded-xl p-4 mb-4 flex items-center gap-4">
-      <div class="relative w-12 h-12 flex-shrink-0">
-        <svg width="48" height="48" viewBox="0 0 48 48" class="timer-ring">
-          <circle cx="24" cy="24" r="20" stroke="rgba(255,255,255,0.06)" stroke-width="3" fill="none"/>
-          <circle id="timer-circle" cx="24" cy="24" r="20" stroke="#2979FF" stroke-width="3" fill="none"
-            stroke-dasharray="125.6" stroke-dashoffset="125.6" stroke-linecap="round" class="timer-ring-circle"/>
-        </svg>
-        <div class="absolute inset-0 flex items-center justify-center">
-          <span id="timer-text" class="text-xs font-bold font-mono text-brand-500">15</span>
-        </div>
-      </div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2 mb-1">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="text-warning-500">
-            <path d="M12 8V12M12 16H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          <span class="text-sm font-semibold text-white">Security Verification Active</span>
-        </div>
-        <p class="text-xs text-gray-400 leading-relaxed">Please wait for the verification window to open before entering your deposit code.</p>
-      </div>
     </div>
 
     <!-- Deposit Details Card -->
@@ -271,20 +241,6 @@
       </div>
     </div>
 
-    <!-- Success Banner (Hidden by default) -->
-    <div id="success-banner" class="hidden rounded-xl p-4 mb-4 bg-success-500/10 border border-success-500/20">
-      <div class="flex items-center gap-3">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="text-success-500 flex-shrink-0">
-          <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.709 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18455 2.99721 7.13631 4.39828 5.49706C5.79935 3.85781 7.69279 2.71537 9.79619 2.24013C11.8996 1.7649 14.1003 1.98232 16.07 2.85999" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M22 4L12 14.01L9 11.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <div>
-          <h3 class="text-sm font-bold text-success-500">Deposit Completed</h3>
-          <p class="text-xs text-gray-300 mt-0.5">Your funds have been successfully credited to your account.</p>
-        </div>
-      </div>
-    </div>
-
     <!-- Verification Form -->
     <form id="confirm-form" class="space-y-4">
       <div class="mt5-card rounded-xl p-5">
@@ -303,8 +259,8 @@
               id="code" 
               required 
               maxlength="6" 
-              pattern="\d{6}" 
-              inputmode="numeric"
+              pattern="[A-Za-z0-9]{6}" 
+              inputmode="text"
               autocomplete="one-time-code"
               class="w-full px-4 py-3.5 mt5-input rounded-xl text-white text-center text-2xl font-mono code-input focus:outline-none placeholder-gray-600"
               placeholder="000000"
@@ -411,14 +367,6 @@
     ];
 
     // ============================================================
-    // STATE MANAGEMENT
-    // ============================================================
-    const pageLoadTime = Date.now();
-    let timerInterval = null;
-    let codesEnabled = false;
-    const CODE_DELAY_MS = 15000; // 15 seconds
-
-    // ============================================================
     // AUTH & DATA INITIALIZATION (Preserved from original)
     // ============================================================
     if (!TS_Auth.requireAuth()) throw new Error('Auth required');
@@ -429,46 +377,6 @@
     document.getElementById('dep-coin').textContent = pending.coin;
     document.getElementById('dep-network').textContent = pending.network;
     document.getElementById('dep-address').textContent = pending.address;
-
-    // ============================================================
-    // TIMER LOGIC (15-second security delay)
-    // ============================================================
-    function initSecurityTimer() {
-      const timerText = document.getElementById('timer-text');
-      const timerCircle = document.getElementById('timer-circle');
-      const timerPanel = document.getElementById('timer-panel');
-      const circumference = 2 * Math.PI * 20; // r=20
-
-      let remaining = 15;
-
-      timerInterval = setInterval(() => {
-        const elapsed = Date.now() - pageLoadTime;
-        const left = Math.max(0, Math.ceil((CODE_DELAY_MS - elapsed) / 1000));
-        remaining = left;
-
-        timerText.textContent = left;
-        const offset = circumference - (elapsed / CODE_DELAY_MS) * circumference;
-        timerCircle.style.strokeDashoffset = Math.max(0, offset);
-
-        if (elapsed >= CODE_DELAY_MS) {
-          clearInterval(timerInterval);
-          codesEnabled = true;
-          timerText.textContent = '✓';
-          timerText.classList.remove('text-brand-500');
-          timerText.classList.add('text-success-500');
-          timerCircle.style.stroke = '#00C853';
-          timerPanel.classList.add('border-success-500/20');
-          
-          // Update panel text
-          const panelTitle = timerPanel.querySelector('span.text-sm');
-          const panelDesc = timerPanel.querySelector('p');
-          if (panelTitle) panelTitle.textContent = 'Verification Window Open';
-          if (panelDesc) panelDesc.textContent = 'You may now enter your deposit code to complete the transaction.';
-          
-          TS_UI.showToast('Verification window is now open', 'success');
-        }
-      }, 1000);
-    }
 
     // ============================================================
     // SUPPORT BANNER LOGIC
@@ -490,17 +398,7 @@
     }
 
     // ============================================================
-    // SUCCESS BANNER LOGIC
-    // ============================================================
-    const successBanner = document.getElementById('success-banner');
-
-    function showSuccessBanner() {
-      successBanner.classList.remove('hidden');
-      successBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    // ============================================================
-    // CODE VALIDATION LOGIC
+    // CODE VALIDATION HELPERS
     // ============================================================
     function getUsedCodes() {
       return TS_DB.get('used_deposit_codes', []);
@@ -508,8 +406,8 @@
 
     function markCodeUsed(code) {
       const used = getUsedCodes();
-      if (!used.includes(code)) {
-        used.push(code);
+      if (!used.includes(code.toUpperCase())) {
+        used.push(code.toUpperCase());
         TS_DB.set('used_deposit_codes', used);
       }
     }
@@ -523,34 +421,27 @@
     }
 
     // ============================================================
-    // FORM SUBMISSION (Preserved & Enhanced)
+    // FORM SUBMISSION (15-second processing then auto-redirect)
     // ============================================================
     document.getElementById('confirm-form').addEventListener('submit', function(e) {
       e.preventDefault();
 
       const codeInput = document.getElementById('code');
-      const code = codeInput.value.trim().toUpperCase();
+      const code = codeInput.value.trim();
       const validIcon = document.getElementById('code-valid-icon');
       const invalidIcon = document.getElementById('code-invalid-icon');
 
       // Reset icons
       validIcon.classList.add('hidden');
       invalidIcon.classList.add('hidden');
+      codeInput.classList.remove('border-danger-500');
 
-      // Basic format validation (6 alphanumeric for deposit codes, not just digits)
+      // Basic format validation
       if (code.length !== 6) {
         TS_UI.showToast('Enter a valid 6-character code', 'warning');
         invalidIcon.classList.remove('hidden');
         codeInput.classList.add('border-danger-500');
         setTimeout(() => codeInput.classList.remove('border-danger-500'), 2000);
-        return;
-      }
-
-      // Check 15-second delay
-      if (!codesEnabled) {
-        const remaining = Math.ceil((CODE_DELAY_MS - (Date.now() - pageLoadTime)) / 1000);
-        TS_UI.showToast(`Please wait ${remaining} more seconds before submitting`, 'warning');
-        invalidIcon.classList.remove('hidden');
         return;
       }
 
@@ -571,18 +462,21 @@
         return;
       }
 
-      // Hide any banners
+      // Hide support banner if visible
       hideSupportBanner();
 
-      // Show loading
+      // Disable submit button during processing
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.disabled = true;
+
+      // Show loading overlay for 15 seconds
       document.getElementById('loading-overlay').classList.remove('hidden');
 
-      // Process deposit
       setTimeout(() => {
         // Mark code as used
         markCodeUsed(code);
 
-        // Add to balance
+        // Add deposited amount to balance
         TS_Balance.add(pending.amount);
 
         // Record transaction
@@ -593,7 +487,7 @@
           method: 'crypto',
           symbol: pending.coin,
           network: pending.network,
-          depositCode: code,
+          depositCode: code.toUpperCase(),
           status: 'completed',
           createdAt: new Date().toISOString()
         });
@@ -602,19 +496,13 @@
         // Clear pending deposit
         TS_DB.remove('pending_crypto_deposit');
 
-        // Hide loading
-        document.getElementById('loading-overlay').classList.add('hidden');
-
-        // Show success UI
-        validIcon.classList.remove('hidden');
-        showSuccessBanner();
+        // Show success toast
         TS_UI.showToast('Deposit successful!', 'success');
 
-        // Navigate after brief delay
-        setTimeout(() => {
-          location.href = 'dashboard.html';
-        }, 2500);
-      }, 3000);
+        // Automatically redirect to dashboard
+        location.href = 'dashboard.html';
+
+      }, 15000); // 15 seconds loading
     });
 
     // ============================================================
@@ -629,11 +517,6 @@
       document.getElementById('code-invalid-icon').classList.add('hidden');
       this.classList.remove('border-danger-500');
     });
-
-    // ============================================================
-    // INITIALIZE
-    // ============================================================
-    initSecurityTimer();
   </script>
 </body>
 </html>
