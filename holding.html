@@ -463,16 +463,26 @@
         const first = active[0];
         document.getElementById('currentPlan').textContent = first.planName || 'Standard Plan';
         
+        // Calculate remaining time based on selected duration from investment start
         const start = new Date(first.startDate || first.createdAt).getTime();
-        const end = new Date(first.endDate).getTime();
         const selectedDuration = (first.duration && !isNaN(first.duration)) 
           ? parseInt(first.duration) 
-          : Math.floor((end - start) / 86400000);
+          : Math.floor((new Date(first.endDate).getTime() - start) / 86400000);
+        const endTimestamp = start + (selectedDuration * 86400000);
         const now = Date.now();
-        const elapsedDays = Math.floor((now - start) / 86400000);
-        const remainingDays = Math.max(0, selectedDuration - elapsedDays);
+        const remaining = Math.max(0, endTimestamp - now);
+        const remainingDays = Math.floor(remaining / 86400000);
+        const hours = Math.floor((remaining % 86400000) / 3600000);
+        const minutes = Math.floor((remaining % 3600000) / 60000);
+        const seconds = Math.floor((remaining % 60000) / 1000);
         
         document.getElementById('currentDuration').textContent = remainingDays + ' days remaining';
+        // Update the muted text in the Duration card to show live countdown
+        const durationCard = document.getElementById('currentDuration').closest('.mt5-card');
+        if (durationCard) {
+          const mutedSpan = durationCard.querySelector('.text-xs.text-mt5-muted');
+          if (mutedSpan) mutedSpan.textContent = `${hours}h ${minutes}m ${seconds}s remaining`;
+        }
       } else {
         document.getElementById('currentPlan').textContent = 'No active plan';
         document.getElementById('currentDuration').textContent = '-';
@@ -492,11 +502,19 @@
         const profit = liveVal - h.amount;
         const profitPct = h.amount > 0 ? (profit / h.amount) * 100 : 0;
         const now = Date.now();
-        const end = new Date(h.endDate).getTime();
-        const remaining = Math.max(0, end - now);
+        
+        // Calculate remaining time based on selected duration from investment start
+        const start = new Date(h.startDate || h.createdAt).getTime();
+        const selectedDuration = (h.duration && !isNaN(h.duration)) 
+          ? parseInt(h.duration) 
+          : Math.floor((new Date(h.endDate).getTime() - start) / 86400000);
+        const endTimestamp = start + (selectedDuration * 86400000);
+        const remaining = Math.max(0, endTimestamp - now);
+        
         const days = Math.floor(remaining / 86400000);
         const hours = Math.floor((remaining % 86400000) / 3600000);
         const minutes = Math.floor((remaining % 3600000) / 60000);
+        const seconds = Math.floor((remaining % 60000) / 1000);
         const isProfitable = profit >= 0;
 
         return `
@@ -514,7 +532,7 @@
                   <div class="flex items-center gap-2 mt-0.5">
                     <span class="text-xs text-mt5-muted">ID: ${h.id ? h.id.substring(0, 8) : 'N/A'}</span>
                     <span class="w-1 h-1 rounded-full bg-mt5-muted"></span>
-                    <span class="text-xs ${days < 3 ? 'text-mt5-danger' : 'text-mt5-success'} font-medium">${days}d ${hours}h ${minutes}m left</span>
+                    <span class="text-xs ${days < 3 ? 'text-mt5-danger' : 'text-mt5-success'} font-medium">${days}d ${hours}h ${minutes}m ${seconds}s left</span>
                   </div>
                 </div>
               </div>
