@@ -433,7 +433,7 @@
       let totalInvested = 0;
       let primaryAsset = '-';
       let maxAmount = 0;
-      let totalDays = 0;
+      let totalSelectedDays = 0;
 
       active.forEach(h => {
         const liveVal = TS_Invest.calculateLiveValue(h);
@@ -446,23 +446,33 @@
         }
         const start = new Date(h.startDate || h.createdAt).getTime();
         const end = new Date(h.endDate).getTime();
-        totalDays += Math.floor((end - start) / 86400000);
+        // Use the user-selected duration (in days) if available; otherwise derive from the date range
+        const selectedDuration = (h.duration && !isNaN(h.duration)) 
+          ? parseInt(h.duration) 
+          : Math.floor((end - start) / 86400000);
+        totalSelectedDays += selectedDuration;
       });
 
       document.getElementById('holdingBalance').textContent = '$' + totalBalance.toFixed(2);
       document.getElementById('holdingReturns').textContent = '$' + Math.max(0, totalReturns).toFixed(2);
       document.getElementById('totalInvested').textContent = '$' + totalInvested.toFixed(2);
       document.getElementById('primaryAsset').textContent = primaryAsset;
-      document.getElementById('avgDuration').textContent = active.length > 0 ? Math.floor(totalDays / active.length) + ' days' : '-';
+      document.getElementById('avgDuration').textContent = active.length > 0 ? Math.floor(totalSelectedDays / active.length) + ' days' : '-';
       
       if (active.length > 0) {
         const first = active[0];
         document.getElementById('currentPlan').textContent = first.planName || 'Standard Plan';
+        
+        const start = new Date(first.startDate || first.createdAt).getTime();
         const end = new Date(first.endDate).getTime();
+        const selectedDuration = (first.duration && !isNaN(first.duration)) 
+          ? parseInt(first.duration) 
+          : Math.floor((end - start) / 86400000);
         const now = Date.now();
-        const remaining = Math.max(0, end - now);
-        const days = Math.floor(remaining / 86400000);
-        document.getElementById('currentDuration').textContent = days + ' days remaining';
+        const elapsedDays = Math.floor((now - start) / 86400000);
+        const remainingDays = Math.max(0, selectedDuration - elapsedDays);
+        
+        document.getElementById('currentDuration').textContent = remainingDays + ' days remaining';
       } else {
         document.getElementById('currentPlan').textContent = 'No active plan';
         document.getElementById('currentDuration').textContent = '-';
