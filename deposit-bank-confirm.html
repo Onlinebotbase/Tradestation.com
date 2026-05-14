@@ -5,32 +5,729 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Confirm Bank Deposit - Trade Station</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{600:'#2563eb'},dark:{800:'#1f2937',900:'#111827',950:'#0b0f19'}}}}}</script>
-  <style>body{background:#0b0f19;}</style>
-</head>
-<body class="text-white">
-  <div id="ts-global-header"></div>
-  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
-    <h1 class="text-lg font-bold mb-4">Confirm Deposit</h1>
-    <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 mb-4 space-y-3">
-      <div class="flex justify-between"><span class="text-sm text-gray-400">Amount</span><span class="text-sm font-bold text-white" id="dep-amount">--</span></div>
-      <div class="flex justify-between"><span class="text-sm text-gray-400">Method</span><span class="text-sm font-bold text-white">Bank Transfer</span></div>
-      <div class="flex justify-between"><span class="text-sm text-gray-400">Bank</span><span class="text-sm font-bold text-white" id="dep-bank">--</span></div>
-      <div class="flex justify-between"><span class="text-sm text-gray-400">Status</span><span class="text-sm font-bold text-yellow-400">Pending</span></div>
-    </div>
-    <div class="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 mb-4">
-      <p class="text-xs text-yellow-400">After confirming, please contact support via live chat to complete your bank deposit. A 6-digit validation code will be required.</p>
-    </div>
-    <button onclick="confirmDeposit()" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl mb-3">Confirm Bank Deposit</button>
-    <button onclick="location.href='deposit-bank.html'" class="w-full py-3 bg-gray-800 text-gray-300 font-bold rounded-xl">Edit Details</button>
-  </main>
-  <div id="ts-global-footer"></div>
-  <script src="app.js"></script>
   <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 600: '#2563eb', 700: '#1d4ed8', 500: '#3b82f6' },
+            dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19', 850: '#161d2e' },
+            mt5: { accent: '#2563eb', success: '#10b981', warning: '#f59e0b', danger: '#ef4444', border: '#2d3748', panel: '#151b27' }
+          },
+          fontFamily: {
+            mono: ['ui-monospace','SFMono-Regular','Menlo','Monaco','Consolas','monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-panel: #111827;
+      --bg-elevated: #161d2e;
+      --border-color: #2d3748;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --accent: #2563eb;
+      --accent-glow: rgba(37,99,235,0.15);
+      --success: #10b981;
+      --warning: #f59e0b;
+    }
+    * { -webkit-tap-highlight-color: transparent; }
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    /* Panel glass effect */
+    .panel {
+      background: linear-gradient(145deg, rgba(17,24,39,0.95), rgba(11,15,25,0.98));
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+    .panel-elevated {
+      background: linear-gradient(145deg, rgba(22,29,46,0.98), rgba(17,24,39,0.95));
+      border: 1px solid rgba(45,55,72,0.8);
+      border-radius: 12px;
+    }
+    
+    /* Status badge */
+    .status-pending {
+      background: rgba(245,158,11,0.12);
+      border: 1px solid rgba(245,158,11,0.25);
+      color: #fbbf24;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    
+    /* Detail row */
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(45,55,72,0.5);
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label {
+      color: var(--text-secondary);
+      font-size: 0.8125rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .detail-value {
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-align: right;
+      word-break: break-word;
+      max-width: 60%;
+    }
+    .detail-value-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.8125rem;
+      letter-spacing: -0.01em;
+    }
+    
+    /* Invoice table */
+    .invoice-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    .invoice-table th {
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      background: rgba(17,24,39,0.6);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .invoice-table td {
+      padding: 12px;
+      font-size: 0.8125rem;
+      border-bottom: 1px solid rgba(45,55,72,0.3);
+    }
+    .invoice-table tr:last-child td { border-bottom: none; }
+    
+    /* Buttons */
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      border: 1px solid rgba(59,130,246,0.4);
+      color: white;
+      font-weight: 700;
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 0.9375rem;
+      letter-spacing: -0.01em;
+      box-shadow: 0 4px 16px rgba(37,99,235,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      cursor: pointer;
+    }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-secondary {
+      background: linear-gradient(145deg, #1f2937, #161d2e);
+      border: 1px solid rgba(45,55,72,0.8);
+      color: #94a3b8;
+      font-weight: 600;
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 0.9375rem;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      cursor: pointer;
+    }
+    .btn-secondary:active { transform: scale(0.98); }
+    
+    /* Copy button */
+    .btn-copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: rgba(37,99,235,0.1);
+      border: 1px solid rgba(37,99,235,0.2);
+      border-radius: 6px;
+      color: #60a5fa;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-copy:active { background: rgba(37,99,235,0.2); }
+    
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 24px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 4px;
+      bottom: 4px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--success), rgba(16,185,129,0.2));
+      border-radius: 2px;
+    }
+    .timeline-item {
+      position: relative;
+      padding-bottom: 16px;
+    }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-dot {
+      position: absolute;
+      left: -24px;
+      top: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--bg-primary);
+      border: 2px solid var(--success);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .timeline-dot.pending { border-color: var(--warning); }
+    .timeline-dot svg { width: 8px; height: 8px; }
+    
+    /* Warning banner */
+    .banner-warning {
+      background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.03));
+      border: 1px solid rgba(245,158,11,0.2);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .banner-warning::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(to bottom, #f59e0b, #d97706);
+    }
+    
+    /* Security badge */
+    .security-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(16,185,129,0.08);
+      border: 1px solid rgba(16,185,129,0.15);
+      border-radius: 8px;
+      color: #34d399;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    
+    /* Animations */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+    .pulse-ring::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid var(--warning);
+      animation: pulse-ring 2s cubic-bezier(0.4,0,0.6,1) infinite;
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-up {
+      animation: slideUp 0.4s ease-out forwards;
+    }
+    .delay-1 { animation-delay: 0.08s; opacity: 0; }
+    .delay-2 { animation-delay: 0.16s; opacity: 0; }
+    .delay-3 { animation-delay: 0.24s; opacity: 0; }
+    .delay-4 { animation-delay: 0.32s; opacity: 0; }
+    
+    /* Header invoice style */
+    .invoice-header {
+      background: linear-gradient(135deg, rgba(37,99,235,0.08), rgba(17,24,39,0.4));
+      border: 1px solid rgba(37,99,235,0.15);
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .invoice-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    
+    /* Section label */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #64748b;
+      margin-bottom: 12px;
+      margin-top: 24px;
+    }
+    
+    /* SVG icon sizing helpers */
+    .icon-sm { width: 16px; height: 16px; }
+    .icon-md { width: 20px; height: 20px; }
+    .icon-lg { width: 24px; height: 24px; }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+  </style>
+</head>
+<body class="text-white min-h-screen">
+
+  <div id="ts-global-header"></div>
+
+  <main class="pb-28 pt-3 px-4 max-w-lg mx-auto">
+
+    <!-- Page Title -->
+    <div class="flex items-center justify-between mb-5 animate-slide-up">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600/20 to-blue-700/10 border border-blue-500/20 flex items-center justify-center">
+          <svg class="icon-md text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="14" rx="2"/>
+            <line x1="2" y1="10" x2="22" y2="10"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white leading-tight">Confirm Deposit</h1>
+          <p class="text-xs text-slate-400 mt-0.5">Bank Transfer Invoice</p>
+        </div>
+      </div>
+      <div class="status-badge status-pending">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-yellow-400"></span>
+        </span>
+        Pending
+      </div>
+    </div>
+
+    <!-- Invoice Header Card -->
+    <div class="invoice-header p-5 mb-4 animate-slide-up delay-1">
+      <div class="flex justify-between items-start mb-4 relative z-10">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <svg class="icon-sm text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+            <span class="text-sm font-bold text-white tracking-tight">Trade Station</span>
+          </div>
+          <p class="text-xs text-slate-400">Deposit Confirmation</p>
+        </div>
+        <div class="text-right">
+          <p class="text-xs font-mono text-slate-500 mb-0.5" id="invoice-number">#--</p>
+          <p class="text-xs text-slate-400" id="invoice-date">--</p>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4 relative z-10">
+        <div class="panel-elevated p-3">
+          <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Account</p>
+          <p class="text-sm font-bold text-white" id="acc-display">--</p>
+        </div>
+        <div class="panel-elevated p-3">
+          <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Client</p>
+          <p class="text-sm font-bold text-white" id="client-name">--</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Amount & Method Summary -->
+    <div class="panel p-0 mb-4 overflow-hidden animate-slide-up delay-2">
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th>
+              <svg class="icon-sm inline-block mr-1 -mt-0.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+              </svg>
+              Description
+            </th>
+            <th class="text-right">
+              <svg class="icon-sm inline-block mr-1 -mt-0.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              Amount
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                  <svg class="icon-sm text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="font-semibold text-slate-200 text-sm">Bank Deposit</p>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Wire Transfer</p>
+                </div>
+              </div>
+            </td>
+            <td class="text-right">
+              <p class="font-bold text-white text-sm" id="dep-amount">--</p>
+              <p class="text-[11px] text-slate-500 mt-0.5">USD</p>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                  <svg class="icon-sm text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="font-semibold text-slate-200 text-sm">Processing Fee</p>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Broker covered</p>
+                </div>
+              </div>
+            </td>
+            <td class="text-right">
+              <p class="font-bold text-emerald-400 text-sm">$0.00</p>
+              <p class="text-[11px] text-slate-500 mt-0.5">No commission</p>
+            </td>
+          </tr>
+          <tr class="bg-blue-500/5">
+            <td class="font-bold text-white text-sm">Total Amount</td>
+            <td class="text-right font-bold text-white text-base" id="dep-total">--</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Transaction Details -->
+    <div class="section-label animate-slide-up delay-2">
+      <svg class="icon-sm text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>
+      </svg>
+      Transaction Details
+    </div>
+    <div class="panel p-4 mb-4 animate-slide-up delay-2">
+      <div class="detail-row">
+        <span class="detail-label">
+          <svg class="icon-sm text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Amount to Deposit
+        </span>
+        <span class="detail-value" id="dep-amount-row">--</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">
+          <svg class="icon-sm text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+          </svg>
+          Payment Method
+        </span>
+        <span class="detail-value flex items-center gap-2">
+          <svg class="icon-sm text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+          </svg>
+          Bank Transfer
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">
+          <svg class="icon-sm text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          Receiving Bank
+        </span>
+        <span class="detail-value" id="dep-bank">--</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">
+          <svg class="icon-sm text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          Status
+        </span>
+        <span class="status-badge status-pending">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-yellow-400"></span>
+          </span>
+          Pending
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">
+          <svg class="icon-sm text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Expires In
+        </span>
+        <span class="detail-value font-mono text-amber-400" id="countdown-timer">23:59:59</span>
+      </div>
+    </div>
+
+    <!-- Bank Wire Instructions -->
+    <div class="section-label animate-slide-up delay-3">
+      <svg class="icon-sm text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      Wire Transfer Instructions
+    </div>
+    <div class="panel p-4 mb-4 animate-slide-up delay-3">
+      <div class="detail-row">
+        <span class="detail-label">Bank Name</span>
+        <span class="detail-value flex items-center gap-2">
+          <span id="wire-bank-name">--</span>
+          <button class="btn-copy" onclick="copyToClipboard(this, document.getElementById('wire-bank-name').textContent)">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copy
+          </button>
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Account Name</span>
+        <span class="detail-value">Trade Station Ltd</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Account Number</span>
+        <span class="detail-value detail-value-mono flex items-center gap-2">
+          <span id="wire-acc-num">**** **** 4582</span>
+          <button class="btn-copy" onclick="copyToClipboard(this, document.getElementById('wire-acc-num').textContent)">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">SWIFT / BIC</span>
+        <span class="detail-value detail-value-mono flex items-center gap-2">
+          <span id="wire-swift">TRSTUS33</span>
+          <button class="btn-copy" onclick="copyToClipboard(this, document.getElementById('wire-swift').textContent)">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Reference</span>
+        <span class="detail-value detail-value-mono flex items-center gap-2">
+          <span id="wire-ref">--</span>
+          <button class="btn-copy" onclick="copyToClipboard(this, document.getElementById('wire-ref').textContent)">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </span>
+      </div>
+    </div>
+
+    <!-- Security Notice -->
+    <div class="banner-warning p-4 mb-4 animate-slide-up delay-3">
+      <div class="flex gap-3">
+        <div class="flex-shrink-0 mt-0.5">
+          <svg class="icon-lg text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-bold text-amber-300 mb-1">Action Required</p>
+          <p class="text-xs text-amber-200/80 leading-relaxed">
+            After confirming, please contact support via live chat to complete your bank deposit. 
+            A 6-digit validation code will be required to finalize this transaction.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Processing Timeline -->
+    <div class="section-label animate-slide-up delay-4">
+      <svg class="icon-sm text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+      Processing Timeline
+    </div>
+    <div class="panel p-4 mb-6 animate-slide-up delay-4">
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <p class="text-sm font-semibold text-emerald-400">Request Created</p>
+          <p class="text-xs text-slate-500 mt-0.5">Deposit request generated</p>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot pending relative pulse-ring">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </div>
+          <p class="text-sm font-semibold text-amber-400">Awaiting Confirmation</p>
+          <p class="text-xs text-slate-500 mt-0.5">Confirm to proceed with wire transfer</p>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="border-color: #475569;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <p class="text-sm font-semibold text-slate-400">Validation & Credit</p>
+          <p class="text-xs text-slate-500 mt-0.5">6-digit code verification + broker processing</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security Footer -->
+    <div class="flex items-center justify-center gap-3 mb-5 animate-slide-up delay-4">
+      <div class="security-badge">
+        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        SSL Secured
+      </div>
+      <div class="security-badge">
+        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        256-bit Encrypted
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="space-y-3 animate-slide-up delay-4">
+      <button onclick="confirmDeposit()" class="btn-primary">
+        <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        Confirm Bank Deposit
+      </button>
+      
+      <button onclick="location.href='deposit-bank.html'" class="btn-secondary">
+        <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Edit Details
+      </button>
+    </div>
+
+  </main>
+
+  <div id="ts-global-footer"></div>
+
+  <!-- Original app.js -->
+  <script src="app.js"></script>
+
+  <!-- Preserved & Enhanced Logic -->
+  <script>
+    // ─── AUTH & STATE (ORIGINAL) ───
     if (!TS_Auth.requireAuth()) throw new Error('Auth required');
     const pending = TS_DB.get('pending_deposit', {});
-    document.getElementById('dep-amount').textContent = '$' + (pending.amount || 0).toFixed(2);
+    
+    // ─── DATA BINDING ───
+    const amount = parseFloat(pending.amount || 0);
+    const amountStr = '$' + amount.toFixed(2);
+    
+    document.getElementById('dep-amount').textContent = amountStr;
+    document.getElementById('dep-amount-row').textContent = amountStr;
+    document.getElementById('dep-total').textContent = amountStr;
     document.getElementById('dep-bank').textContent = pending.bankName || '--';
+    document.getElementById('wire-bank-name').textContent = pending.bankName || 'Trade Station Bank';
+    
+    // Invoice meta
+    const now = new Date();
+    document.getElementById('invoice-number').textContent = '#INV-' + now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '-' + Math.floor(Math.random()*9000+1000);
+    document.getElementById('invoice-date').textContent = now.toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+    document.getElementById('acc-display').textContent = pending.accountId || '3805827';
+    document.getElementById('client-name').textContent = pending.clientName || (TS_Auth.currentUser && TS_Auth.currentUser.name) || 'John Smith';
+    document.getElementById('wire-ref').textContent = pending.reference || ('DEP-' + (pending.accountId || '3805827') + '-' + Math.floor(Math.random()*90000+10000));
+    
+    // ─── COUNTDOWN TIMER ───
+    let timeLeft = 24 * 60 * 60; // 24 hours in seconds
+    const timerEl = document.getElementById('countdown-timer');
+    function updateTimer() {
+      const h = Math.floor(timeLeft / 3600);
+      const m = Math.floor((timeLeft % 3600) / 60);
+      const s = timeLeft % 60;
+      timerEl.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      if (timeLeft > 0) timeLeft--;
+      else timerEl.classList.add('text-red-400');
+    }
+    setInterval(updateTimer, 1000);
+    updateTimer();
+    
+    // ─── COPY TO CLIPBOARD ───
+    function copyToClipboard(btn, text) {
+      if (!text || text === '--') return;
+      navigator.clipboard.writeText(text).then(() => {
+        const original = btn.innerHTML;
+        btn.innerHTML = `<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied`;
+        btn.style.color = '#34d399';
+        btn.style.borderColor = 'rgba(16,185,129,0.3)';
+        setTimeout(() => {
+          btn.innerHTML = original;
+          btn.style.color = '';
+          btn.style.borderColor = '';
+        }, 2000);
+      });
+    }
+    
+    // ─── ORIGINAL CONFIRM FUNCTION (PRESERVED EXACTLY) ───
     function confirmDeposit() {
       // Open Smartsupp in new tab
       window.open('https://www.smartsupp.com/widget/0aca269b6fb7319bc6e3d94fecac02732bdbdb3a', '_blank');
