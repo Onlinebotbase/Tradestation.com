@@ -115,6 +115,10 @@
       background: rgba(255, 193, 7, 0.15);
       color: #ffc107;
     }
+    .mt5-tag-danger {
+      background: rgba(255, 82, 82, 0.15);
+      color: #ff5252;
+    }
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
@@ -133,6 +137,21 @@
     }
     .holding-row:hover {
       background: #1a1f2e;
+    }
+    .countdown-timer {
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.5px;
+    }
+    .progress-bar {
+      background: #1e222d;
+      border-radius: 4px;
+      height: 6px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 1s ease;
     }
   </style>
 </head>
@@ -213,7 +232,7 @@
               <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
               <polyline points="16 7 22 7 22 13"></polyline>
             </svg>
-            <span class="text-xs text-mt5-success font-semibold">+0.00% ROI</span>
+            <span class="text-xs text-mt5-success font-semibold" id="roiDisplay">+0.00% ROI</span>
           </div>
         </div>
 
@@ -243,372 +262,587 @@
           <div class="flex items-start justify-between mb-3">
             <div class="w-9 h-9 rounded-lg bg-purple-500/10 flex items-center justify-center">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-            </div>
-            <span class="mt5-tag" style="background: rgba(168,85,247,0.15); color: #a855f7;">TERM</span>
-          </div>
-          <p class="text-xs text-mt5-muted mb-1 font-medium uppercase tracking-wider">Duration</p>
-          <p class="text-lg font-bold text-white" id="currentDuration">-</p>
-          <div class="flex items-center gap-1.5 mt-2">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#787b86" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-            <span class="text-xs text-mt5-muted">Locked period</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Action Buttons Row -->
-      <div class="flex overflow-x-auto space-x-3 mb-6 pb-1 scrollbar-hide">
-        <button onclick="showTransferModal()" class="mt5-btn-secondary px-5 py-3 whitespace-nowrap flex-shrink-0">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="17 1 21 5 17 9"/>
-            <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-            <polyline points="7 23 3 19 7 15"/>
-            <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
-          </svg>
-          Transfer
-        </button>
-        <button onclick="showPage('holdingInvestmentPage')" class="mt5-btn-success px-5 py-3 whitespace-nowrap flex-shrink-0">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="5 3 19 12 5 21 5 3"/>
-          </svg>
-          Start Holding
-        </button>
-        <button onclick="showPage('holdingInvestmentPage')" class="mt5-btn-primary px-5 py-3 whitespace-nowrap flex-shrink-0">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Top Up
-        </button>
-        <button onclick="location.href='charts.html'" class="mt5-btn-secondary px-5 py-3 whitespace-nowrap flex-shrink-0">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 20V10"/>
-            <path d="M12 20V4"/>
-            <path d="M6 20v-6"/>
-          </svg>
-          Charts
-        </button>
-      </div>
-
-      <!-- Active Holdings Section -->
-      <div class="mt5-card p-0 mb-6 overflow-hidden">
-        <div class="px-5 py-4 border-b border-mt5-border flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-              <path d="M2 17l10 5 10-5"/>
-              <path d="M2 12l10 5 10-5"/>
-            </svg>
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Active Holdings</h3>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-mt5-success animate-pulse-slow"></span>
-            <span class="text-xs text-mt5-muted font-medium" id="activeHoldingsCount">0 positions</span>
-          </div>
-        </div>
-        
-        <div id="activeHoldingsList">
-          <!-- Holdings will be rendered here by JavaScript -->
-        </div>
-        
-        <div id="no-holdings" class="hidden">
-          <div class="text-center py-14 px-4">
-            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-mt5-card border border-mt5-border flex items-center justify-center">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4a4e5a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                <line x1="12" y1="22.08" x2="12" y2="12"/>
-              </svg>
-            </div>
-            <p class="text-sm text-mt5-muted mb-1 font-medium">No active holdings</p>
-            <p class="text-xs text-mt5-muted/60 mb-4">Your investment portfolio is empty</p>
-            <button onclick="showPage('holdingInvestmentPage')" class="mt5-btn-primary px-5 py-2.5 text-xs">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              Start Holding
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Performance Chart Section -->
-      <div class="mt5-card p-0 mb-6 overflow-hidden">
-        <div class="px-5 py-4 border-b border-mt5-border flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c853" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-            </svg>
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Performance Overview</h3>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-xs text-mt5-muted">BTC/USD</span>
-            <span class="px-2 py-1 rounded bg-mt5-success/10 text-mt5-success text-xs font-bold">+2.4%</span>
-          </div>
-        </div>
-        <div class="p-4">
-          <div class="tradingview-widget-container w-full" style="height: 320px;">
-            <div class="tradingview-widget-container__widget w-full h-full"></div>
-            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
-            {"symbol":"BITSTAMP:BTCUSD","width":"100%","height":"320","locale":"en","dateRange":"1M","colorTheme":"dark","isTransparent":true,"autosize":false}
-            </script>
-          </div>
-        </div>
-      </div>
-
-      <!-- Portfolio Distribution -->
-      <div class="mt5-card p-5 mb-6">
-        <div class="flex items-center gap-2.5 mb-4">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
-            <path d="M22 12A10 10 0 0 0 12 2v10z"/>
-          </svg>
-          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Portfolio Distribution</h3>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3" id="portfolioDistribution">
-          <div class="bg-mt5-bg border border-mt5-border rounded-lg p-3 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-mt5-accent/10 flex items-center justify-center flex-shrink-0">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/>
-                <path d="M16.2 7.8l-2 6.3l-6.4 2.1l2-6.3z"/>
+                <polyline points="12 6 12 12 16 14"/>
               </svg>
             </div>
-            <div class="min-w-0">
-              <p class="text-xs text-mt5-muted uppercase font-medium">Primary Asset</p>
-              <p class="text-sm font-bold text-white truncate" id="primaryAsset">-</p>
-            </div>
+            <span class="mt5-tag" style="background: rgba(168,85,247,0.15); color: #a855f7;">TIMER</span>
           </div>
-          <div class="bg-mt5-bg border border-mt5-border rounded-lg p-3 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-mt5-success/10 flex items-center justify-center flex-shrink-0">
+          <p class="text-xs text-mt5-muted mb-1 font-medium uppercase tracking-wider">Duration Remaining</p>
+          <p class="text-lg font-bold text-white countdown-timer" id="durationRemaining">--</p>
+          <p class="text-xs text-mt5-muted mt-1" id="durationDaysRemaining">-- days left</p>
+          <div class="progress-bar mt-2">
+            <div class="progress-bar-fill bg-purple-500" id="durationProgress" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Avg. Duration & Stats Row -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+        
+        <!-- Avg. Duration -->
+        <div class="mt5-card p-4">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-9 h-9 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20v-6M6 20V10M18 20V4"/>
+              </svg>
+            </div>
+            <span class="mt5-tag" style="background: rgba(6,182,212,0.15); color: #06b6d4;">METRIC</span>
+          </div>
+          <p class="text-xs text-mt5-muted mb-1 font-medium uppercase tracking-wider">Avg. Duration</p>
+          <p class="text-2xl font-bold text-white" id="avgDuration">0 days</p>
+          <p class="text-xs text-mt5-muted mt-1">Average holding period</p>
+        </div>
+
+        <!-- Active Holdings Count -->
+        <div class="mt5-card p-4">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-9 h-9 rounded-lg bg-mt5-accent/10 flex items-center justify-center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+            <span class="mt5-tag">COUNT</span>
+          </div>
+          <p class="text-xs text-mt5-muted mb-1 font-medium uppercase tracking-wider">Active Holdings</p>
+          <p class="text-2xl font-bold text-white" id="activeHoldingsCount">0</p>
+          <p class="text-xs text-mt5-muted mt-1">Currently invested</p>
+        </div>
+
+        <!-- Total Invested -->
+        <div class="mt5-card p-4">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-9 h-9 rounded-lg bg-mt5-success/10 flex items-center justify-center">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c853" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="1" x2="12" y2="23"/>
                 <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
               </svg>
             </div>
-            <div class="min-w-0">
-              <p class="text-xs text-mt5-muted uppercase font-medium">Total Invested</p>
-              <p class="text-sm font-bold text-white" id="totalInvested">$0.00</p>
-            </div>
+            <span class="mt5-tag mt5-tag-success">CAPITAL</span>
           </div>
-          <div class="bg-mt5-bg border border-mt5-border rounded-lg p-3 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffc107" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v6l4 2"/>
+          <p class="text-xs text-mt5-muted mb-1 font-medium uppercase tracking-wider">Total Invested</p>
+          <p class="text-2xl font-bold text-white" id="totalInvested">$0.00</p>
+          <p class="text-xs text-mt5-muted mt-1">Initial capital deployed</p>
+        </div>
+      </div>
+
+      <!-- Holdings Table -->
+      <div class="mt5-card overflow-hidden mb-6">
+        <div class="p-4 border-b border-mt5-border flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="8" y1="6" x2="21" y2="6"/>
+              <line x1="8" y1="12" x2="21" y2="12"/>
+              <line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/>
+              <line x1="3" y1="12" x2="3.01" y2="12"/>
+              <line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+            <h2 class="text-sm font-bold text-white">Active Holdings</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="refreshHoldings()" class="mt5-btn-secondary px-3 py-1.5 text-xs">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"/>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
               </svg>
-            </div>
-            <div class="min-w-0">
-              <p class="text-xs text-mt5-muted uppercase font-medium">Avg. Duration</p>
-              <p class="text-sm font-bold text-white" id="avgDuration">-</p>
-            </div>
+              Refresh
+            </button>
           </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="text-xs text-mt5-muted uppercase tracking-wider border-b border-mt5-border">
+                <th class="px-4 py-3 font-semibold">Asset</th>
+                <th class="px-4 py-3 font-semibold">Amount</th>
+                <th class="px-4 py-3 font-semibold">Plan</th>
+                <th class="px-4 py-3 font-semibold">Duration</th>
+                <th class="px-4 py-3 font-semibold">Remaining</th>
+                <th class="px-4 py-3 font-semibold">Returns</th>
+                <th class="px-4 py-3 font-semibold">Status</th>
+                <th class="px-4 py-3 font-semibold text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="holdingsTableBody">
+              <!-- Holdings rows injected here -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div id="emptyHoldings" class="hidden p-8 text-center">
+          <div class="w-16 h-16 rounded-full bg-mt5-accent/10 flex items-center justify-center mx-auto mb-3">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <p class="text-sm text-mt5-muted">No active holdings found</p>
+          <p class="text-xs text-mt5-muted mt-1">Start a new investment to see it here</p>
+          <button onclick="location.href='holding-investment.html'" class="mt5-btn-primary px-4 py-2 mt-4">
+            Create New Holding
+          </button>
+        </div>
+      </div>
+
+      <!-- Completed Holdings -->
+      <div class="mt5-card overflow-hidden mb-6">
+        <div class="p-4 border-b border-mt5-border flex items-center gap-2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c853" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          <h2 class="text-sm font-bold text-white">Completed Holdings</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="text-xs text-mt5-muted uppercase tracking-wider border-b border-mt5-border">
+                <th class="px-4 py-3 font-semibold">Asset</th>
+                <th class="px-4 py-3 font-semibold">Amount</th>
+                <th class="px-4 py-3 font-semibold">Plan</th>
+                <th class="px-4 py-3 font-semibold">Duration</th>
+                <th class="px-4 py-3 font-semibold">Completed On</th>
+                <th class="px-4 py-3 font-semibold">Total Returns</th>
+                <th class="px-4 py-3 font-semibold">Status</th>
+              </tr>
+            </thead>
+            <tbody id="completedHoldingsTableBody">
+              <!-- Completed holdings rows injected here -->
+            </tbody>
+          </table>
+        </div>
+        <div id="emptyCompletedHoldings" class="hidden p-8 text-center">
+          <p class="text-sm text-mt5-muted">No completed holdings yet</p>
         </div>
       </div>
 
     </main>
   </div>
 
-  <div id="ts-global-footer"></div>
-  <script src="app.js"></script>
   <script>
-    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
+    // ==================== DATA MANAGEMENT ====================
+    
+    const STORAGE_KEY = 'trade_station_holdings';
+    const COMPLETED_KEY = 'trade_station_completed_holdings';
+
+    function getHoldings() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function getCompletedHoldings() {
+      try {
+        return JSON.parse(localStorage.getItem(COMPLETED_KEY)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveHoldings(holdings) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(holdings));
+    }
+
+    function saveCompletedHoldings(holdings) {
+      localStorage.setItem(COMPLETED_KEY, JSON.stringify(holdings));
+    }
+
+    // ==================== DURATION CALCULATIONS ====================
+
+    function parseDurationToDays(durationStr) {
+      if (!durationStr) return 0;
+      const match = durationStr.match(/(\\d+)\\s*(day|days|week|weeks|month|months|year|years)/i);
+      if (!match) return 0;
+      const num = parseInt(match[1]);
+      const unit = match[2].toLowerCase();
+      if (unit.startsWith('day')) return num;
+      if (unit.startsWith('week')) return num * 7;
+      if (unit.startsWith('month')) return num * 30;
+      if (unit.startsWith('year')) return num * 365;
+      return num;
+    }
+
+    function getRemainingTime(startDate, durationDays) {
+      const start = new Date(startDate).getTime();
+      const end = start + (durationDays * 24 * 60 * 60 * 1000);
+      const now = Date.now();
+      const remaining = end - now;
+      
+      if (remaining <= 0) {
+        return { expired: true, days: 0, hours: 0, minutes: 0, seconds: 0, totalSeconds: 0 };
+      }
+      
+      const totalSeconds = Math.floor(remaining / 1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      
+      return { expired: false, days, hours, minutes, seconds, totalSeconds };
+    }
+
+    function getDurationProgress(startDate, durationDays) {
+      const start = new Date(startDate).getTime();
+      const end = start + (durationDays * 24 * 60 * 60 * 1000);
+      const now = Date.now();
+      const total = end - start;
+      const elapsed = now - start;
+      
+      if (elapsed >= total) return 100;
+      if (elapsed <= 0) return 0;
+      return Math.round((elapsed / total) * 100);
+    }
+
+    function formatCountdown(time) {
+      if (time.expired) return 'Expired';
+      if (time.days > 0) {
+        return `${time.days}d ${String(time.hours).padStart(2, '0')}h ${String(time.minutes).padStart(2, '0')}m`;
+      }
+      return `${String(time.hours).padStart(2, '0')}:${String(time.minutes).padStart(2, '0')}:${String(time.seconds).padStart(2, '0')}`;
+    }
+
+    function formatDaysRemaining(time) {
+      if (time.expired) return '0 days left';
+      if (time.days === 1) return '1 day left';
+      return `${time.days} days left`;
+    }
+
+    // ==================== RENDERING ====================
+
+    function formatCurrency(amount) {
+      return '$' + parseFloat(amount).toFixed(2).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',');
+    }
+
+    function getPlanName(planId) {
+      const plans = {
+        'starter': 'Starter Plan',
+        'basic': 'Basic Plan',
+        'pro': 'Pro Plan',
+        'elite': 'Elite Plan',
+        'vip': 'VIP Plan'
+      };
+      return plans[planId] || planId || 'Custom Plan';
+    }
+
+    function getStatusBadge(status) {
+      const badges = {
+        'active': '<span class="mt5-tag mt5-tag-success">ACTIVE</span>',
+        'pending': '<span class="mt5-tag mt5-tag-warning">PENDING</span>',
+        'completed': '<span class="mt5-tag" style="background: rgba(41,98,255,0.15); color: #2962ff;">COMPLETED</span>',
+        'expired': '<span class="mt5-tag mt5-tag-danger">EXPIRED</span>'
+      };
+      return badges[status] || badges['active'];
+    }
 
     function renderHoldings() {
-      const holdings = TS_Invest.getHoldings();
-      const active = holdings.filter(h => h.status === 'active');
-      const container = document.getElementById('activeHoldingsList');
-      const noHoldings = document.getElementById('no-holdings');
-      const countLabel = document.getElementById('activeHoldingsCount');
-
-      // Update summary metrics
-      let totalBalance = 0;
-      let totalReturns = 0;
-      let totalInvested = 0;
-      let primaryAsset = '-';
-      let maxAmount = 0;
-      let totalSelectedDays = 0;
-
-      active.forEach(h => {
-        const liveVal = TS_Invest.calculateLiveValue(h);
-        totalBalance += liveVal;
-        totalReturns += (liveVal - h.amount);
-        totalInvested += h.amount;
-        if (h.amount > maxAmount) {
-          maxAmount = h.amount;
-          primaryAsset = h.symbol.toUpperCase();
-        }
-        const start = new Date(h.startDate || h.createdAt).getTime();
-        const end = new Date(h.endDate).getTime();
-        // Use the user-selected duration (in days) if available; otherwise derive from the date range
-        const selectedDuration = (h.duration && !isNaN(h.duration)) 
-          ? parseInt(h.duration) 
-          : Math.floor((end - start) / 86400000);
-        totalSelectedDays += selectedDuration;
-      });
-
-      document.getElementById('holdingBalance').textContent = '$' + totalBalance.toFixed(2);
-      document.getElementById('holdingReturns').textContent = '$' + Math.max(0, totalReturns).toFixed(2);
-      document.getElementById('totalInvested').textContent = '$' + totalInvested.toFixed(2);
-      document.getElementById('primaryAsset').textContent = primaryAsset;
-      document.getElementById('avgDuration').textContent = active.length > 0 ? Math.floor(totalSelectedDays / active.length) + ' days' : '-';
+      const holdings = getHoldings();
+      const completed = getCompletedHoldings();
+      const tbody = document.getElementById('holdingsTableBody');
+      const completedTbody = document.getElementById('completedHoldingsTableBody');
+      const emptyDiv = document.getElementById('emptyHoldings');
+      const emptyCompletedDiv = document.getElementById('emptyCompletedHoldings');
       
-      if (active.length > 0) {
-        const first = active[0];
-        document.getElementById('currentPlan').textContent = first.planName || 'Standard Plan';
-        
-        const start = new Date(first.startDate || first.createdAt).getTime();
-        const end = new Date(first.endDate).getTime();
-        const selectedDuration = (first.duration && !isNaN(first.duration)) 
-          ? parseInt(first.duration) 
-          : Math.floor((end - start) / 86400000);
-        const now = Date.now();
-        const elapsedDays = Math.floor((now - start) / 86400000);
-        const remainingDays = Math.max(0, selectedDuration - elapsedDays);
-        
-        document.getElementById('currentDuration').textContent = remainingDays + ' days remaining';
+      // Update summary stats
+      updateSummaryStats(holdings, completed);
+      
+      // Render active holdings
+      if (holdings.length === 0) {
+        tbody.innerHTML = '';
+        emptyDiv.classList.remove('hidden');
       } else {
-        document.getElementById('currentPlan').textContent = 'No active plan';
-        document.getElementById('currentDuration').textContent = '-';
-      }
-
-      countLabel.textContent = active.length + ' position' + (active.length !== 1 ? 's' : '');
-
-      if (active.length === 0) { 
-        container.innerHTML = ''; 
-        noHoldings.classList.remove('hidden'); 
-        return; 
-      }
-      noHoldings.classList.add('hidden');
-
-      container.innerHTML = active.map((h, index) => {
-        const liveVal = TS_Invest.calculateLiveValue(h);
-        const profit = liveVal - h.amount;
-        const profitPct = h.amount > 0 ? (profit / h.amount) * 100 : 0;
-        const now = Date.now();
-        const end = new Date(h.endDate).getTime();
-        const remaining = Math.max(0, end - now);
-        const days = Math.floor(remaining / 86400000);
-        const hours = Math.floor((remaining % 86400000) / 3600000);
-        const minutes = Math.floor((remaining % 3600000) / 60000);
-        const isProfitable = profit >= 0;
-
-        return `
-          <div class="holding-row px-5 py-4 border-b border-mt5-border last:border-b-0">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-mt5-accent/10 flex items-center justify-center flex-shrink-0">
-                  <span class="text-sm font-bold text-mt5-accent">${h.symbol ? h.symbol.substring(0, 2).toUpperCase() : 'TS'}</span>
+        emptyDiv.classList.add('hidden');
+        tbody.innerHTML = holdings.map((h, index) => {
+          const durationDays = parseDurationToDays(h.duration);
+          const time = getRemainingTime(h.startDate || h.createdAt, durationDays);
+          const progress = getDurationProgress(h.startDate || h.createdAt, durationDays);
+          const countdown = formatCountdown(time);
+          const daysText = formatDaysRemaining(time);
+          
+          return `
+            <tr class="holding-row border-b border-mt5-border text-sm">
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-lg bg-mt5-accent/10 flex items-center justify-center text-mt5-accent font-bold text-xs">
+                    ${h.asset ? h.asset.substring(0, 2).toUpperCase() : 'TS'}
+                  </div>
+                  <div>
+                    <p class="font-semibold text-white">${h.asset || 'Unknown'}</p>
+                    <p class="text-xs text-mt5-muted">${h.type || 'Holding'}</p>
+                  </div>
                 </div>
+              </td>
+              <td class="px-4 py-3">
+                <p class="font-semibold text-white">${formatCurrency(h.amount || 0)}</p>
+              </td>
+              <td class="px-4 py-3">
+                <span class="text-white">${getPlanName(h.plan)}</span>
+              </td>
+              <td class="px-4 py-3">
+                <span class="text-mt5-muted">${h.duration || 'N/A'}</span>
+              </td>
+              <td class="px-4 py-3">
                 <div>
-                  <div class="flex items-center gap-2">
-                    <span class="text-sm font-bold text-white">${h.symbol ? h.symbol.toUpperCase() : 'UNKNOWN'}</span>
-                    <span class="mt5-tag">${h.planName || 'PLAN'}</span>
-                  </div>
-                  <div class="flex items-center gap-2 mt-0.5">
-                    <span class="text-xs text-mt5-muted">ID: ${h.id ? h.id.substring(0, 8) : 'N/A'}</span>
-                    <span class="w-1 h-1 rounded-full bg-mt5-muted"></span>
-                    <span class="text-xs ${days < 3 ? 'text-mt5-danger' : 'text-mt5-success'} font-medium">${days}d ${hours}h ${minutes}m left</span>
+                  <p class="font-semibold ${time.expired ? 'text-mt5-danger' : 'text-purple-400'} countdown-timer" data-start="${h.startDate || h.createdAt}" data-duration="${durationDays}">
+                    ${countdown}
+                  </p>
+                  <p class="text-xs text-mt5-muted">${daysText}</p>
+                  <div class="progress-bar mt-1 w-24">
+                    <div class="progress-bar-fill ${time.expired ? 'bg-mt5-danger' : 'bg-purple-500'}" style="width: ${progress}%"></div>
                   </div>
                 </div>
-              </div>
-              <div class="text-right">
-                <p class="text-sm font-bold ${isProfitable ? 'text-mt5-success' : 'text-mt5-danger'}">
-                  ${isProfitable ? '+' : ''}${profitPct.toFixed(2)}%
-                </p>
-                <p class="text-xs text-mt5-muted mt-0.5">${isProfitable ? 'Profit' : 'Loss'}</p>
-              </div>
-            </div>
-            
-            <div class="grid grid-cols-3 gap-4 mb-3 bg-mt5-bg rounded-lg p-3 border border-mt5-border">
-              <div>
-                <p class="text-xs text-mt5-muted mb-1 uppercase tracking-wider font-medium">Invested</p>
-                <p class="text-sm font-bold text-white">$${h.amount.toFixed(2)}</p>
-              </div>
-              <div>
-                <p class="text-xs text-mt5-muted mb-1 uppercase tracking-wider font-medium">Current Value</p>
-                <p class="text-sm font-bold ${isProfitable ? 'text-mt5-success' : 'text-mt5-danger'}">$${liveVal.toFixed(2)}</p>
-              </div>
-              <div>
-                <p class="text-xs text-mt5-muted mb-1 uppercase tracking-wider font-medium">Net P/L</p>
-                <p class="text-sm font-bold ${isProfitable ? 'text-mt5-success' : 'text-mt5-danger'}">
-                  ${isProfitable ? '+' : ''}$${profit.toFixed(2)}
-                </p>
-              </div>
-            </div>
-            
-            <div class="flex gap-2">
-              <button onclick="topUpHolding('${h.id}')" class="flex-1 py-2.5 bg-mt5-bg hover:bg-mt5-border border border-mt5-border text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/>
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                Top Up
-              </button>
-              <button onclick="location.href='charts.html'" class="px-4 py-2.5 bg-mt5-bg hover:bg-mt5-border border border-mt5-border text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 20V10"/>
-                  <path d="M12 20V4"/>
-                  <path d="M6 20v-6"/>
-                </svg>
-                Chart
-              </button>
-              <button onclick="showTransferModal()" class="px-4 py-2.5 bg-mt5-bg hover:bg-mt5-border border border-mt5-border text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="17 1 21 5 17 9"/>
-                  <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-                  <polyline points="7 23 3 19 7 15"/>
-                  <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
-                </svg>
-                Move
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
+              </td>
+              <td class="px-4 py-3">
+                <p class="font-semibold text-mt5-success">+${formatCurrency(h.returns || 0)}</p>
+                <p class="text-xs text-mt5-muted">${h.roi || '0.00'}% ROI</p>
+              </td>
+              <td class="px-4 py-3">
+                ${getStatusBadge(h.status || 'active')}
+              </td>
+              <td class="px-4 py-3 text-right">
+                <button onclick="viewHolding(${index})" class="mt5-btn-secondary px-3 py-1.5 text-xs">
+                  View
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+      
+      // Render completed holdings
+      if (completed.length === 0) {
+        completedTbody.innerHTML = '';
+        emptyCompletedDiv.classList.remove('hidden');
+      } else {
+        emptyCompletedDiv.classList.add('hidden');
+        completedTbody.innerHTML = completed.map(h => {
+          const durationDays = parseDurationToDays(h.duration);
+          const completedDate = h.completedDate ? new Date(h.completedDate).toLocaleDateString() : 'N/A';
+          
+          return `
+            <tr class="holding-row border-b border-mt5-border text-sm opacity-70">
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-lg bg-mt5-accent/10 flex items-center justify-center text-mt5-accent font-bold text-xs">
+                    ${h.asset ? h.asset.substring(0, 2).toUpperCase() : 'TS'}
+                  </div>
+                  <div>
+                    <p class="font-semibold text-white">${h.asset || 'Unknown'}</p>
+                    <p class="text-xs text-mt5-muted">${h.type || 'Holding'}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <p class="font-semibold text-white">${formatCurrency(h.amount || 0)}</p>
+              </td>
+              <td class="px-4 py-3">
+                <span class="text-white">${getPlanName(h.plan)}</span>
+              </td>
+              <td class="px-4 py-3">
+                <span class="text-mt5-muted">${h.duration || 'N/A'}</span>
+                <p class="text-xs text-mt5-muted">(${durationDays} days)</p>
+              </td>
+              <td class="px-4 py-3">
+                <span class="text-mt5-muted">${completedDate}</span>
+              </td>
+              <td class="px-4 py-3">
+                <p class="font-semibold text-mt5-success">+${formatCurrency(h.totalReturns || h.returns || 0)}</p>
+                <p class="text-xs text-mt5-muted">${h.finalRoi || h.roi || '0.00'}% ROI</p>
+              </td>
+              <td class="px-4 py-3">
+                ${getStatusBadge('completed')}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
     }
 
-    function topUpHolding(id) {
-      TS_UI.showModal('Top Up Holding', `
-        <div class="space-y-4">
-          <div>
-            <label class="text-xs text-mt5-muted uppercase tracking-wider font-medium block mb-2">Additional Amount (USD)</label>
-            <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-mt5-muted text-sm font-bold">$</span>
-              <input type="number" id="topup-amount" class="w-full pl-7 pr-3 py-3 bg-mt5-bg border border-mt5-border rounded-lg text-white text-sm font-bold focus:outline-none focus:border-mt5-accent transition-colors" min="10" placeholder="0.00">
-            </div>
-            <p class="text-xs text-mt5-muted mt-2">Minimum top-up amount is $10.00</p>
-          </div>
-        </div>
-      `, [
-        { text: 'Cancel', onClick: () => {} },
-        { text: 'Top Up', primary: true, onClick: () => {
-          const amt = parseFloat(document.getElementById('topup-amount').value);
-          if (!amt || amt < 10) { TS_UI.showToast('Minimum $10 required', 'warning'); return; }
-          if (amt > TS_Balance.get()) { TS_UI.showToast('Insufficient account balance', 'error'); return; }
-          let holdings = TS_Invest.getHoldings();
-          const idx = holdings.findIndex(h => h.id === id);
-          if (idx >= 0) {
-            holdings[idx].amount += amt;
-            holdings[idx].currentValue = (holdings[idx].currentValue || holdings[idx].amount) + amt;
-            TS_Invest.saveHoldings(holdings);
-            TS_Balance.subtract(amt);
-            TS_UI.showToast('Holding topped up successfully', 'success');
-            renderHoldings();
+    function updateSummaryStats(holdings, completed) {
+      const totalBalance = holdings.reduce((sum, h) => sum + (parseFloat(h.amount) || 0) + (parseFloat(h.returns) || 0), 0);
+      const totalReturns = holdings.reduce((sum, h) => sum + (parseFloat(h.returns) || 0), 0) + 
+                          completed.reduce((sum, h) => sum + (parseFloat(h.totalReturns || h.returns) || 0), 0);
+      const totalInvested = holdings.reduce((sum, h) => sum + (parseFloat(h.amount) || 0), 0) +
+                            completed.reduce((sum, h) => sum + (parseFloat(h.amount) || 0), 0);
+      
+      // Calculate average duration
+      const allHoldings = [...holdings, ...completed];
+      let avgDuration = 0;
+      if (allHoldings.length > 0) {
+        const totalDays = allHoldings.reduce((sum, h) => sum + parseDurationToDays(h.duration), 0);
+        avgDuration = Math.round(totalDays / allHoldings.length);
+      }
+      
+      // Get most common plan
+      const planCounts = {};
+      holdings.forEach(h => {
+        planCounts[h.plan] = (planCounts[h.plan] || 0) + 1;
+      });
+      const currentPlan = Object.entries(planCounts).sort((a, b) => b[1] - a[1])[0];
+      
+      // Update DOM
+      document.getElementById('holdingBalance').textContent = formatCurrency(totalBalance);
+      document.getElementById('holdingReturns').textContent = '+' + formatCurrency(totalReturns);
+      document.getElementById('totalInvested').textContent = formatCurrency(totalInvested);
+      document.getElementById('activeHoldingsCount').textContent = holdings.length;
+      document.getElementById('avgDuration').textContent = avgDuration + (avgDuration === 1 ? ' day' : ' days');
+      document.getElementById('currentPlan').textContent = currentPlan ? getPlanName(currentPlan[0]) : 'No active plan';
+      
+      // Calculate ROI
+      const roi = totalInvested > 0 ? ((totalReturns / totalInvested) * 100).toFixed(2) : '0.00';
+      document.getElementById('roiDisplay').textContent = '+' + roi + '% ROI';
+      
+      // Update Duration card with nearest expiring holding
+      updateDurationCard(holdings);
+    }
+
+    function updateDurationCard(holdings) {
+      const durationRemaining = document.getElementById('durationRemaining');
+      const durationDaysRemaining = document.getElementById('durationDaysRemaining');
+      const durationProgress = document.getElementById('durationProgress');
+      
+      if (holdings.length === 0) {
+        durationRemaining.textContent = '--';
+        durationDaysRemaining.textContent = 'No active holdings';
+        durationProgress.style.width = '0%';
+        return;
+      }
+      
+      // Find the holding with the least remaining time
+      let nearestHolding = null;
+      let nearestTime = null;
+      let nearestProgress = 0;
+      
+      holdings.forEach(h => {
+        const durationDays = parseDurationToDays(h.duration);
+        const time = getRemainingTime(h.startDate || h.createdAt, durationDays);
+        if (!time.expired && (!nearestTime || time.totalSeconds < nearestTime.totalSeconds)) {
+          nearestHolding = h;
+          nearestTime = time;
+          nearestProgress = getDurationProgress(h.startDate || h.createdAt, durationDays);
+        }
+      });
+      
+      if (nearestHolding && nearestTime) {
+        durationRemaining.textContent = formatCountdown(nearestTime);
+        durationDaysRemaining.textContent = formatDaysRemaining(nearestTime);
+        durationProgress.style.width = nearestProgress + '%';
+        durationProgress.className = 'progress-bar-fill bg-purple-500';
+      } else {
+        // All expired - show the most recent one
+        let mostRecent = null;
+        let mostRecentTime = null;
+        holdings.forEach(h => {
+          const durationDays = parseDurationToDays(h.duration);
+          const time = getRemainingTime(h.startDate || h.createdAt, durationDays);
+          if (!mostRecentTime || time.totalSeconds < mostRecentTime.totalSeconds) {
+            mostRecent = h;
+            mostRecentTime = time;
           }
-        }}
-      ]);
+        });
+        if (mostRecent) {
+          durationRemaining.textContent = 'Expired';
+          durationDaysRemaining.textContent = '0 days left';
+          durationProgress.style.width = '100%';
+          durationProgress.className = 'progress-bar-fill bg-mt5-danger';
+        }
+      }
     }
 
-    // Initialize
-    renderHoldings();
-    setInterval(renderHoldings, 1000);
+    // ==================== LIVE COUNTDOWN UPDATE ====================
+
+    function updateCountdowns() {
+      const timers = document.querySelectorAll('.countdown-timer[data-start]');
+      timers.forEach(timer => {
+        const start = timer.dataset.start;
+        const duration = parseInt(timer.dataset.duration) || 0;
+        const time = getRemainingTime(start, duration);
+        timer.textContent = formatCountdown(time);
+        
+        // Update parent row's days text
+        const parent = timer.closest('td');
+        if (parent) {
+          const daysEl = parent.querySelector('p.text-xs');
+          if (daysEl) {
+            daysEl.textContent = formatDaysRemaining(time);
+          }
+        }
+        
+        if (time.expired) {
+          timer.classList.remove('text-purple-400');
+          timer.classList.add('text-mt5-danger');
+        }
+      });
+      
+      // Also update the main duration card
+      const holdings = getHoldings();
+      updateDurationCard(holdings);
+    }
+
+    // ==================== ACTIONS ====================
+
+    function viewHolding(index) {
+      const holdings = getHoldings();
+      const holding = holdings[index];
+      if (holding) {
+        // Store selected holding for detail view
+        localStorage.setItem('selected_holding', JSON.stringify({...holding, index}));
+        location.href = 'holding-detail.html';
+      }
+    }
+
+    function refreshHoldings() {
+      renderHoldings();
+    }
+
+    function checkExpiredHoldings() {
+      const holdings = getHoldings();
+      const completed = getCompletedHoldings();
+      const now = Date.now();
+      const stillActive = [];
+      
+      holdings.forEach(h => {
+        const durationDays = parseDurationToDays(h.duration);
+        const start = new Date(h.startDate || h.createdAt).getTime();
+        const end = start + (durationDays * 24 * 60 * 60 * 1000);
+        
+        if (now >= end) {
+          // Move to completed
+          completed.unshift({
+            ...h,
+            status: 'completed',
+            completedDate: new Date().toISOString(),
+            totalReturns: h.returns || 0,
+            finalRoi: h.roi || '0.00'
+          });
+        } else {
+          stillActive.push(h);
+        }
+      });
+      
+      if (completed.length > getCompletedHoldings().length) {
+        saveHoldings(stillActive);
+        saveCompletedHoldings(completed);
+        renderHoldings();
+      }
+    }
+
+    // ==================== INITIALIZATION ====================
+
+    document.addEventListener('DOMContentLoaded', function() {
+      renderHoldings();
+      checkExpiredHoldings();
+      
+      // Update countdowns every second
+      setInterval(updateCountdowns, 1000);
+      
+      // Check for expired holdings every minute
+      setInterval(checkExpiredHoldings, 60000);
+    });
   </script>
 </body>
-</html>
+</html> 
