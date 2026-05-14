@@ -3,59 +3,499 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Deposit Confirmation - Trade Station</title>
+  <title>Deposit Confirmation — Trade Station</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{600:'#2563eb'},dark:{800:'#1f2937',900:'#111827',950:'#0b0f19'}}}}}</script>
-  <style>body{background:#0b0f19;}</style>
-</head>
-<body class="text-white">
-  <div id="ts-global-header"></div>
-  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
-    <h1 class="text-lg font-bold mb-4">Confirm Deposit</h1>
-    <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 mb-4 space-y-3">
-      <div class="flex justify-between"><span class="text-sm text-gray-400">Amount</span><span class="text-sm font-bold text-white" id="dep-amount">--</span></div>
-      <div class="flex justify-between"><span class="text-sm text-gray-400">Coin</span><span class="text-sm font-bold text-white" id="dep-coin">--</span></div>
-      <div class="flex justify-between"><span class="text-sm text-gray-400">Network</span><span class="text-sm font-bold text-white" id="dep-network">--</span></div>
-      <div class="flex justify-between"><span class="text-sm text-gray-400">Address</span><span class="text-sm font-bold text-white font-mono truncate max-w-[150px]" id="dep-address">--</span></div>
-    </div>
-    <form id="confirm-form" class="space-y-4">
-      <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">6-Digit Verification Code</label>
-        <input type="text" id="code" required maxlength="6" pattern="\d{6}" class="w-full px-3 py-2.5 bg-dark-800 border border-gray-700 rounded-lg text-white text-sm text-center text-2xl font-mono tracking-widest focus:outline-none focus:border-brand-600" placeholder="000000">
-      </div>
-      <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl">Submit Deposit</button>
-    </form>
-  </main>
-  <div id="ts-global-footer"></div>
-  <div id="loading-overlay" class="hidden fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm">
-    <div class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-    <p class="text-white font-medium">Processing deposit...</p>
-  </div>
-  <script src="app.js"></script>
   <script>
-    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
-    const pending = TS_DB.get('pending_crypto_deposit', { amount: 0, coin: '--', network: '--', address: '--' });
-    document.getElementById('dep-amount').textContent = '$' + pending.amount.toFixed(2);
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 600: '#2563eb', 700: '#1d4ed8', 500: '#3b82f6' },
+            dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19', 850: '#182033' },
+            mt5: { 
+              header: '#1e293b', 
+              card: '#162032', 
+              border: '#334155', 
+              accent: '#0ea5e9',
+              success: '#10b981',
+              warning: '#f59e0b',
+              danger: '#ef4444',
+              muted: '#94a3b8'
+            }
+          },
+          fontFamily: {
+            mono: ['ui-monospace','SFMono-Regular','Menlo','Monaco','Consolas','monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #0b1220; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    .mt5-card {
+      background: linear-gradient(180deg, #162032 0%, #111827 100%);
+      border: 1px solid #334155;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .mt5-input {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      transition: all 0.2s ease;
+    }
+    .mt5-input:focus {
+      outline: none;
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
+    }
+    .mt5-btn-primary {
+      background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%);
+      border: 1px solid #0284c7;
+      box-shadow: 0 2px 8px rgba(2,132,199,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+      transition: all 0.15s ease;
+    }
+    .mt5-btn-primary:hover {
+      background: linear-gradient(180deg, #38bdf8 0%, #0ea5e9 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(2,132,199,0.35);
+    }
+    .mt5-btn-primary:active { transform: translateY(0); }
+    .mt5-btn-secondary {
+      background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+      border: 1px solid #475569;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+      transition: all 0.15s ease;
+    }
+    .mt5-btn-secondary:hover { background: linear-gradient(180deg, #475569 0%, #334155 100%); }
+    .mt5-glow-success { box-shadow: 0 0 20px rgba(16,185,129,0.2); }
+    .mt5-glow-danger { box-shadow: 0 0 20px rgba(239,68,68,0.2); }
+    .support-banner {
+      background: linear-gradient(135deg, #451a1a 0%, #371c1c 100%);
+      border: 1px solid #7f1d1d;
+      box-shadow: 0 8px 32px rgba(220,38,38,0.15);
+    }
+    .detail-row { border-bottom: 1px solid rgba(51,65,85,0.5); }
+    .detail-row:last-child { border-bottom: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .animate-spin-custom { animation: spin 1s linear infinite; }
+    @keyframes pulse-soft { 0%,100%{opacity:1} 50%{opacity:.6} }
+    .animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+    .code-digit {
+      caret-color: #0ea5e9;
+      letter-spacing: 0.25em;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Global Header -->
+  <div id="ts-global-header">
+    <header class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-slate-700/60 sticky top-0 z-50">
+      <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Trade Station Logo">
+            <rect width="32" height="32" rx="6" fill="url(#hdrGrad)"/>
+            <path d="M8 22V12l4 6 4-6v10" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M22 22V12l-3 5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="hdrGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#0ea5e9"/><stop offset="1" stop-color="#2563eb"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="font-bold text-sm tracking-wide text-slate-100">TRADE STATION</span>
+          <span class="hidden sm:inline-flex items-center gap-1.5 ml-3 px-2 py-0.5 rounded-md bg-slate-800 border border-slate-600 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><circle cx="4" cy="4" r="3" fill="#10b981"/></svg>
+            Live
+          </span>
+        </div>
+        <div class="flex items-center gap-4 text-xs text-slate-400">
+          <div class="hidden sm:flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span id="hdr-account">Account</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <span id="hdr-balance" class="font-mono font-semibold text-slate-200">--</span>
+          </div>
+        </div>
+      </div>
+    </header>
+  </div>
+
+  <main class="flex-1 w-full max-w-2xl mx-auto px-4 pt-6 pb-28">
+
+    <!-- Breadcrumb / Nav -->
+    <nav class="flex items-center gap-2 text-xs text-slate-500 mb-5">
+      <button onclick="location.href='dashboard.html'" class="hover:text-slate-300 transition-colors flex items-center gap-1">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        Dashboard
+      </button>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="opacity-40"><polyline points="9 18 15 12 9 6"/></svg>
+      <span class="text-slate-400">Deposit Confirmation</span>
+    </nav>
+
+    <!-- Page Title -->
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-lg shadow-sky-900/30">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold text-white tracking-tight">Confirm Deposit</h1>
+        <p class="text-xs text-slate-400 mt-0.5">Verify transaction details and enter your deposit code</p>
+      </div>
+    </div>
+
+    <!-- Deposit Details Card -->
+    <section class="mt5-card rounded-2xl overflow-hidden mb-5">
+      <div class="px-5 py-4 border-b border-slate-700/60 flex items-center justify-between bg-slate-900/40">
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-300 uppercase tracking-wider">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sky-400"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Transaction Details
+        </div>
+        <span class="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-wide animate-pulse-soft">Pending</span>
+      </div>
+
+      <div class="p-5 space-y-0">
+        <div class="detail-row flex items-center justify-between py-3.5">
+          <div class="flex items-center gap-2.5 text-sm text-slate-400">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Amount
+          </div>
+          <span class="text-sm font-bold text-white font-mono" id="dep-amount">--</span>
+        </div>
+        <div class="detail-row flex items-center justify-between py-3.5">
+          <div class="flex items-center gap-2.5 text-sm text-slate-400">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            Coin
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[8px] font-bold text-slate-300">₿</span>
+            <span class="text-sm font-bold text-white" id="dep-coin">--</span>
+          </div>
+        </div>
+        <div class="detail-row flex items-center justify-between py-3.5">
+          <div class="flex items-center gap-2.5 text-sm text-slate-400">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><path d="M14 2v6h6"/><path d="M2 15h10"/><path d="M5 12v6"/><path d="M8 12v6"/><path d="M11 12v6"/></svg>
+            Network
+          </div>
+          <span class="text-sm font-bold text-white" id="dep-network">--</span>
+        </div>
+        <div class="detail-row flex items-center justify-between py-3.5">
+          <div class="flex items-center gap-2.5 text-sm text-slate-400">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Address
+          </div>
+          <div class="flex items-center gap-2 max-w-[60%]">
+            <span class="text-sm font-bold text-white font-mono truncate" id="dep-address">--</span>
+            <button type="button" id="btn-copy-addr" class="p-1 rounded-md hover:bg-slate-700/50 text-slate-500 hover:text-sky-400 transition-colors" title="Copy address">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Security Notice -->
+    <div class="flex items-start gap-3 rounded-xl bg-sky-500/5 border border-sky-500/10 p-4 mb-5">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sky-400 mt-0.5 shrink-0">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <p class="text-xs text-slate-400 leading-relaxed">
+        Your deposit is protected by end-to-end encryption. Funds will be credited to your account after network confirmation and code verification. <span class="text-slate-300">Ensure the address and network match your wallet before sending.</span>
+      </p>
+    </div>
+
+    <!-- Verification Form -->
+    <form id="confirm-form" class="space-y-4">
+      <div class="mt5-card rounded-2xl p-5">
+        <label class="flex items-center gap-2 text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sky-400"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          6-Digit Verification Code
+        </label>
+        <div class="relative">
+          <input 
+            type="text" 
+            id="code" 
+            required 
+            maxlength="6" 
+            inputmode="numeric" 
+            autocomplete="one-time-code"
+            class="w-full px-4 py-3.5 mt5-input rounded-xl text-white text-center text-2xl font-mono tracking-[0.25em] focus:outline-none placeholder-slate-600" 
+            placeholder="••••••"
+          >
+          <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-2 ml-0.5">Enter the deposit code provided by your payment system. Codes are single-use and expire after validation.</p>
+      </div>
+
+      <button type="submit" class="w-full py-3.5 mt5-btn-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 text-sm tracking-wide">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Submit Deposit
+      </button>
+    </form>
+
+    <!-- Support Banner (Used Code) -->
+    <div id="support-banner" class="hidden mt-6 support-banner rounded-2xl p-5">
+      <div class="flex items-start gap-4">
+        <div class="shrink-0 w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="text-sm font-bold text-red-400 mb-1">Code Already Used</h3>
+          <p class="text-xs text-slate-400 leading-relaxed mb-4">
+            This deposit code has already been redeemed. Each code is valid for exactly one transaction. If you believe this is an error or need a new code, please contact our support team immediately.
+          </p>
+          <div class="flex items-center gap-3">
+            <a 
+              href="https://www.smartsupp.com/widget/0aca269b6fb7319bc6e3d94fecac02732bdbdb3a" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 text-xs font-semibold transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Contact Support
+            </a>
+            <button 
+              type="button" 
+              id="btn-hide-support"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-300 text-xs font-semibold transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Banner (Hidden by default) -->
+    <div id="success-banner" class="hidden mt-6 rounded-2xl p-5 bg-emerald-500/5 border border-emerald-500/20">
+      <div class="flex items-start gap-4">
+        <div class="shrink-0 w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-sm font-bold text-emerald-400 mb-1">Deposit Completed</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Your funds have been successfully credited to your account. The transaction is now complete and visible in your history.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Global Footer -->
+  <div id="ts-global-footer">
+    <footer class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-700/60 z-40">
+      <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between text-[11px] text-slate-500">
+        <div class="flex items-center gap-3">
+          <span class="flex items-center gap-1.5">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Secure Connection
+          </span>
+          <span class="hidden sm:inline text-slate-700">|</span>
+          <span class="hidden sm:inline">SSL 256-bit encrypted</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="location.href='dashboard.html'" class="hover:text-slate-300 transition-colors">Dashboard</button>
+          <button onclick="location.href='history.html'" class="hover:text-slate-300 transition-colors">History</button>
+          <button onclick="location.href='support.html'" class="hover:text-slate-300 transition-colors">Help</button>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="hidden fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-sm">
+    <div class="relative mb-6">
+      <div class="w-14 h-14 border-[3px] border-slate-700 border-t-sky-500 rounded-full animate-spin-custom"></div>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+        </svg>
+      </div>
+    </div>
+    <p class="text-white font-semibold text-sm tracking-wide" id="loading-text">Processing deposit...</p>
+    <p class="text-slate-500 text-xs mt-2">Verifying blockchain confirmation</p>
+  </div>
+
+  <!-- Application Logic -->
+  <script>
+    /* ── Deposit Codes Registry ── */
+    const DEPOSIT_CODES = [
+      "A7B3C1","D4E8F2","G1H9J3","K5L2M4","N7P6Q5","R3S8T6","U1V4W7","X9Y2Z8","B6C5D9","E3F1G0",
+      "H7J4K2","L8M6N3","P5Q9R4","S2T7U5","V1W8X6","Y4Z3A7","C9D2E8","F6G5H1","J7K4L9","M3N8P2",
+      "Q1R5S7","T6U4V8","W2X9Y3","Z5A7B4","C1D8E6","F9G3H5","J2K7L1","M4N6P8","Q3R9S2","T5U1V7",
+      "W8X4Y6","Z2A9B3","C7D5E1","F4G8H2","J9K6L3","M1N7P4","Q5R2S8","T3U9V1","W6X5Y7","Z4A8B2",
+      "C3D1E9","F7G6H4","J5K2L8","M9N3P1","Q4R7S6","T8U5V2","W1X9Y4","Z6A3B7","C2D8E5","F1G4H9",
+      "J6K7L2","M5N1P8","Q9R3S4","T2U6V7","W4X8Y1","Z3A5B9","C6D7E2","F8G1H5","J4K9L6","M2N5P3",
+      "Q7R1S8","T9U4V5","W3X6Y2","Z1A8B7","C5D9E4","F2G7H6","J1K3L8","M6N4P9","Q2R5S1","T7U8V3",
+      "W9X1Y6","Z4A2B5","C8D3E7","F5G9H1","J2K6L4","M7N8P5","Q1R4S9","T3U7V2","W5X8Y4","Z6A1B3",
+      "C9D5E8","F4G2H7","J8K1L6","M3N9P4","Q5R7S2","T1U8V6","W2X4Y9","Z7A3B1","C6D8E5","F9G1H4",
+      "J5K7L2","M8N3P6","Q4R9S1","T2U5V7","W6X1Y8","Z3A4B9","C7D2E6","F1G8H5","J9K4L3","M5N7P1",
+      "Q8R2S6","T4U9V5","W1X3Y7","Z5A6B2","C8D1E4","F7G3H9","J2K5L8","M4N6P1","Q9R7S3","T5U2V8",
+      "W3X4Y6","Z1A9B7","C2D5E8","F6G1H3","J7K8L4","M9N2P5","Q1R6S7","T8U3V4","W5X9Y2","Z4A7B1",
+      "C3D6E5","F2G8H9","J1K4L7","M5N3P8","Q7R9S2","T6U1V5","W8X2Y4","Z9A3B6","C1D7E8","F4G5H2",
+      "J6K9L1","M2N8P7","Q5R3S4","T1U7V9","W4X6Y5","Z2A8B3","C9D1E7","F5G4H6","J3K8L2","M7N1P9",
+      "Q4R6S5","T8U2V1","W9X3Y7","Z5A4B8","C6D2E1","F7G9H3","J4K5L6","M8N2P1","Q3R7S9","T5U4V2",
+      "W1X8Y6","Z7A9B5","C2D4E3","F6G8H1","J9K7L5","M1N4P2","Q8R5S6","T3U1V7","W2X9Y8","Z4A6B1",
+      "C5D3E7","F1G2H8","J6K4L9","M7N5P3","Q2R8S1","T9U6V4","W3X1Y5","Z8A2B7","C4D9E6","F5G7H1",
+      "J2K8L3","M6N1P4","Q7R5S2","T4U3V9","W8X6Y1","Z1A5B4","C9D7E2","F3G4H8","J5K1L6","M2N9P7"
+    ];
+
+    /* ── Auth Guard ── */
+    if (typeof TS_Auth !== 'undefined' && !TS_Auth.requireAuth()) {
+      throw new Error('Auth required');
+    }
+
+    /* ── State ── */
+    const pending = (typeof TS_DB !== 'undefined')
+      ? TS_DB.get('pending_crypto_deposit', { amount: 0, coin: '--', network: '--', address: '--' })
+      : { amount: 0, coin: '--', network: '--', address: '--' };
+
+    /* ── Header Sync ── */
+    const hdrBalance = document.getElementById('hdr-balance');
+    const hdrAccount = document.getElementById('hdr-account');
+    if (hdrBalance && typeof TS_Balance !== 'undefined') {
+      hdrBalance.textContent = '$' + (TS_Balance.get?.() ?? TS_Balance.current ?? 0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    }
+    if (hdrAccount && typeof TS_Auth !== 'undefined') {
+      const acct = TS_Auth.getAccount?.() ?? TS_Auth.account ?? '—';
+      hdrAccount.textContent = typeof acct === 'object' ? (acct.login ?? acct.id ?? 'Account') : acct;
+    }
+
+    /* ── Render Details ── */
+    document.getElementById('dep-amount').textContent = '$' + Number(pending.amount).toFixed(2);
     document.getElementById('dep-coin').textContent = pending.coin;
     document.getElementById('dep-network').textContent = pending.network;
     document.getElementById('dep-address').textContent = pending.address;
-    
+
+    /* ── Copy Address Utility ── */
+    document.getElementById('btn-copy-addr').addEventListener('click', async function() {
+      try {
+        await navigator.clipboard.writeText(pending.address);
+        if (typeof TS_UI !== 'undefined') TS_UI.showToast('Address copied to clipboard', 'success');
+      } catch(e) {
+        if (typeof TS_UI !== 'undefined') TS_UI.showToast('Failed to copy address', 'warning');
+      }
+    });
+
+    /* ── Used-Code Tracking ── */
+    const USED_CODES_KEY = 'ts_used_deposit_codes_v1';
+    function getUsedCodes() {
+      try { return JSON.parse(localStorage.getItem(USED_CODES_KEY) || '[]'); }
+      catch(e) { return []; }
+    }
+    function markCodeUsed(code) {
+      const used = getUsedCodes();
+      if (!used.includes(code)) { used.push(code); localStorage.setItem(USED_CODES_KEY, JSON.stringify(used)); }
+    }
+    function isCodeUsed(code) { return getUsedCodes().includes(code); }
+    function isValidCode(code) { return DEPOSIT_CODES.includes(code); }
+
+    /* ── UI Refs ── */
+    const supportBanner = document.getElementById('support-banner');
+    const successBanner = document.getElementById('success-banner');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingText = document.getElementById('loading-text');
+    const codeInput = document.getElementById('code');
+
+    document.getElementById('btn-hide-support').addEventListener('click', () => {
+      supportBanner.classList.add('hidden');
+      codeInput.value = '';
+      codeInput.focus();
+    });
+
+    /* ── Form Handler ── */
     document.getElementById('confirm-form').addEventListener('submit', function(e) {
       e.preventDefault();
-      const code = document.getElementById('code').value.trim();
-      if (code.length !== 6 || !/^\d{6}$/.test(code)) { TS_UI.showToast('Enter a valid 6-digit code', 'warning'); return; }
-      if (!TS_Deposit.validateCode(code)) { TS_UI.showToast('Invalid or already used code', 'error'); return; }
-      
-      document.getElementById('loading-overlay').classList.remove('hidden');
+      const raw = codeInput.value.trim().toUpperCase();
+      codeInput.value = raw;
+
+      if (raw.length !== 6 || !/^[A-Z0-9]{6}$/.test(raw)) {
+        if (typeof TS_UI !== 'undefined') TS_UI.showToast('Enter a valid 6-character deposit code', 'warning');
+        return;
+      }
+
+      /* Already used? → Support Banner */
+      if (isCodeUsed(raw)) {
+        supportBanner.classList.remove('hidden');
+        supportBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (typeof TS_UI !== 'undefined') TS_UI.showToast('This code has already been used', 'error');
+        return;
+      }
+
+      /* Unknown code? */
+      if (!isValidCode(raw)) {
+        if (typeof TS_UI !== 'undefined') TS_UI.showToast('Invalid deposit code', 'error');
+        codeInput.classList.add('animate-pulse');
+        setTimeout(() => codeInput.classList.remove('animate-pulse'), 600);
+        return;
+      }
+
+      /* First-time valid code → 15s processing → success */
+      loadingOverlay.classList.remove('hidden');
+      loadingText.textContent = 'Verifying deposit code…';
+
+      let dots = 0;
+      const dotInterval = setInterval(() => {
+        dots = (dots + 1) % 4;
+        loadingText.textContent = 'Verifying deposit code' + '.'.repeat(dots);
+      }, 400);
+
       setTimeout(() => {
-        TS_Balance.add(pending.amount);
-        const txs = TS_DB.get('transactions', []);
-        txs.unshift({ type: 'deposit', amount: pending.amount, method: 'crypto', symbol: pending.coin, network: pending.network, status: 'completed', createdAt: new Date().toISOString() });
-        TS_DB.set('transactions', txs);
-        TS_DB.remove('pending_crypto_deposit');
-        TS_UI.showToast('Deposit successful!', 'success');
-        location.href = 'dashboard.html';
-      }, 3000);
+        clearInterval(dotInterval);
+        loadingText.textContent = 'Processing deposit…';
+
+        /* Credit balance */
+        if (typeof TS_Balance !== 'undefined') TS_Balance.add(Number(pending.amount));
+
+        /* Record transaction */
+        if (typeof TS_DB !== 'undefined') {
+          const txs = TS_DB.get('transactions', []);
+          txs.unshift({
+            type: 'deposit',
+            amount: Number(pending.amount),
+            method: 'crypto',
+            symbol: pending.coin,
+            network: pending.network,
+            status: 'completed',
+            code: raw,
+            createdAt: new Date().toISOString()
+          });
+          TS_DB.set('transactions', txs);
+          TS_DB.remove('pending_crypto_deposit');
+        }
+
+        /* Mark code consumed */
+        markCodeUsed(raw);
+
+        /* UI feedback */
+        loadingOverlay.classList.add('hidden');
+        successBanner.classList.remove('hidden');
+        successBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (typeof TS_UI !== 'undefined') TS_UI.showToast('Deposit successful!', 'success');
+
+        /* Navigate after brief pause */
+        setTimeout(() => { location.href = 'dashboard.html'; }, 2200);
+
+      }, 15000); /* 15-second requirement */
+    });
+
+    /* ── Restrict input to alphanumeric ── */
+    codeInput.addEventListener('input', function(e) {
+      this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0,6);
     });
   </script>
 </body>
