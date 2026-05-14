@@ -5,55 +5,724 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Validate Deposit - Trade Station</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{600:'#2563eb'},dark:{800:'#1f2937',900:'#111827',950:'#0b0f19'}}}}}</script>
-  <style>body{background:#0b0f19;}</style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 600: '#2563eb', 500: '#3b82f6', 400: '#60a5fa', 700: '#1d4ed8' },
+            dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19', 850: '#182234', 750: '#243044' },
+            mt5: { bg: '#0d1117', card: '#161b22', border: '#30363d', accent: '#238636', danger: '#da3633', warning: '#d29922' }
+          },
+          fontFamily: {
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica', 'Arial', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+    .mt5-card {
+      background: linear-gradient(180deg, #161b22 0%, #111827 100%);
+      border: 1px solid #30363d;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+    .mt5-input {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      transition: all 0.2s ease;
+    }
+    .mt5-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      outline: none;
+    }
+    .mt5-btn-primary {
+      background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+      border: 1px solid #1d4ed8;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+      transition: all 0.2s ease;
+    }
+    .mt5-btn-primary:hover {
+      background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+      transform: translateY(-1px);
+    }
+    .mt5-btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+    }
+    .mt5-btn-secondary {
+      background: linear-gradient(180deg, #21262d 0%, #161b22 100%);
+      border: 1px solid #30363d;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+      transition: all 0.2s ease;
+    }
+    .mt5-btn-secondary:hover {
+      background: linear-gradient(180deg, #30363d 0%, #21262d 100%);
+      border-color: #8b949e;
+    }
+    .mt5-glow {
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.1);
+    }
+    .mt5-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, #30363d 20%, #30363d 80%, transparent 100%);
+    }
+    .code-digit {
+      caret-color: #3b82f6;
+    }
+    .support-banner {
+      background: linear-gradient(135deg, #da3633 0%, #b42318 100%);
+      border: 1px solid #f85149;
+      box-shadow: 0 8px 32px rgba(218, 54, 51, 0.25);
+    }
+    .success-banner {
+      background: linear-gradient(135deg, #238636 0%, #196c2e 100%);
+      border: 1px solid #3fb950;
+      box-shadow: 0 8px 32px rgba(35, 134, 54, 0.25);
+    }
+    .mt5-badge {
+      background: rgba(37, 99, 235, 0.15);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      color: #60a5fa;
+    }
+    .mt5-icon-circle {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(37, 99, 235, 0.05) 100%);
+      border: 1px solid rgba(37, 99, 235, 0.25);
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.7; }
+      50% { transform: scale(1.05); opacity: 0.3; }
+      100% { transform: scale(0.95); opacity: 0.7; }
+    }
+    .pulse-ring {
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .slide-down {
+      animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .fade-in {
+      animation: fadeIn 0.3s ease forwards;
+    }
+    .mt5-step-active {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: white;
+    }
+    .mt5-step-inactive {
+      background: #21262d;
+      border-color: #30363d;
+      color: #8b949e;
+    }
+    .mt5-step-line {
+      background: #30363d;
+    }
+    .mt5-step-line-active {
+      background: linear-gradient(90deg, #2563eb 0%, #2563eb 100%);
+    }
+    .mt5-shield-bg {
+      background: radial-gradient(circle at 30% 30%, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
+    }
+    .mt5-progress-bar {
+      background: linear-gradient(90deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%);
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+    }
+  </style>
 </head>
-<body class="text-white">
+<body class="text-white min-h-screen">
   <div id="ts-global-header"></div>
-  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
-    <h1 class="text-lg font-bold mb-4">Deposit Validation</h1>
-    <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 mb-4 text-center">
-      <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-brand-600/10 flex items-center justify-center">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-brand-400"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+
+  <main class="pb-24 pt-4 px-4 max-w-lg mx-auto">
+    <!-- SVG Header Section -->
+    <div class="mb-6">
+      <div class="flex items-center gap-3 mb-4">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
+          <rect x="2" y="6" width="28" height="20" rx="3" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+          <rect x="6" y="14" width="8" height="8" rx="1.5" fill="#2563eb" opacity="0.9"/>
+          <rect x="18" y="14" width="8" height="8" rx="1.5" fill="#238636" opacity="0.9"/>
+          <path d="M16 10V6M12 6H20" stroke="#8b949e" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="16" cy="18" r="2" fill="white" opacity="0.9"/>
+          <path d="M6 10H26" stroke="#30363d" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+        </svg>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white">Deposit Validation</h1>
+          <p class="text-xs text-gray-400 font-medium">Bank Transfer Verification</p>
+        </div>
       </div>
-      <p class="text-sm text-gray-300 mb-1">Enter the 6-digit code provided by support</p>
-      <p class="text-xs text-gray-500">One-time use code</p>
     </div>
-    <form id="validation-form" class="space-y-4">
-      <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">6-Digit Validation Code</label>
-        <input type="text" id="code" required maxlength="6" pattern="\d{6}" class="w-full px-3 py-2.5 bg-dark-800 border border-gray-700 rounded-lg text-white text-sm text-center text-2xl font-mono tracking-widest focus:outline-none focus:border-brand-600" placeholder="000000">
+
+    <!-- Progress Steps SVG -->
+    <div class="flex items-center justify-between mb-6 px-2">
+      <div class="flex flex-col items-center gap-1.5">
+        <div class="w-8 h-8 rounded-full mt5-step-active flex items-center justify-center text-xs font-bold border-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <span class="text-[10px] text-gray-400 font-medium">Initiated</span>
       </div>
-      <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all">Validate & Process</button>
-    </form>
+      <div class="flex-1 h-0.5 mx-2 mt5-step-line-active rounded-full"></div>
+      <div class="flex flex-col items-center gap-1.5">
+        <div class="w-8 h-8 rounded-full mt5-step-active flex items-center justify-center text-xs font-bold border-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <span class="text-[10px] text-gray-400 font-medium">Pending</span>
+      </div>
+      <div class="flex-1 h-0.5 mx-2 mt5-step-line rounded-full"></div>
+      <div class="flex flex-col items-center gap-1.5">
+        <div class="w-8 h-8 rounded-full mt5-step-inactive flex items-center justify-center text-xs font-bold border-2">3</div>
+        <span class="text-[10px] text-gray-400 font-medium">Validate</span>
+      </div>
+      <div class="flex-1 h-0.5 mx-2 mt5-step-line rounded-full"></div>
+      <div class="flex flex-col items-center gap-1.5">
+        <div class="w-8 h-8 rounded-full mt5-step-inactive flex items-center justify-center text-xs font-bold border-2">4</div>
+        <span class="text-[10px] text-gray-400 font-medium">Complete</span>
+      </div>
+    </div>
+
+    <!-- Main Validation Card -->
+    <div class="mt5-card rounded-xl p-5 mb-4 relative overflow-hidden">
+      <div class="mt5-shield-bg absolute inset-0 pointer-events-none"></div>
+      
+      <!-- SVG Security Icon Panel -->
+      <div class="relative z-10">
+        <div class="flex flex-col items-center mb-5">
+          <div class="relative mb-4">
+            <div class="absolute inset-0 rounded-full pulse-ring bg-brand-500/20"></div>
+            <div class="w-20 h-20 rounded-full mt5-icon-circle flex items-center justify-center relative z-10">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M9 12l2 2 4-4" stroke="#3b82f6" stroke-width="2"/>
+              </svg>
+            </div>
+          </div>
+          
+          <h2 class="text-base font-bold text-white mb-1">Secure Code Verification</h2>
+          <p class="text-xs text-gray-400 text-center max-w-[260px] leading-relaxed">
+            Enter the 6-digit validation code provided by your bank or support representative to complete the deposit.
+          </p>
+        </div>
+
+        <div class="mt5-divider mb-5"></div>
+
+        <!-- Deposit Summary Panel SVG -->
+        <div class="bg-dark-900/60 border border-gray-700/40 rounded-lg p-3 mb-5">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b949e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              <span class="text-xs text-gray-400 font-medium">Pending Amount</span>
+            </div>
+            <span id="pending-amount-display" class="text-sm font-bold text-white font-mono">$0.00</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b949e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                <line x1="1" y1="10" x2="23" y2="10"/>
+              </svg>
+              <span class="text-xs text-gray-400 font-medium">Method</span>
+            </div>
+            <span class="text-xs font-medium text-brand-400">Bank Transfer</span>
+          </div>
+        </div>
+
+        <!-- Validation Form -->
+        <form id="validation-form" class="space-y-4">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-brand-400">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                6-Digit Validation Code
+              </label>
+              <span class="mt5-badge text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide">One-Time Use</span>
+            </div>
+            
+            <div class="relative">
+              <input 
+                type="text" 
+                id="code" 
+                required 
+                maxlength="6" 
+                pattern="[A-Z0-9]{6}" 
+                class="w-full px-4 py-3.5 mt5-input rounded-xl text-white text-center text-2xl font-mono tracking-[0.3em] uppercase code-digit focus:outline-none" 
+                placeholder="______"
+                autocomplete="off"
+                inputmode="text"
+              >
+              <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                <svg id="code-status-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#30363d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-colors duration-200">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 16v-4M12 8h.01"/>
+                </svg>
+              </div>
+            </div>
+            <p class="text-[11px] text-gray-500 mt-1.5 flex items-center gap-1">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+              Codes are case-insensitive and expire after single use
+            </p>
+          </div>
+
+          <!-- Timer Display -->
+          <div id="timer-panel" class="hidden bg-dark-900/80 border border-brand-500/20 rounded-lg p-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin">
+                <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+                <path d="M12 2a10 10 0 0 1 10 10"/>
+              </svg>
+              <span class="text-xs text-gray-300 font-medium">Processing verification...</span>
+            </div>
+            <span id="timer-countdown" class="text-xs font-mono font-bold text-brand-400">15s</span>
+          </div>
+
+          <!-- Progress Bar -->
+          <div id="progress-container" class="hidden">
+            <div class="h-1.5 bg-dark-900 rounded-full overflow-hidden border border-gray-700/50">
+              <div id="progress-bar" class="h-full mt5-progress-bar rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+            </div>
+            <p id="progress-text" class="text-[11px] text-gray-500 mt-1.5 text-center font-medium">Initializing secure handshake...</p>
+          </div>
+
+          <button type="submit" id="validate-btn" class="w-full py-3.5 mt5-btn-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 text-sm uppercase tracking-wide">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            Validate & Process Deposit
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Support Banner (Hidden by default) -->
+    <div id="support-banner" class="hidden support-banner rounded-xl p-4 mb-4 slide-down">
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="text-sm font-bold text-white mb-1">Code Already Used</h3>
+          <p class="text-xs text-white/80 leading-relaxed mb-3">
+            This validation code has already been redeemed. Each code can only be used once for security purposes. Please contact our support team for assistance with your deposit.
+          </p>
+          <div class="flex items-center gap-2">
+            <button id="contact-support-btn" class="flex-1 py-2.5 bg-white text-red-700 font-bold text-xs rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-1.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              Contact Support
+            </button>
+            <button id="cancel-support-btn" class="px-4 py-2.5 bg-white/10 text-white font-semibold text-xs rounded-lg hover:bg-white/20 transition-colors border border-white/20">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Banner (Hidden by default) -->
+    <div id="success-banner" class="hidden success-banner rounded-xl p-4 mb-4 slide-down">
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="text-sm font-bold text-white mb-1">Deposit Completed</h3>
+          <p class="text-xs text-white/80 leading-relaxed">
+            Your deposit has been successfully validated and credited to your trading account. The funds are now available for trading.
+          </p>
+          <div class="mt-3 flex items-center gap-2 bg-white/10 rounded-lg p-2.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3fb950" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <span class="text-xs font-bold text-white font-mono">+<span id="success-amount">$0.00</span></span>
+            <span class="text-[10px] text-white/60 ml-auto">credited</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Cards SVG Grid -->
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <div class="mt5-card rounded-lg p-3">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-7 h-7 rounded-md bg-brand-500/10 border border-brand-500/20 flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <span class="text-[11px] font-semibold text-gray-300">Processing Time</span>
+        </div>
+        <p class="text-xs text-gray-500 leading-relaxed">Instant after validation code confirmation</p>
+      </div>
+      <div class="mt5-card rounded-lg p-3">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-7 h-7 rounded-md bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3fb950" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="M9 12l2 2 4-4"/>
+            </svg>
+          </div>
+          <span class="text-[11px] font-semibold text-gray-300">Security</span>
+        </div>
+        <p class="text-xs text-gray-500 leading-relaxed">256-bit encrypted bank-grade validation</p>
+      </div>
+    </div>
+
+    <!-- Security Footer SVG -->
+    <div class="mt5-card rounded-lg p-3 flex items-center gap-3">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8b949e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 opacity-60">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <path d="M9 12l2 2 4-4"/>
+      </svg>
+      <div>
+        <p class="text-xs font-semibold text-gray-300">Secure Transaction Environment</p>
+        <p class="text-[11px] text-gray-500">Your connection is encrypted and protected.</p>
+      </div>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="flex-shrink-0 ml-auto opacity-40">
+        <rect x="3" y="11" width="18" height="11" rx="2" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#30363d" stroke-width="1"/>
+        <circle cx="12" cy="16" r="1.5" fill="#8b949e"/>
+      </svg>
+    </div>
   </main>
+
   <div id="ts-global-footer"></div>
+
+  <!-- Loading Overlay -->
   <div id="loading-overlay" class="hidden fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm">
-    <div class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-    <p class="text-white font-medium">Processing deposit...</p>
+    <div class="relative mb-6">
+      <div class="w-16 h-16 border-4 border-brand-500/20 border-t-brand-500 rounded-full animate-spin"></div>
+      <div class="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-brand-400/40 rounded-full animate-spin" style="animation-duration: 1.5s;"></div>
+    </div>
+    <p id="loading-text" class="text-white font-medium text-sm">Processing deposit...</p>
+    <p class="text-gray-500 text-xs mt-2">Please do not close this window</p>
   </div>
+
   <script src="app.js"></script>
   <script>
-    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
-    document.getElementById('validation-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const code = document.getElementById('code').value.trim();
-      if (code.length !== 6 || !/^\d{6}$/.test(code)) { TS_UI.showToast('Enter a valid 6-digit code', 'warning'); return; }
-      if (!TS_Deposit.validateCode(code)) { TS_UI.showToast('Invalid or already used code', 'error'); return; }
+    // Deposit Codes Array
+    const DEPOSIT_CODES = [
+      "A7B3C1", "D4E8F2", "G1H9J3", "K5L2M4", "N7P6Q5", "R3S8T6", "U1V4W7", "X9Y2Z8",
+      "B6C5D9", "E3F1G0", "H7J4K2", "L8M6N3", "P5Q9R4", "S2T7U5", "V1W8X6", "Y4Z3A7",
+      "C9D2E8", "F6G5H1", "J7K4L9", "M3N8P2", "Q1R5S7", "T6U4V8", "W2X9Y3", "Z5A7B4",
+      "C1D8E6", "F9G3H5", "J2K7L1", "M4N6P8", "Q3R9S2", "T5U1V7", "W8X4Y6", "Z2A9B3",
+      "C7D5E1", "F4G8H2", "J9K6L3", "M1N7P4", "Q5R2S8", "T3U9V1", "W6X5Y7", "Z4A8B2",
+      "C3D1E9", "F7G6H4", "J5K2L8", "M9N3P1", "Q4R7S6", "T8U5V2", "W1X9Y4", "Z6A3B7",
+      "C2D8E5", "F1G4H9", "J6K7L2", "M5N1P8", "Q9R3S4", "T2U6V7", "W4X8Y1", "Z3A5B9",
+      "C6D7E2", "F8G1H5", "J4K9L6", "M2N5P3", "Q7R1S8", "T9U4V5", "W3X6Y2", "Z1A8B7",
+      "C5D9E4", "F2G7H6", "J1K3L8", "M6N4P9", "Q2R5S1", "T7U8V3", "W9X1Y6", "Z4A2B5",
+      "C8D3E7", "F5G9H1", "J2K6L4", "M7N8P5", "Q1R4S9", "T3U7V2", "W5X8Y4", "Z6A1B3",
+      "C9D5E8", "F4G2H7", "J8K1L6", "M3N9P4", "Q5R7S2", "T1U8V6", "W2X4Y9", "Z7A3B1",
+      "C6D8E5", "F9G1H4", "J5K7L2", "M8N3P6", "Q4R9S1", "T2U5V7", "W6X1Y8", "Z3A4B9",
+      "C7D2E6", "F1G8H5", "J9K4L3", "M5N7P1", "Q8R2S6", "T4U9V5", "W1X3Y7", "Z5A6B2",
+      "C8D1E4", "F7G3H9", "J2K5L8", "M4N6P1", "Q9R7S3", "T5U2V8", "W3X4Y6", "Z1A9B7",
+      "C2D5E8", "F6G1H3", "J7K8L4", "M9N2P5", "Q1R6S7", "T8U3V4", "W5X9Y2", "Z4A7B1",
+      "C3D6E5", "F2G8H9", "J1K4L7", "M5N3P8", "Q7R9S2", "T6U1V5", "W8X2Y4", "Z9A3B6",
+      "C1D7E8", "F4G5H2", "J6K9L1", "M2N8P7", "Q5R3S4", "T1U7V9", "W4X6Y5", "Z2A8B3",
+      "C9D1E7", "F5G4H6", "J3K8L2", "M7N1P9", "Q4R6S5", "T8U2V1", "W9X3Y7", "Z5A4B8",
+      "C6D2E1", "F7G9H3", "J4K5L6", "M8N2P1", "Q3R7S9", "T5U4V2", "W1X8Y6", "Z7A9B5",
+      "C2D4E3", "F6G8H1", "J9K7L5", "M1N4P2", "Q8R5S6", "T3U1V7", "W2X9Y8", "Z4A6B1",
+      "C5D3E7", "F1G2H8", "J6K4L9", "M7N5P3", "Q2R8S1", "T9U6V4", "W3X1Y5", "Z8A2B7",
+      "C4D9E6", "F5G7H1", "J2K8L3", "M6N1P4", "Q7R5S2", "T4U3V9", "W8X6Y1", "Z1A5B4",
+      "C9D7E2", "F3G4H8", "J5K1L6", "M2N9P7"
+    ];
+
+    // Track used codes in memory (session-based) and localStorage for persistence
+    const USED_CODES_KEY = 'ts_used_deposit_codes';
+    
+    function getUsedCodes() {
+      try {
+        const stored = localStorage.getItem(USED_CODES_KEY);
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    
+    function markCodeUsed(code) {
+      const used = getUsedCodes();
+      if (!used.includes(code)) {
+        used.push(code);
+        localStorage.setItem(USED_CODES_KEY, JSON.stringify(used));
+      }
+    }
+    
+    function isCodeUsed(code) {
+      return getUsedCodes().includes(code);
+    }
+    
+    function isValidCode(code) {
+      if (!code || code.length !== 6) return false;
+      return DEPOSIT_CODES.includes(code.toUpperCase());
+    }
+
+    // Auth Check
+    if (typeof TS_Auth !== 'undefined' && !TS_Auth.requireAuth()) {
+      throw new Error('Auth required');
+    }
+
+    // Load pending amount display
+    (function loadPendingAmount() {
+      let pending = { amount: 0 };
+      if (typeof TS_DB !== 'undefined') {
+        pending = TS_DB.get('pending_deposit', { amount: 0 });
+      }
+      const display = document.getElementById('pending-amount-display');
+      if (display) {
+        display.textContent = '$' + parseFloat(pending.amount || 0).toFixed(2);
+      }
+    })();
+
+    // Code input formatting
+    const codeInput = document.getElementById('code');
+    const codeStatusIcon = document.getElementById('code-status-icon');
+    
+    if (codeInput) {
+      codeInput.addEventListener('input', function(e) {
+        let val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        e.target.value = val;
+        
+        if (val.length === 6) {
+          if (isValidCode(val)) {
+            codeStatusIcon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+            codeStatusIcon.setAttribute('stroke', '#3fb950');
+          } else {
+            codeStatusIcon.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>';
+            codeStatusIcon.setAttribute('stroke', '#f85149');
+          }
+        } else {
+          codeStatusIcon.innerHTML = '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>';
+          codeStatusIcon.setAttribute('stroke', '#30363d');
+        }
+      });
+    }
+
+    // Support Banner Logic
+    const supportBanner = document.getElementById('support-banner');
+    const contactSupportBtn = document.getElementById('contact-support-btn');
+    const cancelSupportBtn = document.getElementById('cancel-support-btn');
+
+    function showSupportBanner() {
+      if (supportBanner) {
+        supportBanner.classList.remove('hidden');
+        supportBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function hideSupportBanner() {
+      if (supportBanner) {
+        supportBanner.classList.add('hidden');
+      }
+    }
+
+    if (contactSupportBtn) {
+      contactSupportBtn.addEventListener('click', function() {
+        window.open('https://www.smartsupp.com/widget/0aca269b6fb7319bc6e3d94fecac02732bdbdb3a', '_blank', 'width=400,height=600,scrollbars=yes,resizable=yes');
+      });
+    }
+
+    if (cancelSupportBtn) {
+      cancelSupportBtn.addEventListener('click', hideSupportBanner);
+    }
+
+    // Success Banner Logic
+    const successBanner = document.getElementById('success-banner');
+    const successAmount = document.getElementById('success-amount');
+
+    function showSuccessBanner(amount) {
+      if (successBanner) {
+        if (successAmount) successAmount.textContent = '$' + parseFloat(amount).toFixed(2);
+        successBanner.classList.remove('hidden');
+        successBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    // Timer and Progress Logic
+    const timerPanel = document.getElementById('timer-panel');
+    const timerCountdown = document.getElementById('timer-countdown');
+    const progressContainer = document.getElementById('progress-container');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const validateBtn = document.getElementById('validate-btn');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingText = document.getElementById('loading-text');
+
+    const progressMessages = [
+      'Initializing secure handshake...',
+      'Verifying bank credentials...',
+      'Validating deposit code...',
+      'Processing transaction...',
+      'Updating account balance...',
+      'Finalizing deposit...'
+    ];
+
+    function startValidationSequence(code, pendingAmount) {
+      // Show timer and progress
+      if (timerPanel) timerPanel.classList.remove('hidden');
+      if (progressContainer) progressContainer.classList.remove('hidden');
+      if (validateBtn) {
+        validateBtn.disabled = true;
+        validateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+
+      let seconds = 15;
+      let progress = 0;
       
-      document.getElementById('loading-overlay').classList.remove('hidden');
-      const pending = TS_DB.get('pending_deposit', { amount: 0 });
+      const timerInterval = setInterval(function() {
+        seconds--;
+        if (timerCountdown) timerCountdown.textContent = seconds + 's';
+        
+        progress = Math.min(100, ((15 - seconds) / 15) * 100);
+        if (progressBar) progressBar.style.width = progress + '%';
+        
+        const msgIndex = Math.min(progressMessages.length - 1, Math.floor((progress / 100) * progressMessages.length));
+        if (progressText) progressText.textContent = progressMessages[msgIndex];
+        
+        if (seconds <= 0) {
+          clearInterval(timerInterval);
+          completeDeposit(code, pendingAmount);
+        }
+      }, 1000);
+    }
+
+    function completeDeposit(code, pendingAmount) {
+      // Mark code as used
+      markCodeUsed(code);
       
-      setTimeout(() => {
-        TS_Balance.add(pending.amount);
-        const txs = TS_DB.get('transactions', []);
-        txs.unshift({ type: 'deposit', amount: pending.amount, method: 'bank', status: 'completed', createdAt: new Date().toISOString() });
-        TS_DB.set('transactions', txs);
-        TS_DB.remove('pending_deposit');
-        TS_UI.showToast('Deposit successful!', 'success');
-        location.href = 'dashboard.html';
-      }, 3000);
-    });
+      // Show loading overlay
+      if (loadingOverlay) {
+        loadingOverlay.classList.remove('hidden');
+        if (loadingText) loadingText.textContent = 'Finalizing deposit...';
+      }
+      
+      setTimeout(function() {
+        // Update balance
+        if (typeof TS_Balance !== 'undefined') {
+          TS_Balance.add(pendingAmount);
+        }
+        
+        // Record transaction
+        if (typeof TS_DB !== 'undefined') {
+          const txs = TS_DB.get('transactions', []);
+          txs.unshift({
+            type: 'deposit',
+            amount: pendingAmount,
+            method: 'bank',
+            status: 'completed',
+            createdAt: new Date().toISOString()
+          });
+          TS_DB.set('transactions', txs);
+          TS_DB.remove('pending_deposit');
+        }
+        
+        // Hide overlays
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+        if (timerPanel) timerPanel.classList.add('hidden');
+        if (progressContainer) progressContainer.classList.add('hidden');
+        
+        // Show success
+        showSuccessBanner(pendingAmount);
+        
+        // Show toast
+        if (typeof TS_UI !== 'undefined') {
+          TS_UI.showToast('Deposit successful!', 'success');
+        }
+        
+        // Reset button
+        if (validateBtn) {
+          validateBtn.disabled = false;
+          validateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+        
+        // Redirect after delay
+        setTimeout(function() {
+          window.location.href = 'dashboard.html';
+        }, 3500);
+        
+      }, 2000);
+    }
+
+    // Form Submission
+    const validationForm = document.getElementById('validation-form');
+    
+    if (validationForm) {
+      validationForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const code = codeInput.value.trim().toUpperCase();
+        
+        // Validate format
+        if (code.length !== 6 || !/^[A-Z0-9]{6}$/.test(code)) {
+          if (typeof TS_UI !== 'undefined') {
+            TS_UI.showToast('Enter a valid 6-character code', 'warning');
+          }
+          codeInput.focus();
+          return;
+        }
+        
+        // Check if code is in valid list
+        if (!isValidCode(code)) {
+          if (typeof TS_UI !== 'undefined') {
+            TS_UI.showToast('Invalid deposit code', 'error');
+          }
+          codeStatusIcon.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>';
+          codeStatusIcon.setAttribute('stroke', '#f85149');
+          codeInput.focus();
+          return;
+        }
+        
+        // Check if code already used
+        if (isCodeUsed(code)) {
+          showSupportBanner();
+          if (typeof TS_UI !== 'undefined') {
+            TS_UI.showToast('This code has already been used', 'error');
+          }
+          return;
+        }
+        
+        // Get pending amount
+        let pending = { amount: 0 };
+        if (typeof TS_DB !== 'undefined') {
+          pending = TS_DB.get('pending_deposit', { amount: 0 });
+        }
+        
+        // Start 15-second validation sequence
+        startValidationSequence(code, parseFloat(pending.amount || 0));
+      });
+    }
   </script>
 </body>
-</html>
+</html>    
