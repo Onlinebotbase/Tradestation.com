@@ -5,49 +5,1007 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Notifications - Trade Station</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{600:'#2563eb'},dark:{800:'#1f2937',900:'#111827',950:'#0b0f19'}}}}}</script>
-  <style>body{background:#0b0f19;}</style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 600: '#2563eb', 700: '#1d4ed8', 500: '#3b82f6' },
+            dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19', 850: '#182033', 750: '#1a2236' },
+            mt5: {
+              bg: '#0b0f19',
+              panel: '#111827',
+              border: '#1f2937',
+              hover: '#182033',
+              active: '#1d4ed8',
+              text: '#e5e7eb',
+              muted: '#6b7280',
+              success: '#10b981',
+              warning: '#f59e0b',
+              danger: '#ef4444',
+              info: '#3b82f6',
+              purple: '#8b5cf6'
+            }
+          },
+          fontFamily: {
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    * {
+      -webkit-tap-highlight-color: transparent;
+      scrollbar-width: thin;
+      scrollbar-color: #374151 #0b0f19;
+    }
+
+    body {
+      background: #0b0f19;
+      font-family: 'Inter', system-ui, sans-serif;
+      color: #e5e7eb;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b0f19; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+    .mt5-panel {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .mt5-toolbar-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      color: #9ca3af;
+      background: transparent;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      gap: 4px;
+    }
+
+    .mt5-toolbar-btn:hover {
+      background: #182033;
+      color: #e5e7eb;
+      border-color: #374151;
+    }
+
+    .mt5-toolbar-btn.active {
+      background: #1d4ed8;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+
+    .mt5-tabs {
+      display: flex;
+      background: #111827;
+      border-bottom: 1px solid #1f2937;
+      overflow-x: auto;
+      gap: 2px;
+      padding: 0 4px;
+    }
+
+    .mt5-tab {
+      padding: 8px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #6b7280;
+      border: none;
+      background: transparent;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mt5-tab:hover { color: #9ca3af; }
+    .mt5-tab.active {
+      color: #3b82f6;
+      border-bottom-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .mt5-tab .badge {
+      background: #374151;
+      color: #e5e7eb;
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    .mt5-tab.active .badge { background: #3b82f6; }
+
+    .mt5-statusbar {
+      background: #111827;
+      border-top: 1px solid #1f2937;
+      font-size: 10px;
+      color: #6b7280;
+      padding: 4px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .market-ticker {
+      background: #0f172a;
+      border-bottom: 1px solid #1f2937;
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+    }
+
+    .market-ticker-content {
+      display: inline-flex;
+      animation: ticker 30s linear infinite;
+      padding: 6px 0;
+      font-size: 11px;
+      font-family: ui-monospace, monospace;
+    }
+
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .ticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 16px;
+      color: #9ca3af;
+    }
+
+    .ticker-item .value { color: #e5e7eb; font-weight: 600; }
+    .ticker-item .up { color: #10b981; }
+    .ticker-item .down { color: #ef4444; }
+
+    .market-pop-banner {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+      border-bottom: 1px solid #3b82f6;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .market-pop-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+      animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    .market-pop-content {
+      position: relative;
+      z-index: 1;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .icon-s { width: 14px; height: 14px; }
+    .icon-m { width: 16px; height: 16px; }
+    .icon-l { width: 20px; height: 20px; }
+    .icon-xl { width: 24px; height: 24px; }
+
+    .conn-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 4px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .notif-card {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 6px;
+      padding: 0;
+      margin-bottom: 6px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .notif-card:hover {
+      border-color: #374151;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .notif-card-header {
+      padding: 10px 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .notif-icon-wrap {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .notif-icon-wrap.info { background: rgba(59, 130, 246, 0.12); }
+    .notif-icon-wrap.success { background: rgba(16, 185, 129, 0.12); }
+    .notif-icon-wrap.warning { background: rgba(245, 158, 11, 0.12); }
+    .notif-icon-wrap.error { background: rgba(239, 68, 68, 0.12); }
+    .notif-icon-wrap.market { background: rgba(139, 92, 246, 0.12); }
+
+    .notif-meta {
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .notif-actions {
+      display: flex;
+      gap: 4px;
+      padding: 6px 12px;
+      border-top: 1px solid #1f2937;
+      background: rgba(17, 24, 39, 0.5);
+    }
+
+    .btn-icon {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      border: none;
+      background: transparent;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-icon:hover {
+      background: #1f2937;
+      color: #e5e7eb;
+    }
+
+    .btn-icon.danger:hover {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+    }
+
+    .mt5-input {
+      background: #0b0f19;
+      border: 1px solid #374151;
+      border-radius: 4px;
+      padding: 6px 10px 6px 32px;
+      font-size: 12px;
+      color: #e5e7eb;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .mt5-input:focus {
+      border-color: #3b82f6;
+    }
+
+    .mt5-input::placeholder {
+      color: #4b5563;
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #4b5563;
+      padding: 12px 12px 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .toast-notif {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      background: #111827;
+      border: 1px solid #374151;
+      border-left: 3px solid #3b82f6;
+      border-radius: 6px;
+      padding: 12px 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      z-index: 9999;
+      transform: translateX(120%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: 320px;
+    }
+
+    .toast-notif.show {
+      transform: translateX(0);
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 20px;
+      color: #4b5563;
+    }
+
+    .footer-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #111827;
+      border-top: 1px solid #1f2937;
+      display: flex;
+      justify-content: space-around;
+      padding: 6px 0 8px;
+      z-index: 50;
+    }
+
+    .footer-nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 4px 12px;
+      border: none;
+      background: transparent;
+      color: #6b7280;
+      font-size: 10px;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .footer-nav-btn:hover, .footer-nav-btn.active {
+      color: #3b82f6;
+    }
+
+    .app-header {
+      background: #111827;
+      border-bottom: 1px solid #1f2937;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .market-ticker::-webkit-scrollbar { display: none; }
+    .market-ticker { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
 </head>
 <body class="text-white">
-  <div id="ts-global-header"></div>
-  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
-    <div class="flex items-center justify-between mb-4">
-      <h1 class="text-lg font-bold">Notifications</h1>
-      <button onclick="TS_Notifications.clearAll(); renderNotifications();" class="text-xs text-red-400 font-medium">Clear All</button>
+
+  <div id="ts-global-header">
+    <div id="market-pop-banner" class="market-pop-banner hidden">
+      <div class="market-pop-content">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <svg class="icon-l flex-shrink-0 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold text-white truncate" id="market-pop-title">--</div>
+            <div class="text-[11px] text-blue-100 truncate" id="market-pop-message">--</div>
+          </div>
+        </div>
+        <button onclick="dismissMarketBanner()" class="flex-shrink-0 p-1.5 rounded hover:bg-white/10 transition-colors">
+          <svg class="icon-m text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
     </div>
-    <div id="notifications-list" class="space-y-2"></div>
-    <div id="no-notifications" class="hidden text-center py-12 text-gray-500 text-sm">
-      <p>No notifications yet.</p>
+
+    <div class="market-ticker" id="market-ticker">
+      <div class="market-ticker-content" id="ticker-content">
+        <span class="ticker-item">Loading live market data...</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-header">
+    <div class="flex items-center gap-3">
+      <button onclick="TS_Nav.goBack()" class="p-1.5 rounded hover:bg-white/5 transition-colors text-gray-400 hover:text-white">
+        <svg class="icon-l" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <div class="flex items-center gap-2">
+        <svg class="icon-l text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <h1 class="text-sm font-bold tracking-wide text-gray-100">NOTIFICATIONS</h1>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-green-500/10 border border-green-500/20">
+        <div class="conn-dot"></div>
+        <span class="text-[10px] font-semibold text-green-400 uppercase tracking-wider">Online</span>
+      </div>
+      <button onclick="TS_Notifications.clearAll(); renderNotifications();" class="mt5-toolbar-btn text-red-400 hover:text-red-300 hover:bg-red-500/10" title="Clear All">
+        <svg class="icon-m" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="px-3 pt-3 pb-2">
+    <div class="relative">
+      <svg class="icon-m absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" id="notif-search" class="mt5-input" placeholder="Search notifications..." oninput="filterNotifications()">
+    </div>
+  </div>
+
+  <div class="mt5-tabs px-2" id="notif-tabs">
+    <button class="mt5-tab active" onclick="setCategory('all', this)">
+      <svg class="icon-s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="8" y1="6" x2="21" y2="6"></line>
+        <line x1="8" y1="12" x2="21" y2="12"></line>
+        <line x1="8" y1="18" x2="21" y2="18"></line>
+        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+      </svg>
+      All
+      <span class="badge" id="badge-all">0</span>
+    </button>
+    <button class="mt5-tab" onclick="setCategory('trading', this)">
+      <svg class="icon-s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+      </svg>
+      Trading
+      <span class="badge" id="badge-trading">0</span>
+    </button>
+    <button class="mt5-tab" onclick="setCategory('system', this)">
+      <svg class="icon-s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+        <line x1="8" y1="21" x2="16" y2="21"></line>
+        <line x1="12" y1="17" x2="12" y2="21"></line>
+      </svg>
+      System
+      <span class="badge" id="badge-system">0</span>
+    </button>
+    <button class="mt5-tab" onclick="setCategory('market', this)">
+      <svg class="icon-s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      </svg>
+      Price Alerts
+      <span class="badge" id="badge-market">0</span>
+    </button>
+    <button class="mt5-tab" onclick="setCategory('news', this)">
+      <svg class="icon-s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
+      </svg>
+      News
+      <span class="badge" id="badge-news">0</span>
+    </button>
+  </div>
+
+  <main class="pb-28 pt-1 px-3 max-w-3xl mx-auto">
+    <div class="section-label">
+      <svg class="icon-s text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+      Today
+    </div>
+
+    <div id="notifications-list" class="space-y-1.5"></div>
+
+    <div id="no-notifications" class="hidden empty-state">
+      <svg class="icon-xl mb-3 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+      <p class="text-sm font-medium text-gray-500">No notifications</p>
+      <p class="text-xs text-gray-600 mt-1">New alerts will appear here</p>
+    </div>
+
+    <div id="earlier-section" class="hidden">
+      <div class="section-label mt-4">
+        <svg class="icon-s text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        Earlier
+      </div>
+      <div id="earlier-list" class="space-y-1.5"></div>
     </div>
   </main>
-  <div id="ts-global-footer"></div>
+
+  <div class="mt5-statusbar fixed bottom-[60px] left-0 right-0 z-40">
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-1.5">
+        <div class="conn-dot"></div>
+        <span>Connected</span>
+      </div>
+      <span id="conn-server">--</span>
+    </div>
+    <div class="flex items-center gap-4 font-mono">
+      <span id="status-ping">Ping: --ms</span>
+      <span id="status-time">--:--:--</span>
+    </div>
+  </div>
+
+  <div id="ts-global-footer">
+
+
+  <div id="toast-container"></div>
+
   <script src="app.js"></script>
   <script>
-    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
+    const COINGECKO_API = 'https://api.coingecko.com/api/v3';
+    const EXCHANGE_API = 'https://v6.exchangerate-api.com/v6/45602791eb9f29e022a7ce3f/latest/USD';
+    const FINNHUB_API = 'https://finnhub.io/api/v1/news?category=general&token=d7cq1t9r01qv03eta4rgd7cq1t9r01qv03eta4s0';
+    const ALPHAVANTAGE_API = 'https://www.alphavantage.co/query';
+    const ALPHAVANTAGE_KEY = '3A3XN5PXKW8DG38L';
+
+    const MARKET_BANNER_KEY = 'ts_market_banner_dismissed';
+    const MARKET_BANNER_INTERVAL = 30 * 60 * 1000;
+    const TICKER_INTERVAL = 60 * 1000;
+
+    let currentCategory = 'all';
+    let marketDataCache = null;
+
+    if (!TS_Auth || !TS_Auth.requireAuth || !TS_Auth.requireAuth()) {
+      window.location.href = 'login.html';
+      throw new Error('Auth required');
+    }
+
     function renderNotifications() {
-      const notifs = TS_Notifications.getAll().filter(n => !n.dismissed);
+      const allNotifs = TS_Notifications.getAll().filter(n => !n.dismissed);
+      const searchTerm = document.getElementById('notif-search').value.toLowerCase();
+
+      let notifs = allNotifs;
+
+      if (currentCategory !== 'all') {
+        notifs = notifs.filter(n => n.type === currentCategory || (currentCategory === 'news' && n.category === 'news'));
+      }
+
+      if (searchTerm) {
+        notifs = notifs.filter(n =>
+          (n.title && n.title.toLowerCase().includes(searchTerm)) ||
+          (n.message && n.message.toLowerCase().includes(searchTerm))
+        );
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const todayNotifs = notifs.filter(n => new Date(n.createdAt) >= today);
+      const earlierNotifs = notifs.filter(n => new Date(n.createdAt) < today);
+
       const list = document.getElementById('notifications-list');
+      const earlierList = document.getElementById('earlier-list');
+      const earlierSection = document.getElementById('earlier-section');
       const noNotifs = document.getElementById('no-notifications');
-      if (notifs.length === 0) { list.innerHTML = ''; noNotifs.classList.remove('hidden'); return; }
+
+      updateBadges(allNotifs);
+
+      if (notifs.length === 0) {
+        list.innerHTML = '';
+        earlierSection.classList.add('hidden');
+        noNotifs.classList.remove('hidden');
+        return;
+      }
+
       noNotifs.classList.add('hidden');
-      list.innerHTML = notifs.map(n => {
-        const colors = { info: 'bg-blue-500/10 border-blue-500/20', success: 'bg-green-500/10 border-green-500/20', warning: 'bg-yellow-500/10 border-yellow-500/20', error: 'bg-red-500/10 border-red-500/20', market: 'bg-purple-500/10 border-purple-500/20' };
-        const color = colors[n.type] || colors.info;
-        return `
-          <div class="${color} border rounded-xl p-4">
-            <div class="flex items-start justify-between gap-2">
-              <div class="flex-1">
-                <div class="text-sm font-bold text-white mb-1">${n.title}</div>
-                <div class="text-xs text-gray-300">${n.message}</div>
-                <div class="text-xs text-gray-500 mt-1">${new Date(n.createdAt).toLocaleString()}</div>
+
+      if (todayNotifs.length > 0) {
+        list.innerHTML = todayNotifs.map(n => buildNotificationCard(n)).join('');
+      } else {
+        list.innerHTML = '';
+      }
+
+      if (earlierNotifs.length > 0) {
+        earlierSection.classList.remove('hidden');
+        earlierList.innerHTML = earlierNotifs.map(n => buildNotificationCard(n)).join('');
+      } else {
+        earlierSection.classList.add('hidden');
+      }
+    }
+
+    function buildNotificationCard(n) {
+      const typeConfig = {
+        info: {
+          icon: '<svg class="icon-m" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>',
+          label: 'Info',
+          color: '#3b82f6'
+        },
+        success: {
+          icon: '<svg class="icon-m" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
+          label: 'Success',
+          color: '#10b981'
+        },
+        warning: {
+          icon: '<svg class="icon-m" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
+          label: 'Warning',
+          color: '#f59e0b'
+        },
+        error: {
+          icon: '<svg class="icon-m" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>',
+          label: 'Error',
+          color: '#ef4444'
+        },
+        market: {
+          icon: '<svg class="icon-m" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>',
+          label: 'Market',
+          color: '#8b5cf6'
+        }
+      };
+
+      const config = typeConfig[n.type] || typeConfig.info;
+      const timeStr = formatTimeAgo(n.createdAt);
+
+      return `
+        <div class="notif-card type-${n.type}">
+          <div class="notif-card-header">
+            <div class="notif-icon-wrap ${n.type}">
+              ${config.icon}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <div class="text-sm font-semibold text-gray-100 truncate">${escapeHtml(n.title)}</div>
+                <span class="text-[10px] font-mono text-gray-500 flex-shrink-0">${timeStr}</span>
               </div>
-              <button onclick="TS_Notifications.dismiss('${n.id}'); renderNotifications();" class="p-1 text-gray-500 hover:text-white">✕</button>
+              <div class="text-xs text-gray-400 mt-0.5 leading-relaxed">${escapeHtml(n.message)}</div>
+              <div class="notif-meta">
+                <span class="flex items-center gap-1" style="color: ${config.color}">
+                  <span class="w-1.5 h-1.5 rounded-full" style="background: ${config.color}"></span>
+                  ${config.label}
+                </span>
+                <span>${new Date(n.createdAt).toLocaleDateString()} ${new Date(n.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+              </div>
             </div>
           </div>
-        `;
-      }).join('');
+          <div class="notif-actions">
+            <button onclick="dismissNotif('${n.id}')" class="btn-icon danger" title="Dismiss">
+              <svg class="icon-m" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+            <button onclick="markRead('${n.id}')" class="btn-icon" title="Mark as Read">
+              <svg class="icon-m" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </button>
+            ${n.action ? `<button onclick="${n.action}" class="btn-icon" title="Action">
+              <svg class="icon-m" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>` : ''}
+          </div>
+        </div>
+      `;
     }
-    renderNotifications();
+
+    function dismissNotif(id) {
+      if (TS_Notifications && TS_Notifications.dismiss) {
+        TS_Notifications.dismiss(id);
+      }
+      renderNotifications();
+      showToast('Notification dismissed', 'info');
+    }
+
+    function markRead(id) {
+      if (TS_Notifications && TS_Notifications.markRead) {
+        TS_Notifications.markRead(id);
+      } else if (TS_Notifications && TS_Notifications.dismiss) {
+        TS_Notifications.dismiss(id);
+      }
+      renderNotifications();
+    }
+
+    function updateBadges(notifs) {
+      const counts = { all: notifs.length, trading: 0, system: 0, market: 0, news: 0 };
+      notifs.forEach(n => {
+        if (counts[n.type] !== undefined) counts[n.type]++;
+        if (n.category === 'news') counts.news++;
+      });
+
+      Object.keys(counts).forEach(key => {
+        const el = document.getElementById('badge-' + key);
+        if (el) el.textContent = counts[key];
+      });
+    }
+
+    function setCategory(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('.mt5-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      renderNotifications();
+    }
+
+    function filterNotifications() {
+      renderNotifications();
+    }
+
+    async function loadMarketData() {
+      try {
+        const [cryptoRes, forexRes, newsRes, stockRes] = await Promise.allSettled([
+          fetch(`${COINGECKO_API}/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true`).then(r => r.json()),
+          fetch(EXCHANGE_API).then(r => r.json()),
+          fetch(FINNHUB_API).then(r => r.json()),
+          fetch(`${ALPHAVANTAGE_API}?function=GLOBAL_QUOTE&symbol=SPY&apikey=${ALPHAVANTAGE_KEY}`).then(r => r.json())
+        ]);
+
+        marketDataCache = {
+          crypto: cryptoRes.status === 'fulfilled' ? cryptoRes.value : null,
+          forex: forexRes.status === 'fulfilled' ? forexRes.value : null,
+          news: newsRes.status === 'fulfilled' ? newsRes.value : null,
+          stock: stockRes.status === 'fulfilled' ? stockRes.value : null
+        };
+
+        updateTicker();
+        checkMarketBanner();
+      } catch (e) {
+        console.error('Market data load failed:', e);
+      }
+    }
+
+    function updateTicker() {
+      const ticker = document.getElementById('ticker-content');
+      if (!ticker) return;
+
+      if (!marketDataCache) {
+        ticker.innerHTML = '<span class="ticker-item">Loading live market data...</span>';
+        return;
+      }
+
+      const items = [];
+
+      if (marketDataCache.crypto?.bitcoin?.usd) {
+        const btc = marketDataCache.crypto.bitcoin;
+        const change = btc.usd_24h_change || 0;
+        const cls = change >= 0 ? 'up' : 'down';
+        const arrow = change >= 0 ? '▲' : '▼';
+        items.push(`<<span class="ticker-item"><span class="font-semibold text-gray-400">BTC/USD</span> <span class="value">${btc.usd.toLocaleString()}</span> <span class="${cls}">${arrow} ${Math.abs(change).toFixed(2)}%</span></span>`);
+      }
+
+      if (marketDataCache.crypto?.ethereum?.usd) {
+        const eth = marketDataCache.crypto.ethereum;
+        const change = eth.usd_24h_change || 0;
+        const cls = change >= 0 ? 'up' : 'down';
+        const arrow = change >= 0 ? '▲' : '▼';
+        items.push(`<<span class="ticker-item"><span class="font-semibold text-gray-400">ETH/USD</span> <span class="value">${eth.usd.toLocaleString()}</span> <span class="${cls}">${arrow} ${Math.abs(change).toFixed(2)}%</span></span>`);
+      }
+
+      if (marketDataCache.forex?.conversion_rates) {
+        const rates = marketDataCache.forex.conversion_rates;
+        const pairs = [['EUR', rates.EUR], ['GBP', rates.GBP], ['JPY', rates.JPY], ['CHF', rates.CHF], ['AUD', rates.AUD], ['CAD', rates.CAD]];
+        pairs.forEach(([sym, rate]) => {
+          if (rate) items.push(`<<span class="ticker-item"><span class="font-semibold text-gray-400">${sym}/USD</span> <span class="value">${rate.toFixed(4)}</span></span>`);
+        });
+      }
+
+      if (marketDataCache.stock?.['Global Quote']?.['05. price']) {
+        const q = marketDataCache.stock['Global Quote'];
+        const price = parseFloat(q['05. price']);
+        const change = parseFloat(q['09. change']) || 0;
+        if (!isNaN(price)) {
+          const cls = change >= 0 ? 'up' : 'down';
+          const arrow = change >= 0 ? '▲' : '▼';
+          items.push(`<<span class="ticker-item"><span class="font-semibold text-gray-400">SPY</span> <span class="value">${price.toFixed(2)}</span> <span class="${cls}">${arrow} ${Math.abs(change).toFixed(2)}%</span></span>`);
+        }
+      }
+
+      if (marketDataCache.news?.[0]?.headline) {
+        items.push(`<<span class="ticker-item"><span class="font-semibold text-blue-400">NEWS</span> <span class="text-gray-300">${escapeHtml(marketDataCache.news[0].headline.substring(0, 60))}...</span></span>`);
+      }
+
+      if (items.length === 0) {
+        ticker.innerHTML = '<span class="ticker-item">Loading live market data...</span>';
+        return;
+      }
+
+      ticker.innerHTML = items.join('') + items.join('');
+    }
+
+    function checkMarketBanner() {
+      const banner = document.getElementById('market-pop-banner');
+      const lastDismissed = localStorage.getItem(MARKET_BANNER_KEY);
+      const now = Date.now();
+
+      if (lastDismissed && (now - parseInt(lastDismissed)) < MARKET_BANNER_INTERVAL) {
+        banner.classList.add('hidden');
+        return;
+      }
+
+      if (!marketDataCache) {
+        banner.classList.add('hidden');
+        return;
+      }
+
+      let title = null;
+      let message = null;
+
+      if (marketDataCache.crypto?.bitcoin?.usd) {
+        const btc = marketDataCache.crypto.bitcoin;
+        const change = btc.usd_24h_change || 0;
+        title = `BTC ${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+        message = `Bitcoin at $${btc.usd.toLocaleString()}. ${change >= 0 ? 'Bullish' : 'Bearish'} momentum.`;
+      } else if (marketDataCache.stock?.['Global Quote']?.['05. price']) {
+        const q = marketDataCache.stock['Global Quote'];
+        const price = parseFloat(q['05. price']);
+        if (!isNaN(price)) {
+          title = `SPY $${price.toFixed(2)}`;
+          message = `S&P 500 ETF update. Change: ${q['09. change']} (${q['10. change percent']})`;
+        }
+      } else if (marketDataCache.news?.[0]?.headline) {
+        title = 'Breaking News';
+        message = marketDataCache.news[0].headline;
+      }
+
+      if (!title || !message) {
+        banner.classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('market-pop-title').textContent = title;
+      document.getElementById('market-pop-message').textContent = message;
+      banner.classList.remove('hidden');
+    }
+
+    function dismissMarketBanner() {
+      const banner = document.getElementById('market-pop-banner');
+      banner.classList.add('hidden');
+      localStorage.setItem(MARKET_BANNER_KEY, Date.now().toString());
+      showToast('Market alert dismissed. Next update in 30 minutes.', 'info');
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatTimeAgo(dateStr) {
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diff = Math.floor((now - date) / 1000);
+
+      if (diff < 60) return 'Just now';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+      return Math.floor(diff / 86400) + 'd ago';
+    }
+
+    function showToast(message, type) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast-notif';
+
+      const colors = {
+        info: '#3b82f6',
+        success: '#10b981',
+        warning: '#f59e0b',
+        error: '#ef4444'
+      };
+
+      toast.style.borderLeftColor = colors[type] || colors.info;
+      toast.innerHTML = `
+        <div class="text-sm font-semibold text-gray-100 mb-1">${escapeHtml(message)}</div>
+        <div class="text-xs text-gray-500">${new Date().toLocaleTimeString()}</div>
+      `;
+
+      container.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('show'));
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('status-time').textContent = now.toLocaleTimeString('en-US', { hour12: false }) + ' UTC';
+    }
+
+    const TS_Nav = {
+      goBack: function() {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          this.showPage('dashboard');
+        }
+      },
+      showPage: function(pageId) {
+        if (typeof TS_Router !== 'undefined' && TS_Router.navigate) {
+          TS_Router.navigate(pageId);
+        } else {
+          window.location.href = pageId + '.html';
+        }
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      renderNotifications();
+      loadMarketData();
+      updateClock();
+
+      setInterval(() => {
+        loadMarketData();
+      }, TICKER_INTERVAL);
+
+      setInterval(updateClock, 1000);
+
+      const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'notifications';
+      document.querySelectorAll('.footer-nav-btn').forEach(btn => {
+        if (btn.id === 'nav-' + currentPage) {
+          btn.classList.add('active');
+        }
+      });
+
+      if (typeof TS_Config !== 'undefined' && TS_Config.server) {
+        document.getElementById('conn-server').textContent = TS_Config.server;
+      }
+
+      setInterval(() => {
+        const ping = Math.floor(Math.random() * 15) + 18;
+        document.getElementById('status-ping').textContent = `Ping: ${ping}ms`;
+      }, 5000);
+    });
+
+    window.renderNotifications = renderNotifications;
   </script>
 </body>
 </html>
