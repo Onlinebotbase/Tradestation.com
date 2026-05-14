@@ -5,36 +5,1490 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Profile - Trade Station</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{600:'#2563eb'},dark:{800:'#1f2937',900:'#111827',950:'#0b0f19'}}}}}</script>
-  <style>body{background:#0b0f19;}</style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af' },
+            dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19' },
+            mt5: { 
+              bg: '#0b0f19', 
+              panel: '#131722', 
+              card: '#1a1f2e', 
+              border: '#2a2e39',
+              text: '#d1d4dc',
+              muted: '#868993',
+              accent: '#2962ff',
+              success: '#22c55e',
+              warning: '#f59e0b',
+              danger: '#ef4444'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background: #0b0f19;
+      color: #d1d4dc;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0b0f19; }
+    ::-webkit-scrollbar-thumb { background: #2a2e39; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3e49; }
+    
+    /* Card System */
+    .mt5-card {
+      background: #1a1f2e;
+      border: 1px solid #2a2e39;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    .mt5-card:hover {
+      border-color: #3a3e49;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    
+    /* Panel Header */
+    .panel-header {
+      background: #131722;
+      border-bottom: 1px solid #2a2e39;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #d1d4dc;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    /* Status Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .badge-verified {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    .badge-real {
+      background: rgba(41, 98, 255, 0.15);
+      color: #2962ff;
+      border: 1px solid rgba(41, 98, 255, 0.3);
+    }
+    .badge-demo {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    /* Data Rows */
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid #2a2e39;
+      transition: background 0.15s ease;
+    }
+    .data-row:last-child { border-bottom: none; }
+    .data-row:hover { background: rgba(255,255,255,0.02); }
+    .data-label {
+      font-size: 13px;
+      color: #868993;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .data-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: #d1d4dc;
+      font-family: 'SF Mono', Monaco, monospace;
+    }
+    .data-value-mono {
+      font-family: 'SF Mono', Monaco, monospace;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      outline: none;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: #2962ff;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-secondary {
+      background: #2a2e39;
+      color: #d1d4dc;
+      border: 1px solid #3a3e49;
+    }
+    .btn-secondary:hover { background: #3a3e49; }
+    .btn-success {
+      background: #22c55e;
+      color: #fff;
+    }
+    .btn-success:hover { background: #16a34a; }
+    .btn-danger {
+      background: #ef4444;
+      color: #fff;
+    }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-ghost {
+      background: transparent;
+      color: #868993;
+      border: 1px solid #2a2e39;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.05); color: #d1d4dc; }
+    .btn-block { width: 100%; }
+    
+    /* Avatar Upload */
+    .avatar-container {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      margin: 0 auto;
+      cursor: pointer;
+    }
+    .avatar-image {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #2a2e39;
+      transition: all 0.3s ease;
+    }
+    .avatar-container:hover .avatar-image {
+      border-color: #2962ff;
+      box-shadow: 0 0 20px rgba(41,98,255,0.3);
+    }
+    .avatar-overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .avatar-container:hover .avatar-overlay { opacity: 1; }
+    .avatar-initials {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: #2962ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+      border: 3px solid #2a2e39;
+    }
+    
+    /* Modal System */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .modal-backdrop.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-panel {
+      background: #1a1f2e;
+      border: 1px solid #2a2e39;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 440px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: scale(0.95) translateY(10px);
+      transition: all 0.3s ease;
+    }
+    .modal-backdrop.active .modal-panel {
+      transform: scale(1) translateY(0);
+    }
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #2a2e39;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-body { padding: 20px; }
+    .modal-footer {
+      padding: 16px 20px;
+      border-top: 1px solid #2a2e39;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    
+    /* Form Elements */
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #868993;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      background: #131722;
+      border: 1px solid #2a2e39;
+      border-radius: 8px;
+      color: #d1d4dc;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: #2962ff;
+      box-shadow: 0 0 0 3px rgba(41,98,255,0.1);
+    }
+    .form-input::placeholder { color: #4a4e59; }
+    .form-input:read-only {
+      background: #0f131c;
+      color: #868993;
+      cursor: default;
+    }
+    
+    /* Activity Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 24px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #2a2e39;
+    }
+    .timeline-item {
+      position: relative;
+      padding-bottom: 16px;
+    }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-dot {
+      position: absolute;
+      left: -20px;
+      top: 2px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid #1a1f2e;
+    }
+    .timeline-dot.deposit { background: #22c55e; }
+    .timeline-dot.withdrawal { background: #ef4444; }
+    .timeline-dot.trade { background: #2962ff; }
+    .timeline-dot.login { background: #f59e0b; }
+    .timeline-content {
+      background: #131722;
+      border: 1px solid #2a2e39;
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .timeline-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #d1d4dc;
+      margin-bottom: 2px;
+    }
+    .timeline-meta {
+      font-size: 11px;
+      color: #868993;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .toast {
+      background: #1a1f2e;
+      border: 1px solid #2a2e39;
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      transform: translateX(120%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: 340px;
+    }
+    .toast.show { transform: translateX(0); }
+    .toast-icon { flex-shrink: 0; }
+    .toast-content { flex: 1; }
+    .toast-title { font-size: 13px; font-weight: 600; color: #d1d4dc; }
+    .toast-message { font-size: 12px; color: #868993; margin-top: 2px; }
+    
+    /* Balance Cards */
+    .balance-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .balance-card {
+      background: #131722;
+      border: 1px solid #2a2e39;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+    .balance-label {
+      font-size: 11px;
+      color: #868993;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .balance-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #d1d4dc;
+      font-family: 'SF Mono', Monaco, monospace;
+    }
+    .balance-value.positive { color: #22c55e; }
+    .balance-value.negative { color: #ef4444; }
+    
+    /* Section Spacing */
+    .section { margin-bottom: 16px; }
+    
+    /* Responsive */
+    @media (min-width: 768px) {
+      .balance-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    
+    /* Animations */
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .pulse { animation: pulse-dot 2s infinite; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.4s ease forwards;
+    }
+    
+    /* Hide file input */
+    input[type="file"] { display: none; }
+    
+    /* Password toggle */
+    .password-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .password-toggle {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      color: #868993;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .password-toggle:hover { color: #d1d4dc; }
+  </style>
 </head>
-<body class="text-white">
+<body>
+  <!-- Global Header Injection Point -->
   <div id="ts-global-header"></div>
-  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
-    <h1 class="text-lg font-bold mb-4">Profile</h1>
-    <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-6 text-center mb-4">
-      <div class="w-20 h-20 mx-auto mb-3 rounded-full bg-brand-600 flex items-center justify-center text-2xl font-bold text-white" id="profile-initials">--</div>
-      <div class="text-lg font-bold text-white" id="profile-name">--</div>
-      <div class="text-sm text-gray-400" id="profile-email">--</div>
+  
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+  
+  <!-- Main Content -->
+  <main class="max-w-3xl mx-auto px-4 pt-4 pb-28">
+    
+    <!-- Page Title -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-xl font-bold text-white flex items-center gap-3">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        Profile
+      </h1>
+      <span class="badge badge-verified">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Active
+      </span>
     </div>
-    <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 space-y-3 mb-4">
-      <div class="flex justify-between items-center"><span class="text-sm text-gray-400">User ID</span><span class="text-sm font-mono font-bold text-white" id="profile-id">--</span></div>
-      <div class="flex justify-between items-center"><span class="text-sm text-gray-400">Account Type</span><span class="text-sm font-bold text-green-400">Real Account</span></div>
-      <div class="flex justify-between items-center"><span class="text-sm text-gray-400">Email</span><span class="text-sm font-bold text-white" id="profile-email2">--</span></div>
-      <div class="flex justify-between items-center"><span class="text-sm text-gray-400">Password</span><span class="text-sm font-bold text-white">••••••••</span></div>
-    </div>
-    <button onclick="location.href='settings.html'" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl">Edit Profile</button>
+    
+    <!-- A. Profile Header Panel -->
+    <section class="section mt5-card animate-fade-in" id="profile-header-panel">
+      <div class="p-6 text-center">
+        <!-- Avatar Upload -->
+        <div class="avatar-container" onclick="document.getElementById('avatar-upload').click()" title="Click to upload profile picture">
+          <img id="profile-avatar-img" class="avatar-image" style="display:none;" alt="Profile">
+          <div id="profile-initials" class="avatar-initials">--</div>
+          <div class="avatar-overlay">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+        </div>
+        <input type="file" id="avatar-upload" accept="image/*" onchange="handleAvatarUpload(event)">
+        
+        <div class="mt-4">
+          <div class="text-lg font-bold text-white" id="profile-name">--</div>
+          <div class="text-sm text-gray-400 mt-1" id="profile-email">--</div>
+          <div class="flex items-center justify-center gap-2 mt-3">
+            <span class="badge badge-verified">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Verified
+            </span>
+            <span class="badge badge-real" id="account-type-badge">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+              Real Account
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- B. Account Summary Section -->
+    <section class="section mt5-card animate-fade-in" id="account-summary-section" style="animation-delay: 0.1s;">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"/>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+          Account Summary
+        </div>
+        <button class="btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="refreshAccountData()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+      
+      <!-- User Account ID -->
+      <div class="data-row">
+        <span class="data-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#868993" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          User Account ID
+        </span>
+        <span class="data-value data-value-mono" id="profile-id">--</span>
+      </div>
+      
+      <!-- Balance Cards -->
+      <div class="p-4">
+        <div class="balance-grid">
+          <div class="balance-card">
+            <div class="balance-label">Total Balance</div>
+            <div class="balance-value" id="total-balance">$0.00</div>
+          </div>
+          <div class="balance-card">
+            <div class="balance-label">Total Deposits</div>
+            <div class="balance-value positive" id="total-deposits">$0.00</div>
+          </div>
+          <div class="balance-card">
+            <div class="balance-label">Total Withdrawals</div>
+            <div class="balance-value negative" id="total-withdrawals">$0.00</div>
+          </div>
+          <div class="balance-card">
+            <div class="balance-label">Net Profit</div>
+            <div class="balance-value" id="net-profit">$0.00</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Account Type -->
+      <div class="data-row">
+        <span class="data-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#868993" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+          Account Type
+        </span>
+        <span id="account-type-display" class="badge badge-real">Real Account</span>
+      </div>
+    </section>
+    
+    <!-- Account Details Section -->
+    <section class="section mt5-card animate-fade-in" id="account-details-section" style="animation-delay: 0.2s;">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          Account Details
+        </div>
+      </div>
+      
+      <div class="data-row">
+        <span class="data-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#868993" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          Email Address
+        </span>
+        <span class="data-value" id="profile-email2">--</span>
+      </div>
+      
+      <div class="data-row">
+        <span class="data-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#868993" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Password
+        </span>
+        <span class="data-value" style="display:flex;align-items:center;gap:8px;">
+          <span id="password-masked">••••••••</span>
+          <button class="password-toggle" onclick="togglePasswordVisibility()" title="Toggle visibility">
+            <svg id="eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </span>
+      </div>
+      
+      <div class="data-row">
+        <span class="data-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#868993" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          Phone Number
+        </span>
+        <span class="data-value" id="profile-phone">--</span>
+      </div>
+      
+      <div class="data-row">
+        <span class="data-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#868993" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          Country
+        </span>
+        <span class="data-value" id="profile-country">--</span>
+      </div>
+      
+      <div class="data-row">
+        <span class="data-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#868993" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Registration Date
+        </span>
+        <span class="data-value" id="profile-regdate">--</span>
+      </div>
+      
+      <div class="data-row">
+        <span class="data-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#868993" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          Last Login
+        </span>
+        <span class="data-value" id="profile-lastlogin">--</span>
+      </div>
+    </section>
+    
+    <!-- Account Management Panel -->
+    <section class="section mt5-card animate-fade-in" id="account-management-section" style="animation-delay: 0.3s;">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Account Management
+        </div>
+      </div>
+      
+      <div class="p-4 space-y-3">
+        <button onclick="openAddAccountModal()" class="btn btn-primary btn-block">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add Account
+        </button>
+        
+        <button onclick="saveAccountData()" class="btn btn-success btn-block">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Save Account Data
+        </button>
+        
+        <button onclick="location.href='settings.html'" class="btn btn-secondary btn-block">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Edit Profile
+        </button>
+        
+        <button onclick="logoutUser()" class="btn btn-danger btn-block">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Logout
+        </button>
+      </div>
+    </section>
+    
+    <!-- Activity History Section -->
+    <section class="section mt5-card animate-fade-in" id="activity-history-section" style="animation-delay: 0.4s;">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          Activity History
+        </div>
+        <button class="btn btn-ghost" style="padding: 6px 12px; font-size: 11px;" onclick="loadActivityHistory()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+      
+      <div class="p-5">
+        <div class="timeline" id="activity-timeline">
+          <!-- Activity items injected here -->
+        </div>
+      </div>
+    </section>
+    
+    <!-- Trading Statistics -->
+    <section class="section mt5-card animate-fade-in" id="trading-stats-section" style="animation-delay: 0.5s;">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 20V10"/>
+            <path d="M12 20V4"/>
+            <path d="M6 20v-6"/>
+          </svg>
+          Trading Statistics
+        </div>
+      </div>
+      
+      <div class="p-4">
+        <div class="balance-grid">
+          <div class="balance-card">
+            <div class="balance-label">Total Trades</div>
+            <div class="balance-value" id="total-trades">0</div>
+          </div>
+          <div class="balance-card">
+            <div class="balance-label">Win Rate</div>
+            <div class="balance-value" id="win-rate">0%</div>
+          </div>
+          <div class="balance-card">
+            <div class="balance-label">Open Positions</div>
+            <div class="balance-value" id="open-positions">0</div>
+          </div>
+          <div class="balance-card">
+            <div class="balance-label">Total Volume</div>
+            <div class="balance-value" id="total-volume">0.00</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
   </main>
+  
+  <!-- Global Footer Injection Point -->
   <div id="ts-global-footer"></div>
+  
+  <!-- Add Account Modal -->
+  <div class="modal-backdrop" id="add-account-modal">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add New Account
+        </h3>
+        <button onclick="closeAddAccountModal()" class="btn btn-ghost" style="padding: 6px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#868993" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Account Type</label>
+          <select class="form-input" id="new-account-type">
+            <option value="real">Real Account</option>
+            <option value="demo">Demo Account</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="new-account-email" placeholder="Enter new email address">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="password-wrapper">
+            <input type="password" class="form-input" id="new-account-password" placeholder="Create secure password" style="padding-right: 40px;">
+            <button class="password-toggle" onclick="toggleNewPassword()" type="button">
+              <svg id="new-eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Initial Balance</label>
+          <input type="number" class="form-input" id="new-account-balance" placeholder="0.00" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Currency</label>
+          <select class="form-input" id="new-account-currency">
+            <option value="USD">USD - US Dollar</option>
+            <option value="EUR">EUR - Euro</option>
+            <option value="GBP">GBP - British Pound</option>
+            <option value="JPY">JPY - Japanese Yen</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeAddAccountModal()" class="btn btn-ghost">Cancel</button>
+        <button onclick="addAnotherAccount()" class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10,17 15,12 10,7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Add Another Account
+        </button>
+        <button onclick="saveNewAccount()" class="btn btn-success">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Save Account
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Account Switcher Modal -->
+  <div class="modal-backdrop" id="account-switcher-modal">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2962ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Switch Account
+        </h3>
+        <button onclick="closeAccountSwitcher()" class="btn btn-ghost" style="padding: 6px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#868993" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" id="account-list-container">
+        <!-- Account list injected here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Core Scripts -->
   <script src="app.js"></script>
   <script>
-    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
-    const user = TS_Auth.getUser();
-    document.getElementById('profile-name').textContent = user.firstName + ' ' + user.lastName;
-    document.getElementById('profile-email').textContent = user.email;
-    document.getElementById('profile-email2').textContent = user.email;
-    document.getElementById('profile-id').textContent = user.userId;
-    document.getElementById('profile-initials').textContent = (user.firstName[0] + user.lastName[0]).toUpperCase();
+    // ============================================================
+    // PROFILE DATA MANAGEMENT SYSTEM
+    // ============================================================
+    
+    const STORAGE_KEYS = {
+      USER_DATA: 'ts_user_data',
+      ACCOUNTS: 'ts_accounts',
+      CURRENT_ACCOUNT: 'ts_current_account',
+      ACTIVITY_HISTORY: 'ts_activity_history',
+      AVATAR: 'ts_avatar',
+      SESSION: 'ts_session'
+    };
+    
+    // Initialize profile state
+    let profileState = {
+      user: null,
+      accounts: [],
+      currentAccount: null,
+      activityHistory: [],
+      avatar: null
+    };
+    
+    // ============================================================
+    // AUTHENTICATION & SESSION
+    // ============================================================
+    
+    function requireAuth() {
+      if (typeof TS_Auth !== 'undefined' && TS_Auth.requireAuth) {
+        return TS_Auth.requireAuth();
+      }
+      // Fallback auth check
+      const session = localStorage.getItem(STORAGE_KEYS.SESSION);
+      if (!session) {
+        window.location.href = 'login.html';
+        return false;
+      }
+      return true;
+    }
+    
+    function getUser() {
+      if (typeof TS_Auth !== 'undefined' && TS_Auth.getUser) {
+        return TS_Auth.getUser();
+      }
+      // Fallback user retrieval
+      const userData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
+      return userData ? JSON.parse(userData) : null;
+    }
+    
+    function logoutUser() {
+      localStorage.removeItem(STORAGE_KEYS.SESSION);
+      showToast('Session ended', 'You have been logged out successfully', 'success');
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 1500);
+    }
+    
+    // ============================================================
+    // DATA PERSISTENCE LAYER
+    // ============================================================
+    
+    function loadProfileData() {
+      // Load user data
+      const user = getUser();
+      if (!user) {
+        showToast('Error', 'No user data found. Please login.', 'error');
+        setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+        return;
+      }
+      
+      profileState.user = user;
+      
+      // Load accounts
+      const accountsRaw = localStorage.getItem(STORAGE_KEYS.ACCOUNTS);
+      profileState.accounts = accountsRaw ? JSON.parse(accountsRaw) : [];
+      
+      // Load current account
+      const currentRaw = localStorage.getItem(STORAGE_KEYS.CURRENT_ACCOUNT);
+      profileState.currentAccount = currentRaw ? JSON.parse(currentRaw) : null;
+      
+      // Load activity history
+      const activityRaw = localStorage.getItem(STORAGE_KEYS.ACTIVITY_HISTORY);
+      profileState.activityHistory = activityRaw ? JSON.parse(activityRaw) : [];
+      
+      // Load avatar
+      profileState.avatar = localStorage.getItem(STORAGE_KEYS.AVATAR);
+      
+      // Initialize default account if none exists
+      if (profileState.accounts.length === 0 && user) {
+        const defaultAccount = createDefaultAccount(user);
+        profileState.accounts.push(defaultAccount);
+        profileState.currentAccount = defaultAccount;
+        persistAllData();
+      }
+      
+      renderProfile();
+    }
+    
+    function createDefaultAccount(user) {
+      const accountId = generateAccountId();
+      return {
+        accountId: accountId,
+        userId: user.userId || accountId,
+        email: user.email,
+        password: user.password || '',
+        accountType: 'real',
+        balance: 0.00,
+        deposits: 0.00,
+        withdrawals: 0.00,
+        trades: 0,
+        investments: 0.00,
+        currency: 'USD',
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+      };
+    }
+    
+    function generateAccountId() {
+      return Math.floor(1000000000 + Math.random() * 9000000000).toString();
+    }
+    
+    function persistAllData() {
+      localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(profileState.accounts));
+      localStorage.setItem(STORAGE_KEYS.CURRENT_ACCOUNT, JSON.stringify(profileState.currentAccount));
+      localStorage.setItem(STORAGE_KEYS.ACTIVITY_HISTORY, JSON.stringify(profileState.activityHistory));
+      if (profileState.avatar) {
+        localStorage.setItem(STORAGE_KEYS.AVATAR, profileState.avatar);
+      }
+    }
+    
+    function saveAccountData() {
+      persistAllData();
+      
+      // Also save to user data for cross-page consistency
+      if (profileState.user) {
+        const enhancedUser = {
+          ...profileState.user,
+          accountId: profileState.currentAccount?.accountId,
+          accountType: profileState.currentAccount?.accountType,
+          balance: profileState.currentAccount?.balance,
+          deposits: profileState.currentAccount?.deposits,
+          withdrawals: profileState.currentAccount?.withdrawals,
+          trades: profileState.currentAccount?.trades,
+          investments: profileState.currentAccount?.investments,
+          activityHistory: profileState.activityHistory
+        };
+        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(enhancedUser));
+      }
+      
+      addActivity('save', 'Account data saved successfully');
+      showToast('Data Saved', 'All account information has been persisted to storage', 'success');
+    }
+    
+    // ============================================================
+    // AVATAR UPLOAD SYSTEM
+    // ============================================================
+    
+    function handleAvatarUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      if (!file.type.startsWith('image/')) {
+        showToast('Invalid File', 'Please upload an image file', 'error');
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('File Too Large', 'Maximum file size is 5MB', 'error');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        profileState.avatar = e.target.result;
+        localStorage.setItem(STORAGE_KEYS.AVATAR, e.target.result);
+        renderAvatar();
+        addActivity('profile', 'Profile picture updated');
+        showToast('Success', 'Profile picture updated successfully', 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    function renderAvatar() {
+      const imgEl = document.getElementById('profile-avatar-img');
+      const initialsEl = document.getElementById('profile-initials');
+      
+      if (profileState.avatar) {
+        imgEl.src = profileState.avatar;
+        imgEl.style.display = 'block';
+        initialsEl.style.display = 'none';
+      } else {
+        imgEl.style.display = 'none';
+        initialsEl.style.display = 'flex';
+        if (profileState.user) {
+          initialsEl.textContent = (profileState.user.firstName[0] + profileState.user.lastName[0]).toUpperCase();
+        }
+      }
+    }
+    
+    // ============================================================
+    // RENDER FUNCTIONS
+    // ============================================================
+    
+    function renderProfile() {
+      const user = profileState.user;
+      const account = profileState.currentAccount;
+      
+      if (!user) return;
+      
+      // Profile Header
+      document.getElementById('profile-name').textContent = user.firstName + ' ' + user.lastName;
+      document.getElementById('profile-email').textContent = user.email;
+      document.getElementById('profile-email2').textContent = user.email;
+      
+      // Avatar
+      renderAvatar();
+      
+      // Account Summary
+      if (account) {
+        document.getElementById('profile-id').textContent = account.accountId;
+        document.getElementById('total-balance').textContent = formatCurrency(account.balance, account.currency);
+        document.getElementById('total-deposits').textContent = formatCurrency(account.deposits, account.currency);
+        document.getElementById('total-withdrawals').textContent = formatCurrency(account.withdrawals, account.currency);
+        
+        const netProfit = (account.balance + account.withdrawals) - account.deposits;
+        const profitEl = document.getElementById('net-profit');
+        profitEl.textContent = formatCurrency(netProfit, account.currency);
+        profitEl.className = 'balance-value ' + (netProfit >= 0 ? 'positive' : 'negative');
+        
+        // Account Type Badge
+        const typeBadge = document.getElementById('account-type-badge');
+        const typeDisplay = document.getElementById('account-type-display');
+        if (account.accountType === 'demo') {
+          typeBadge.className = 'badge badge-demo';
+          typeBadge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Demo Account`;
+          typeDisplay.className = 'badge badge-demo';
+          typeDisplay.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Demo Account`;
+        } else {
+          typeBadge.className = 'badge badge-real';
+          typeBadge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> Real Account`;
+          typeDisplay.className = 'badge badge-real';
+          typeDisplay.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> Real Account`;
+        }
+      }
+      
+      // Account Details
+      document.getElementById('profile-phone').textContent = user.phone || '--';
+      document.getElementById('profile-country').textContent = user.country || '--';
+      document.getElementById('profile-regdate').textContent = user.registrationDate ? new Date(user.registrationDate).toLocaleDateString() : new Date().toLocaleDateString();
+      document.getElementById('profile-lastlogin').textContent = user.lastLogin ? new Date(user.lastLogin).toLocaleString() : new Date().toLocaleString();
+      
+      // Trading Statistics (simulated from account data)
+      document.getElementById('total-trades').textContent = account?.trades || 0;
+      document.getElementById('win-rate').textContent = '64%'; // Simulated
+      document.getElementById('open-positions').textContent = '3'; // Simulated
+      document.getElementById('total-volume').textContent = (account?.investments || 0).toFixed(2);
+      
+      // Activity History
+      renderActivityHistory();
+    }
+    
+    function formatCurrency(amount, currency) {
+      const symbol = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : currency === 'JPY' ? '¥' : '$';
+      return symbol + parseFloat(amount || 0).toFixed(2);
+    }
+    
+    // ============================================================
+    // ACTIVITY HISTORY
+    // ============================================================
+    
+    function addActivity(type, description) {
+      const activity = {
+        id: Date.now(),
+        type: type,
+        description: description,
+        timestamp: new Date().toISOString()
+      };
+      profileState.activityHistory.unshift(activity);
+      if (profileState.activityHistory.length > 50) {
+        profileState.activityHistory = profileState.activityHistory.slice(0, 50);
+      }
+      localStorage.setItem(STORAGE_KEYS.ACTIVITY_HISTORY, JSON.stringify(profileState.activityHistory));
+      renderActivityHistory();
+    }
+    
+    function renderActivityHistory() {
+      const container = document.getElementById('activity-timeline');
+      if (profileState.activityHistory.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-gray-500">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4a4e59" stroke-width="1.5" class="mx-auto mb-2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <p class="text-xs">No activity recorded yet</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = profileState.activityHistory.slice(0, 10).map(item => {
+        const date = new Date(item.timestamp);
+        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const dateStr = date.toLocaleDateString();
+        const dotClass = item.type === 'deposit' ? 'deposit' : item.type === 'withdrawal' ? 'withdrawal' : item.type === 'trade' ? 'trade' : 'login';
+        const title = item.type.charAt(0).toUpperCase() + item.type.slice(1);
+        
+        return `
+          <div class="timeline-item">
+            <div class="timeline-dot ${dotClass}"></div>
+            <div class="timeline-content">
+              <div class="timeline-title">${title}</div>
+              <div class="timeline-meta">
+                <span>${item.description}</span>
+                <span>${dateStr} ${timeStr}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function loadActivityHistory() {
+      renderActivityHistory();
+      showToast('Refreshed', 'Activity history updated', 'success');
+    }
+    
+    // ============================================================
+    // MODAL SYSTEM
+    // ============================================================
+    
+    function openAddAccountModal() {
+      document.getElementById('add-account-modal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function closeAddAccountModal() {
+      document.getElementById('add-account-modal').classList.remove('active');
+      document.body.style.overflow = '';
+      // Reset form
+      document.getElementById('new-account-email').value = '';
+      document.getElementById('new-account-password').value = '';
+      document.getElementById('new-account-balance').value = '';
+    }
+    
+    function openAccountSwitcher() {
+      const container = document.getElementById('account-list-container');
+      if (profileState.accounts.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-4">No accounts found</p>';
+      } else {
+        container.innerHTML = profileState.accounts.map(acc => `
+          <div class="data-row" style="cursor:pointer;" onclick="switchAccount('${acc.accountId}')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-xs font-bold text-white">
+                ${acc.accountType === 'real' ? 'R' : 'D'}
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-white">${acc.accountId}</div>
+                <div class="text-xs text-gray-500">${acc.email}</div>
+              </div>
+            </div>
+            <span class="badge ${acc.accountType === 'real' ? 'badge-real' : 'badge-demo'}">
+              ${acc.accountType === 'real' ? 'Real' : 'Demo'}
+            </span>
+          </div>
+        `).join('');
+      }
+      document.getElementById('account-switcher-modal').classList.add('active');
+    }
+    
+    function closeAccountSwitcher() {
+      document.getElementById('account-switcher-modal').classList.remove('active');
+    }
+    
+    function switchAccount(accountId) {
+      const account = profileState.accounts.find(a => a.accountId === accountId);
+      if (account) {
+        profileState.currentAccount = account;
+        persistAllData();
+        renderProfile();
+        closeAccountSwitcher();
+        addActivity('login', `Switched to account ${accountId}`);
+        showToast('Account Switched', `Now using account ${accountId}`, 'success');
+      }
+    }
+    
+    // ============================================================
+    // ACCOUNT MANAGEMENT
+    // ============================================================
+    
+    function saveNewAccount() {
+      const email = document.getElementById('new-account-email').value.trim();
+      const password = document.getElementById('new-account-password').value;
+      const balance = parseFloat(document.getElementById('new-account-balance').value) || 0;
+      const type = document.getElementById('new-account-type').value;
+      const currency = document.getElementById('new-account-currency').value;
+      
+      if (!email || !password) {
+        showToast('Validation Error', 'Email and password are required', 'error');
+        return;
+      }
+      
+      if (!validateEmail(email)) {
+        showToast('Validation Error', 'Please enter a valid email address', 'error');
+        return;
+      }
+      
+      if (password.length < 8) {
+        showToast('Validation Error', 'Password must be at least 8 characters', 'error');
+        return;
+      }
+      
+      // Check for duplicate email
+      const existing = profileState.accounts.find(a => a.email === email);
+      if (existing) {
+        showToast('Error', 'An account with this email already exists', 'error');
+        return;
+      }
+      
+      const newAccount = {
+        accountId: generateAccountId(),
+        userId: generateAccountId(),
+        email: email,
+        password: password,
+        accountType: type,
+        balance: balance,
+        deposits: balance,
+        withdrawals: 0,
+        trades: 0,
+        investments: 0,
+        currency: currency,
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+      };
+      
+      profileState.accounts.push(newAccount);
+      profileState.currentAccount = newAccount;
+      persistAllData();
+      
+      addActivity('profile', `New ${type} account created: ${newAccount.accountId}`);
+      showToast('Account Created', `New ${type} account saved successfully`, 'success');
+      
+      renderProfile();
+      closeAddAccountModal();
+    }
+    
+    function addAnotherAccount() {
+      saveNewAccount();
+      // Keep modal open for another entry if successful
+      const email = document.getElementById('new-account-email').value;
+      if (email) {
+        setTimeout(() => {
+          document.getElementById('new-account-email').value = '';
+          document.getElementById('new-account-password').value = '';
+          document.getElementById('new-account-balance').value = '';
+          document.getElementById('new-account-email').focus();
+        }, 500);
+      }
+    }
+    
+    function validateEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+    
+    // ============================================================
+    // PASSWORD VISIBILITY
+    // ============================================================
+    
+    let passwordVisible = false;
+    function togglePasswordVisibility() {
+      passwordVisible = !passwordVisible;
+      const maskEl = document.getElementById('password-masked');
+      const eyeIcon = document.getElementById('eye-icon');
+      
+      if (passwordVisible && profileState.currentAccount) {
+        maskEl.textContent = profileState.currentAccount.password;
+        eyeIcon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+      } else {
+        maskEl.textContent = '••••••••';
+        eyeIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+      }
+    }
+    
+    let newPasswordVisible = false;
+    function toggleNewPassword() {
+      newPasswordVisible = !newPasswordVisible;
+      const input = document.getElementById('new-account-password');
+      const eyeIcon = document.getElementById('new-eye-icon');
+      input.type = newPasswordVisible ? 'text' : 'password';
+      if (newPasswordVisible) {
+        eyeIcon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+      } else {
+        eyeIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+      }
+    }
+    
+    // ============================================================
+    // REFRESH DATA
+    // ============================================================
+    
+    function refreshAccountData() {
+      // Simulate real-time update
+      if (profileState.currentAccount) {
+        const randomChange = (Math.random() - 0.5) * 100;
+        profileState.currentAccount.balance = Math.max(0, profileState.currentAccount.balance + randomChange);
+        persistAllData();
+        renderProfile();
+      }
+      showToast('Data Refreshed', 'Account data updated in real-time', 'success');
+    }
+    
+    // ============================================================
+    // TOAST NOTIFICATION SYSTEM
+    // ============================================================
+    
+    function showToast(title, message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      
+      const iconColor = type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#2962ff';
+      const iconSvg = type === 'success' 
+        ? '<polyline points="20 6 9 17 4 12"/>'
+        : type === 'error'
+        ? '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'
+        : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>';
+      
+      toast.innerHTML = `
+        <div class="toast-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            ${iconSvg}
+          </svg>
+        </div>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          <div class="toast-message">${message}</div>
+        </div>
+      `;
+      
+      container.appendChild(toast);
+      
+      requestAnimationFrame(() => {
+        toast.classList.add('show');
+      });
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+      }, 4000);
+    }
+    
+    // ============================================================
+    // KEYBOARD SHORTCUTS
+    // ============================================================
+    
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeAddAccountModal();
+        closeAccountSwitcher();
+      }
+    });
+    
+    // Close modal on backdrop click
+    document.getElementById('add-account-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeAddAccountModal();
+    });
+    document.getElementById('account-switcher-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeAccountSwitcher();
+    });
+    
+    // ============================================================
+    // INITIALIZATION
+    // ============================================================
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!requireAuth()) return;
+      loadProfileData();
+      
+      // Record page load activity
+      addActivity('login', 'Profile page accessed');
+    });
   </script>
 </body>
-</html>
+</html>          
