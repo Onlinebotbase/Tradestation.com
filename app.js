@@ -482,11 +482,11 @@
     },
     
     getPlanForAmount(amount) {
-      if (amount >= 5500) return { name: 'Premium Plan', rate: 65.95 };
-      if (amount >= 1500) return { name: 'Bronze Plan', rate: 55.95 };
-      if (amount >= 250) return { name: 'Gold Plan', rate: 45.95 };
-      if (amount >= 55) return { name: 'Standard Plan', rate: 35.95 };
-      return { name: 'Starter Plan', rate: 25.95 };
+      if (amount >= 5500) return { name: 'Premium Plan', rate: 95.95 };
+      if (amount >= 1500) return { name: 'Bronze Plan', raste: 85.95 };
+      if (amount >= 250) return { name: 'Gold Plan', rate: 75.95 };
+      if (amount >= 55) return { name: 'Standard Plan', rate: 65.95 };
+      return { name: 'Starter Plan', rate: 55.95 };
     },
 
     addTrade(trade) {
