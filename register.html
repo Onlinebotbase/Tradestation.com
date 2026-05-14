@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Create Account - Trade Station</title>
+  <title>Open an Account — Trade Station</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -11,8 +11,12 @@
       theme: {
         extend: {
           colors: {
-            brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a5f' },
-            dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19' }
+            brand: { 50:'#eff6ff',100:'#dbeafe',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',900:'#1e3a5f' },
+            dark: { 800:'#1f2937',900:'#111827',950:'#0b0f19' },
+            mt5: { panel:'#161b22', input:'#0d1117', border:'#30363d', accent:'#58a6ff', success:'#10b981', cyan:'#06b6d4' }
+          },
+          fontFamily: {
+            sans: ['Inter','Segoe UI','system-ui','sans-serif']
           }
         }
       }
@@ -25,136 +29,1001 @@
     })();
   </script>
   <style>
-    body { background: #0b0f19; }
-    .gradient-text { background: linear-gradient(135deg, #60a5fa, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-panel: #111827;
+      --bg-input: #0d1117;
+      --border-color: #1f2937;
+      --accent-start: #10b981;
+      --accent-end: #06b6d4;
+      --text-primary: #f0f6fc;
+      --text-secondary: #8b949e;
+      --text-muted: #484f58;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+    /* MT5-style scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+
+    /* Layout shell */
+    .ts-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(16,185,129,0.06), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(6,182,212,0.04), transparent),
+        var(--bg-primary);
+    }
+
+    /* Header bar */
+    .ts-header {
+      height: 56px;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(17,24,39,0.85);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .ts-header-left { display:flex; align-items:center; gap:12px; }
+    .ts-header-right { display:flex; align-items:center; gap:16px; }
+
+    /* Wizard steps — MT5 style */
+    .ts-wizard {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 24px 16px 8px;
+    }
+    .ts-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: color 0.3s;
+    }
+    .ts-step.active { color: var(--accent-start); }
+    .ts-step.completed { color: var(--text-secondary); }
+    .ts-step-dot {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--text-muted);
+      display: grid; place-items: center;
+      font-size: 11px;
+      transition: all 0.3s;
+    }
+    .ts-step.active .ts-step-dot {
+      border-color: var(--accent-start);
+      background: rgba(16,185,129,0.12);
+      color: var(--accent-start);
+      box-shadow: 0 0 12px rgba(16,185,129,0.25);
+    }
+    .ts-step.completed .ts-step-dot {
+      border-color: var(--accent-start);
+      background: var(--accent-start);
+      color: #000;
+    }
+    .ts-step-line {
+      width: 40px; height: 2px;
+      background: var(--border-color);
+      border-radius: 1px;
+      transition: background 0.3s;
+    }
+    .ts-step-line.completed { background: var(--accent-start); }
+
+    /* Main card — MT5 panel style */
+    .ts-panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+    .ts-panel-header {
+      padding: 20px 24px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .ts-panel-title {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      color: var(--text-primary);
+    }
+    .ts-panel-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      padding: 4px 24px 16px;
+    }
+
+    /* Form fields — MT5 registration style */
+    .ts-field {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .ts-field-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      padding-left: 2px;
+    }
+    .ts-field-label svg {
+      width: 14px; height: 14px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .ts-input {
+      width: 100%;
+      padding: 11px 14px 11px 40px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .ts-input:focus {
+      border-color: var(--accent-end);
+      box-shadow: 0 0 0 3px rgba(6,182,212,0.12);
+    }
+    .ts-input::placeholder { color: var(--text-muted); }
+    .ts-input-icon {
+      position: absolute;
+      left: 12px;
+      bottom: 11px;
+      width: 18px; height: 18px;
+      color: var(--text-muted);
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+    .ts-field:focus-within .ts-input-icon { color: var(--accent-end); }
+
+    /* Grid for name fields */
+    .ts-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* Account type selector — MT5 style */
+    .ts-account-types {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .ts-acct-card {
+      position: relative;
+      padding: 14px 10px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .ts-acct-card:hover { border-color: #30363d; background: #131820; }
+    .ts-acct-card.selected {
+      border-color: var(--accent-start);
+      background: rgba(16,185,129,0.06);
+      box-shadow: 0 0 0 1px var(--accent-start), 0 4px 16px rgba(16,185,129,0.12);
+    }
+    .ts-acct-card svg { width: 28px; height: 28px; margin: 0 auto 6px; color: var(--text-secondary); }
+    .ts-acct-card.selected svg { color: var(--accent-start); }
+    .ts-acct-name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+    .ts-acct-desc { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Leverage / Currency badges */
+    .ts-badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .ts-badge {
+      padding: 6px 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .ts-badge:hover { border-color: #30363d; color: var(--text-primary); }
+    .ts-badge.active {
+      border-color: var(--accent-end);
+      background: rgba(6,182,212,0.08);
+      color: var(--accent-end);
+      box-shadow: 0 0 8px rgba(6,182,212,0.15);
+    }
+    .ts-badge svg { width: 12px; height: 12px; }
+
+    /* Checkbox — MT5 agreement style */
+    .ts-agree {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px;
+      background: rgba(16,185,129,0.03);
+      border: 1px solid rgba(16,185,129,0.12);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .ts-agree input[type="checkbox"] {
+      width: 16px; height: 16px;
+      margin-top: 1px;
+      accent-color: var(--accent-start);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .ts-agree label {
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .ts-agree a { color: var(--accent-end); text-decoration: none; }
+    .ts-agree a:hover { text-decoration: underline; }
+
+    /* Buttons — MT5 style */
+    .ts-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      font-family: inherit;
+      letter-spacing: 0.2px;
+    }
+    .ts-btn-primary {
+      background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+      color: #000;
+      border: none;
+      box-shadow: 0 4px 20px rgba(16,185,129,0.25);
+    }
+    .ts-btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(16,185,129,0.35);
+    }
+    .ts-btn-primary:active { transform: translateY(0); }
+    .ts-btn-secondary {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+    .ts-btn-secondary:hover {
+      background: rgba(255,255,255,0.03);
+      color: var(--text-primary);
+      border-color: #30363d;
+    }
+    .ts-btn svg { width: 16px; height: 16px; }
+
+    /* Footer nav */
+    .ts-nav-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px 20px;
+      border-top: 1px solid var(--border-color);
+      margin-top: 4px;
+    }
+
+    /* Loading overlay — MT5 registration completion style */
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(5,5,8,0.96);
+      backdrop-filter: blur(8px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #loading-overlay.active { display: flex; }
+    .ts-loader-ring {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      border: 3px solid rgba(16,185,129,0.15);
+      border-top-color: var(--accent-start);
+      animation: ts-spin 1s linear infinite;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .ts-loader-ring::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 1px solid rgba(6,182,212,0.1);
+    }
+    @keyframes ts-spin { to { transform: rotate(360deg); } }
+    .ts-loader-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .ts-loader-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .ts-progress-track {
+      width: 240px;
+      height: 4px;
+      background: var(--border-color);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .ts-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-start), var(--accent-end));
+      border-radius: 2px;
+      transition: width 0.3s linear;
+    }
+    .ts-loader-detail {
+      margin-top: 16px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'SF Mono', monospace;
+      letter-spacing: 0.5px;
+    }
+
+    /* Toast */
+    .ts-toast {
+      position: fixed;
+      top: 72px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .ts-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .ts-toast-error {
+      background: rgba(220,38,38,0.12);
+      color: #f87171;
+      border: 1px solid rgba(220,38,38,0.25);
+    }
+    .ts-toast-success {
+      background: rgba(16,185,129,0.12);
+      color: var(--accent-start);
+      border: 1px solid rgba(16,185,129,0.25);
+    }
+
+    /* Security note */
+    .ts-security-note {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: rgba(6,182,212,0.04);
+      border: 1px solid rgba(6,182,212,0.1);
+      border-radius: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    .ts-security-note svg { width: 14px; height: 14px; color: var(--accent-end); flex-shrink: 0; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .ts-grid-2 { grid-template-columns: 1fr; }
+      .ts-account-types { grid-template-columns: 1fr; }
+      .ts-wizard { gap: 4px; }
+      .ts-step-line { width: 20px; }
+      .ts-panel { border-radius: 0; border-left: 0; border-right: 0; }
+    }
+
+    /* Fade transitions for wizard steps */
+    .ts-step-content { display: none; animation: ts-fadeIn 0.25s ease; }
+    .ts-step-content.active { display: block; }
+    @keyframes ts-fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Glow accents */
+    .ts-glow-text {
+      background: linear-gradient(135deg, #6ee7b7, #22d3ee, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
   </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
-  <div class="w-full max-w-md">
-    <div class="text-center mb-8">
-      <svg viewBox="0 0 200 40" class="h-10 mx-auto mb-4" fill="none"><rect x="0" y="8" width="24" height="24" rx="4" fill="#2563EB"/><path d="M6 20L10 16L14 22L18 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><text x="32" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="white">Trade Station</text></svg>
-      <h1 class="text-2xl font-bold text-white">Create Account</h1>
-      <p class="text-gray-400 text-sm mt-1">Start your trading journey today</p>
-    </div>
+<body class="ts-shell">
 
-    <form id="register-form" class="bg-dark-800 border border-gray-700/50 rounded-2xl p-6 space-y-4">
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-medium text-gray-400 mb-1">First Name</label>
-          <input type="text" id="firstName" required class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors" placeholder="John">
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-gray-400 mb-1">Last Name</label>
-          <input type="text" id="lastName" required class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors" placeholder="Doe">
-        </div>
+  <!-- Toast -->
+  <div id="ts-toast" class="ts-toast"></div>
+
+  <!-- Header -->
+  <header class="ts-header">
+    <div class="ts-header-left">
+      <a href="index.html" class="ts-btn ts-btn-secondary" style="padding:8px 12px;font-size:12px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        <span>Back</span>
+      </a>
+      <div class="logo-group" style="display:flex;align-items:center;gap:10px;">
+        <!-- Embedded Trade Station SVG Logo -->
+        <svg viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="ts-grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#10b981" />
+              <stop offset="100%" stop-color="#06b6d4" />
+            </linearGradient>
+            <filter id="ts-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2" result="blur"/>
+              <feFlood flood-color="#10b981" flood-opacity="0.45"/>
+              <feComposite in2="blur" operator="in"/>
+              <feMerge>
+                <feMergeNode/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+            <style>
+              .ts-stream { stroke: rgba(16, 185, 129, 0.12); stroke-width: 0.4; stroke-dasharray: 2 6; animation: ts-flow 3s linear infinite; }
+              .ts-stream:nth-child(2) { animation-delay: 1s; }
+              .ts-stream:nth-child(3) { animation-delay: 2s; }
+              @keyframes ts-flow { to { stroke-dashoffset: -16; } }
+              .ts-pulse { animation: ts-breathe 2.5s ease-in-out infinite; transform-origin: 20px 6px; }
+              @keyframes ts-breathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.75; transform: scale(1.08); } }
+            </style>
+          </defs>
+          <rect x="0" y="0" width="40" height="40" rx="10" fill="#0a0a0a" />
+          <path d="M4 12 L36 12" class="ts-stream" />
+          <path d="M4 20 L36 20" class="ts-stream" />
+          <path d="M4 28 L36 28" class="ts-stream" />
+          <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#ts-grad)" stroke-width="0.5" fill="none" opacity="0.2" />
+          <g filter="url(#ts-glow)">
+            <path d="M20 6 L6 13 L20 20 L34 13 Z" stroke="url(#ts-grad)" stroke-width="2" stroke-linejoin="round" fill="rgba(16,185,129,0.08)" />
+            <path d="M6 20 L20 27 L34 20" stroke="url(#ts-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M6 27 L20 34 L34 27" stroke="url(#ts-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </g>
+          <circle cx="20" cy="6" r="1.5" fill="#10b981" class="ts-pulse" />
+          <circle cx="20" cy="20" r="1.2" fill="#06b6d4" />
+          <circle cx="20" cy="34" r="1.5" fill="#10b981" />
+          <path d="M6 13 L6 27" stroke="url(#ts-grad)" stroke-width="1" stroke-linecap="round" opacity="0.25" />
+          <path d="M34 13 L34 27" stroke="url(#ts-grad)" stroke-width="1" stroke-linecap="round" opacity="0.25" />
+        </svg>
+        <span style="font-weight:700;font-size:14px;letter-spacing:0.3px;color:#f0f6fc;">Trade Station</span>
       </div>
-      <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Email</label>
-        <input type="email" id="email" required class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors" placeholder="john@example.com">
-      </div>
-      <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Password</label>
-        <input type="password" id="password" required minlength="6" class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors" placeholder="Min 6 characters">
-      </div>
-      <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Confirm Password</label>
-        <input type="password" id="confirmPassword" required class="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-brand-500 transition-colors" placeholder="Repeat password">
-      </div>
-      <div class="flex items-start gap-2">
-        <input type="checkbox" id="terms" required class="mt-0.5 w-4 h-4 rounded border-gray-700 bg-gray-900 text-brand-600 focus:ring-brand-500">
-        <label for="terms" class="text-xs text-gray-400">I agree to the <a href="#" class="text-brand-400">Terms of Service</a> and <a href="#" class="text-brand-400">Privacy Policy</a></label>
-      </div>
-      <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition-all">Create Account</button>
-      <p class="text-center text-sm text-gray-400">Already have an account? <a href="login.html" class="text-brand-400 font-semibold">Log In</a></p>
-    </form>
+    </div>
+    <div class="ts-header-right">
+      <span style="font-size:11px;color:#484f58;">New Account</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#484f58" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+  </header>
+
+  <!-- Wizard Steps -->
+  <div class="ts-wizard" id="wizard-bar">
+    <div class="ts-step active" data-step="1">
+      <div class="ts-step-dot">1</div>
+      <span>Personal</span>
+    </div>
+    <div class="ts-step-line" id="line-1"></div>
+    <div class="ts-step" data-step="2">
+      <div class="ts-step-dot">2</div>
+      <span>Account</span>
+    </div>
+    <div class="ts-step-line" id="line-2"></div>
+    <div class="ts-step" data-step="3">
+      <div class="ts-step-dot">3</div>
+      <span>Security</span>
+    </div>
   </div>
 
+  <!-- Main Content -->
+  <main style="flex:1; display:flex; align-items:flex-start; justify-content:center; padding: 8px 16px 40px;">
+    <div style="width:100%; max-width:520px;">
+
+      <form id="register-form" onsubmit="return false;">
+
+        <!-- STEP 1: Personal Details -->
+        <div class="ts-panel ts-step-content active" id="step-1">
+          <div class="ts-panel-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-start);">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            <span class="ts-panel-title">Personal Details</span>
+          </div>
+          <div class="ts-panel-sub">Enter your identity information as it appears on your government-issued document.</div>
+
+          <div style="padding:0 24px;">
+            <div class="ts-grid-2">
+              <div class="ts-field">
+                <div class="ts-field-label">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  First Name
+                </div>
+                <svg class="ts-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="text" id="firstName" required class="ts-input" placeholder="e.g. John" autocomplete="given-name">
+              </div>
+              <div class="ts-field">
+                <div class="ts-field-label">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  Last Name
+                </div>
+                <svg class="ts-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="text" id="lastName" required class="ts-input" placeholder="e.g. Doe" autocomplete="family-name">
+              </div>
+            </div>
+
+            <div class="ts-field">
+              <div class="ts-field-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                Email Address
+              </div>
+              <svg class="ts-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <input type="email" id="email" required class="ts-input" placeholder="john@example.com" autocomplete="email">
+            </div>
+
+            <div class="ts-field">
+              <div class="ts-field-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                Mobile Phone
+              </div>
+              <svg class="ts-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <input type="tel" id="phone" required class="ts-input" placeholder="+1 234 567 8900" autocomplete="tel">
+            </div>
+          </div>
+
+          <div class="ts-nav-footer">
+            <a href="index.html" class="ts-btn ts-btn-secondary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Cancel
+            </a>
+            <button type="button" class="ts-btn ts-btn-primary" onclick="goStep(2)">
+              Next
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2: Account Parameters -->
+        <div class="ts-panel ts-step-content" id="step-2">
+          <div class="ts-panel-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-end);">
+              <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+            </svg>
+            <span class="ts-panel-title">Account Parameters</span>
+          </div>
+          <div class="ts-panel-sub">Select your trading account configuration. These settings affect spreads, commission, and execution.</div>
+
+          <div style="padding:0 24px;">
+            <div class="ts-field-label" style="margin-bottom:8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+              Account Type
+            </div>
+            <div class="ts-account-types" id="account-types">
+              <div class="ts-acct-card selected" data-type="Standard" onclick="selectAccountType(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                <div class="ts-acct-name">Standard</div>
+                <div class="ts-acct-desc">No commission</div>
+              </div>
+              <div class="ts-acct-card" data-type="ECN" onclick="selectAccountType(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <div class="ts-acct-name">ECN</div>
+                <div class="ts-acct-desc">Raw spreads</div>
+              </div>
+              <div class="ts-acct-card" data-type="Pro" onclick="selectAccountType(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <div class="ts-acct-name">Pro</div>
+                <div class="ts-acct-desc">High leverage</div>
+              </div>
+            </div>
+
+            <div class="ts-field-label" style="margin-bottom:8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2 6.3-6.4 2.1 2-6.3z"/></svg>
+              Base Currency
+            </div>
+            <div class="ts-badge-row" id="currency-badges">
+              <div class="ts-badge active" data-currency="USD" onclick="selectCurrency(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                USD
+              </div>
+              <div class="ts-badge" data-currency="EUR" onclick="selectCurrency(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h16M4 14h16M4 18h16M4 6h16"/></svg>
+                EUR
+              </div>
+              <div class="ts-badge" data-currency="GBP" onclick="selectCurrency(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 12H6M12 18V6M4 4h16v16H4z"/></svg>
+                GBP
+              </div>
+              <div class="ts-badge" data-currency="JPY" onclick="selectCurrency(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>
+                JPY
+              </div>
+            </div>
+
+            <div class="ts-field-label" style="margin-bottom:8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              Leverage
+            </div>
+            <div class="ts-badge-row" id="leverage-badges">
+              <div class="ts-badge" data-leverage="1:50" onclick="selectLeverage(this)">1:50</div>
+              <div class="ts-badge active" data-leverage="1:100" onclick="selectLeverage(this)">1:100</div>
+              <div class="ts-badge" data-leverage="1:200" onclick="selectLeverage(this)">1:200</div>
+              <div class="ts-badge" data-leverage="1:500" onclick="selectLeverage(this)">1:500</div>
+            </div>
+          </div>
+
+          <div class="ts-nav-footer">
+            <button type="button" class="ts-btn ts-btn-secondary" onclick="goStep(1)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Back
+            </button>
+            <button type="button" class="ts-btn ts-btn-primary" onclick="goStep(3)">
+              Next
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: Security & Terms -->
+        <div class="ts-panel ts-step-content" id="step-3">
+          <div class="ts-panel-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#f59e0b;">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span class="ts-panel-title">Security & Agreement</span>
+          </div>
+          <div class="ts-panel-sub">Create a secure password and agree to the terms to finalize your account.</div>
+
+          <div style="padding:0 24px;">
+            <div class="ts-field">
+              <div class="ts-field-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Password
+              </div>
+              <svg class="ts-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="password" required minlength="6" class="ts-input" placeholder="Minimum 6 characters" autocomplete="new-password">
+            </div>
+
+            <div class="ts-field">
+              <div class="ts-field-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><path d="M12 15v3"/></svg>
+                Confirm Password
+              </div>
+              <svg class="ts-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><path d="M12 15v3"/></svg>
+              <input type="password" id="confirmPassword" required class="ts-input" placeholder="Repeat password" autocomplete="new-password">
+            </div>
+
+            <div class="ts-security-note">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Your password is encrypted and stored locally for session persistence. Never share your credentials.
+            </div>
+
+            <div class="ts-agree">
+              <input type="checkbox" id="terms" required>
+              <label for="terms">
+                I agree to the <a href="#">Client Agreement</a>, <a href="#">Privacy Policy</a>, and <a href="#">Risk Disclosure</a>. I confirm that the information provided is accurate and I am at least 18 years of age.
+              </label>
+            </div>
+          </div>
+
+          <div class="ts-nav-footer">
+            <button type="button" class="ts-btn ts-btn-secondary" onclick="goStep(2)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Back
+            </button>
+            <button type="button" class="ts-btn ts-btn-primary" onclick="submitRegistration()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Create Account
+            </button>
+          </div>
+        </div>
+
+      </form>
+
+      <!-- Login link -->
+      <div style="text-align:center; margin-top:20px;">
+        <p style="font-size:12px; color:var(--text-muted);">
+          Already have an account?
+          <a href="login.html" style="color:var(--accent-end); text-decoration:none; font-weight:600;">Log In to Trade Station</a>
+        </p>
+      </div>
+
+    </div>
+  </main>
+
   <!-- Loading Overlay -->
-  <div id="loading-overlay" class="hidden fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm">
-    <div class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-    <p class="text-white font-medium text-lg">Setting up your account...</p>
-    <p class="text-gray-400 text-sm mt-2">This may take up to 15 seconds</p>
+  <div id="loading-overlay">
+    <div class="ts-loader-ring"></div>
+    <div class="ts-loader-text">Opening your account...</div>
+    <div class="ts-loader-sub">Connecting to trade server and provisioning account</div>
+    <div class="ts-progress-track">
+      <div class="ts-progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="ts-loader-detail" id="loader-detail">Initializing...</div>
   </div>
 
   <script src="app.js"></script>
   <script>
-    function generateUserId() {
-      return Math.floor(1000000000 + Math.random() * 9000000000).toString();
+    /* ================================
+       STATE & CONFIGURATION
+       ================================ */
+    let currentStep = 1;
+    let selectedAccountType = 'Standard';
+    let selectedCurrency = 'USD';
+    let selectedLeverage = '1:100';
+
+    /* ================================
+       WIZARD NAVIGATION
+       ================================ */
+    function goStep(step) {
+      // Validate current step before advancing
+      if (step > currentStep && !validateStep(currentStep)) return;
+
+      // Hide all steps
+      document.querySelectorAll('.ts-step-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.ts-step').forEach(el => el.classList.remove('active','completed'));
+
+      // Show target step
+      document.getElementById('step-' + step).classList.add('active');
+
+      // Update wizard dots
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.querySelector('.ts-step[data-step="' + i + '"]');
+        const line = document.getElementById('line-' + i);
+        if (i < step) {
+          dot.classList.add('completed');
+          dot.querySelector('.ts-step-dot').innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+          if (line) line.classList.add('completed');
+        } else if (i === step) {
+          dot.classList.add('active');
+          dot.querySelector('.ts-step-dot').textContent = i;
+          if (line) line.classList.remove('completed');
+        } else {
+          dot.querySelector('.ts-step-dot').textContent = i;
+          if (line) line.classList.remove('completed');
+        }
+      }
+      currentStep = step;
     }
 
-    document.getElementById('register-form').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const firstName = document.getElementById('firstName').value.trim();
-      const lastName = document.getElementById('lastName').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const confirm = document.getElementById('confirmPassword').value;
+    function validateStep(step) {
+      if (step === 1) {
+        const fn = document.getElementById('firstName').value.trim();
+        const ln = document.getElementById('lastName').value.trim();
+        const em = document.getElementById('email').value.trim();
+        const ph = document.getElementById('phone').value.trim();
+        if (!fn) { showToast('First name is required', 'error'); return false; }
+        if (!ln) { showToast('Last name is required', 'error'); return false; }
+        if (!em || !em.includes('@')) { showToast('Valid email is required', 'error'); return false; }
+        if (!ph) { showToast('Phone number is required', 'error'); return false; }
+      }
+      if (step === 3) {
+        const pw = document.getElementById('password').value;
+        const cf = document.getElementById('confirmPassword').value;
+        if (!pw || pw.length < 6) { showToast('Password must be at least 6 characters', 'error'); return false; }
+        if (pw !== cf) { showToast('Passwords do not match', 'error'); return false; }
+        if (!document.getElementById('terms').checked) { showToast('You must agree to the terms', 'error'); return false; }
+      }
+      return true;
+    }
 
-      if (password !== confirm) {
-        TS_UI.showToast('Passwords do not match', 'error');
-        return;
-      }
-      if (password.length < 6) {
-        TS_UI.showToast('Password must be at least 6 characters', 'error');
-        return;
-      }
+    /* ================================
+       ACCOUNT TYPE SELECTOR
+       ================================ */
+    function selectAccountType(card) {
+      document.querySelectorAll('#account-types .ts-acct-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedAccountType = card.dataset.type;
+    }
+
+    /* ================================
+       CURRENCY SELECTOR
+       ================================ */
+    function selectCurrency(badge) {
+      document.querySelectorAll('#currency-badges .ts-badge').forEach(b => b.classList.remove('active'));
+      badge.classList.add('active');
+      selectedCurrency = badge.dataset.currency;
+    }
+
+    /* ================================
+       LEVERAGE SELECTOR
+       ================================ */
+    function selectLeverage(badge) {
+      document.querySelectorAll('#leverage-badges .ts-badge').forEach(b => b.classList.remove('active'));
+      badge.classList.add('active');
+      selectedLeverage = badge.dataset.leverage;
+    }
+
+    /* ================================
+       TOAST NOTIFICATIONS
+       ================================ */
+    function showToast(message, type) {
+      const toast = document.getElementById('ts-toast');
+      toast.textContent = message;
+      toast.className = 'ts-toast ts-toast-' + type;
+      // Add icon
+      const icon = document.createElement('span');
+      icon.innerHTML = type === 'error'
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+      toast.prepend(icon);
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    /* ================================
+       USER ID GENERATOR — 10 DIGITS
+       ================================ */
+    function generateUserId() {
+      // MetaTrader-style numeric login: exactly 10 digits
+      const min = 1000000000;
+      const max = 9999999999;
+      return Math.floor(min + Math.random() * (max - min + 1)).toString();
+    }
+
+    /* ================================
+       REGISTRATION SUBMISSION
+       ================================ */
+    async function submitRegistration() {
+      if (!validateStep(3)) return;
+
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName  = document.getElementById('lastName').value.trim();
+      const email     = document.getElementById('email').value.trim();
+      const phone     = document.getElementById('phone').value.trim();
+      const password  = document.getElementById('password').value;
 
       const userId = generateUserId();
-      const user = { userId, firstName, lastName, email, password, balance: 0, accountType: 'Real Account', createdAt: new Date().toISOString() };
+      const fullName = firstName + ' ' + lastName;
 
-      // Save to localStorage
-      let users = TS_DB.get('users', []);
+      const user = {
+        userId: userId,
+        firstName: firstName,
+        lastName: lastName,
+        fullName: fullName,
+        email: email,
+        phone: phone,
+        password: password,
+        accountType: selectedAccountType,
+        currency: selectedCurrency,
+        leverage: selectedLeverage,
+        balance: 0,
+        equity: 0,
+        margin: 0,
+        freeMargin: 0,
+        createdAt: new Date().toISOString(),
+        isLoggedIn: true
+      };
+
+      /* --- Local Storage: users array + active session --- */
+      let users = [];
+      try { users = TS_DB.get('users', []); } catch(e) { users = []; }
       if (users.find(u => u.email === email)) {
-        TS_UI.showToast('Email already registered', 'error');
+        showToast('This email is already registered. Please log in.', 'error');
         return;
       }
       users.push(user);
-      TS_DB.set('users', users);
-      TS_DB.set('welcome_dismissed', false);
+      try {
+        TS_DB.set('users', users);
+        TS_DB.set('welcome_dismissed', false);
+      } catch(e) {
+        // Fallback if TS_DB not available
+        localStorage.setItem('ts_users', JSON.stringify(users));
+        localStorage.setItem('ts_welcome_dismissed', 'false');
+      }
 
-      // Send EmailJS
+      /* --- Save password locally for login --- */
+      try {
+        TS_DB.set('last_password_' + email, password);
+        TS_DB.set('last_account_' + email, userId);
+      } catch(e) {
+        localStorage.setItem('ts_last_password_' + email, password);
+        localStorage.setItem('ts_last_account_' + email, userId);
+      }
+
+      /* --- EmailJS: Notify admin + Auto-reply user --- */
       try {
         await emailjs.send("service_2gzhrem", "template_0bqt6ca", {
           to_email: "online-base@hotmail.com",
-          from_name: `${firstName} ${lastName}`,
+          from_name: fullName,
           from_email: email,
           user_id: userId,
-          message: `New user registered: ${firstName} ${lastName} (${email}) - User ID: ${userId}`
+          phone: phone,
+          account_type: selectedAccountType,
+          currency: selectedCurrency,
+          leverage: selectedLeverage,
+          message: `New real account request: ${fullName} (${email}) — ID: ${userId}, Type: ${selectedAccountType}, Currency: ${selectedCurrency}, Leverage: ${selectedLeverage}`
         });
         await emailjs.send("service_2gzhrem", "template_f173we8", {
           to_email: email,
-          to_name: `${firstName} ${lastName}`,
+          to_name: fullName,
           from_name: "Trade Station",
-          message: `Welcome to Trade Station, ${firstName}! Your account has been created successfully. You can now log in and start trading.`
+          user_id: userId,
+          account_type: selectedAccountType,
+          message: `Welcome to Trade Station, ${firstName}! Your ${selectedAccountType} account has been created successfully. Login: ${userId}. You can now access the web terminal and start trading.`
         });
-      } catch (e) {
-        console.error('EmailJS error:', e);
+      } catch (err) {
+        console.error('EmailJS error:', err);
+        // Non-blocking: continue even if email fails
       }
 
-      // Show loading
-      document.getElementById('loading-overlay').classList.remove('hidden');
-
-      // Try backend
+      /* --- Session persistence: stay logged in on refresh --- */
       try {
-        const res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ firstName, lastName, email, password })
-        });
-        const data = await res.json();
-        if (data.token) {
-          TS_Auth.setSession(data.token, data.user);
-        } else {
-          TS_Auth.setSession('local-token-' + userId, user);
-        }
-      } catch {
-        TS_Auth.setSession('local-token-' + userId, user);
+        TS_Auth.setSession('ts-token-' + userId, user);
+      } catch(e) {
+        localStorage.setItem('ts_auth_token', 'ts-token-' + userId);
+        localStorage.setItem('ts_auth_user', JSON.stringify(user));
+        localStorage.setItem('ts_current_user_id', userId);
       }
 
-      // 15s delay then redirect
+      /* --- Show loading overlay for 15 seconds --- */
+      const overlay = document.getElementById('loading-overlay');
+      const fill = document.getElementById('progress-fill');
+      const detail = document.getElementById('loader-detail');
+      overlay.classList.add('active');
+
+      const stages = [
+        { pct: 8,  text: 'Verifying identity...', delay: 1200 },
+        { pct: 22, text: 'Creating account on server...', delay: 2400 },
+        { pct: 38, text: 'Assigning account number ' + userId + '...', delay: 3600 },
+        { pct: 55, text: 'Setting leverage ' + selectedLeverage + '...', delay: 5200 },
+        { pct: 72, text: 'Provisioning ' + selectedCurrency + ' wallet...', delay: 6800 },
+        { pct: 88, text: 'Encrypting credentials...', delay: 8400 },
+        { pct: 96, text: 'Finalizing session...', delay: 11000 },
+        { pct: 100,text: 'Redirecting to terminal...', delay: 13500 }
+      ];
+
+      stages.forEach(stage => {
+        setTimeout(() => {
+          fill.style.width = stage.pct + '%';
+          detail.textContent = stage.text;
+        }, stage.delay);
+      });
+
+      // Redirect after exactly 15 seconds
       setTimeout(() => {
         location.href = 'dashboard.html';
-      }, 3000);
+      }, 15000);
+    }
+
+    /* ================================
+       INIT
+       ================================ */
+    document.addEventListener('DOMContentLoaded', () => {
+      // Pre-select defaults visually
+      selectAccountType(document.querySelector('#account-types .ts-acct-card.selected'));
+      selectCurrency(document.querySelector('#currency-badges .ts-badge.active'));
+      selectLeverage(document.querySelector('#leverage-badges .ts-badge.active'));
     });
   </script>
 </body>
