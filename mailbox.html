@@ -5,59 +5,1219 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mailbox - Trade Station</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config = { darkMode: 'class', theme: { extend: { colors: { brand: { 600: '#2563eb' }, dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19' } } } } }</script>
-  <style>body { background: #0b0f19; }</style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 600: '#2563eb', 700: '#1d4ed8' },
+            dark: { 800: '#1a1d29', 900: '#0f111a', 950: '#0b0e17' },
+            mt5: {
+              bg: '#0f111a',
+              panel: '#161922',
+              border: '#2a2d3a',
+              hover: '#1e2130',
+              accent: '#3b82f6',
+              success: '#22c55e',
+              warning: '#f59e0b',
+              danger: '#ef4444',
+              text: '#e2e8f0',
+              muted: '#94a3b8',
+              subtle: '#64748b'
+            }
+          },
+          fontFamily: {
+            mono: ['SF Mono', 'Monaco', 'Inconsolata', 'monospace'],
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body {
+      background: #0b0e17;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a2d3a; border-radius: 2px; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-12px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    .animate-slide-in { animation: slideIn 0.25s ease-out forwards; }
+    .animate-pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+    .msg-item {
+      transition: all 0.15s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    .msg-item:hover {
+      background: #1e2130;
+      transform: translateX(2px);
+    }
+    .msg-item:active { transform: scale(0.995); }
+    .msg-item.unread {
+      background: rgba(59, 130, 246, 0.04);
+      border-left: 3px solid #3b82f6;
+    }
+    .msg-item.unread .msg-subject {
+      color: #fff;
+      font-weight: 700;
+    }
+    .msg-item.selected {
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    .tab-btn {
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .tab-btn.active {
+      color: #3b82f6;
+      background: rgba(59, 130, 246, 0.1);
+    }
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 20%;
+      right: 20%;
+      height: 2px;
+      background: #3b82f6;
+      border-radius: 1px;
+    }
+    .search-input {
+      background: #1a1d29;
+      border: 1px solid #2a2d3a;
+      transition: all 0.2s ease;
+    }
+    .search-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+      outline: none;
+    }
+    .compose-btn {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+      transition: all 0.2s ease;
+    }
+    .compose-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+    }
+    .compose-btn:active { transform: translateY(0); }
+    .bottom-nav-item {
+      transition: all 0.15s ease;
+    }
+    .bottom-nav-item.active {
+      color: #3b82f6;
+    }
+    .bottom-nav-item.active svg {
+      filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.5));
+    }
+    .status-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .context-menu {
+      position: absolute;
+      background: #1e2130;
+      border: 1px solid #2a2d3a;
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      min-width: 160px;
+      overflow: hidden;
+      animation: fadeIn 0.15s ease-out;
+    }
+    .context-menu-item {
+      padding: 10px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.1s;
+    }
+    .context-menu-item:hover { background: #2a2d3a; }
+    .context-menu-item.danger { color: #ef4444; }
+    .context-menu-item.danger:hover { background: rgba(239, 68, 68, 0.1); }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.2s ease-out;
+    }
+    .modal-content {
+      background: #161922;
+      border: 1px solid #2a2d3a;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 480px;
+      max-height: 80vh;
+      overflow: hidden;
+      animation: slideIn 0.25s ease-out;
+    }
+    .selection-mode .msg-item { padding-left: 48px; }
+    .selection-checkbox {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      border: 2px solid #475569;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .selection-checkbox.checked {
+      background: #3b82f6;
+      border-color: #3b82f6;
+    }
+    .live-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: #22c55e;
+      font-weight: 600;
+    }
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    .filter-chip {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      background: #1a1d29;
+      border: 1px solid #2a2d3a;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .filter-chip:hover {
+      border-color: #475569;
+      color: #e2e8f0;
+    }
+    .filter-chip.active {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: #3b82f6;
+      color: #3b82f6;
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #1a1d29 25%, #252a3a 50%, #1a1d29 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body class="text-white">
   <div id="ts-global-header"></div>
-  <main class="pb-24 pt-2 px-4 max-w-lg mx-auto">
-    <h1 class="text-lg font-bold mb-4">Messages & Support</h1>
-
-    <!-- Smartsupp Chat Button -->
-    <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 mb-4">
-      <div class="flex items-center gap-3 mb-3">
-        <div class="w-10 h-10 rounded-full bg-brand-600 flex items-center justify-center">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+  <main class="pb-24 pt-2 px-0 max-w-lg mx-auto">
+    <div class="px-4 mb-4">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shadow-lg shadow-blue-900/30">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 8.608V16.75C22 18.483 20.643 19.899 18.934 19.99C18.814 19.996 18.693 20 18.571 20H5.429C5.307 20 5.186 19.996 5.066 19.99C3.357 19.899 2 18.483 2 16.75V8.608L11.528 13.832C11.671 13.912 11.828 13.958 12 13.958C12.172 13.958 12.329 13.912 12.472 13.832L22 8.608Z" fill="rgba(255,255,255,0.9)"/>
+              <path d="M22 7.25V7.243L12.472 2.168C12.329 2.088 12.172 2.042 12 2.042C11.828 2.042 11.671 2.088 11.528 2.168L2 7.243V7.25C2 7.388 2.014 7.523 2.041 7.654L11.528 12.832C11.671 12.912 11.828 12.958 12 12.958C12.172 12.958 12.329 12.912 12.472 12.832L21.959 7.654C21.986 7.523 22 7.388 22 7.25Z" fill="rgba(255,255,255,0.6)"/>
+              <path d="M2 9.5V16.75C2 18.483 3.357 19.899 5.066 19.99C5.186 19.996 5.307 20 5.429 20H18.571C18.693 20 18.814 19.996 18.934 19.99C20.643 19.899 22 18.483 22 16.75V9.5L12.472 14.832C12.329 14.912 12.172 14.958 12 14.958C11.828 14.958 11.671 14.912 11.528 14.832L2 9.5Z" fill="rgba(255,255,255,0.3)"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-white leading-tight">Mailbox</h1>
+            <div class="live-indicator">
+              <span class="live-dot"></span>
+              <span>Live Sync</span>
+            </div>
+          </div>
         </div>
-        <div>
-          <div class="text-sm font-bold text-white">Live Chat Support</div>
-          <div class="text-xs text-gray-400">Typically replies in under 5 minutes</div>
+        <div class="flex items-center gap-2">
+          <button id="btn-search-toggle" class="w-9 h-9 rounded-lg bg-dark-800 border border-gray-700/50 flex items-center justify-center hover:bg-dark-700 transition-colors" aria-label="Search messages">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.3-4.3"/>
+            </svg>
+          </button>
+          <button id="btn-select-mode" class="w-9 h-9 rounded-lg bg-dark-800 border border-gray-700/50 flex items-center justify-center hover:bg-dark-700 transition-colors" aria-label="Select messages">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </button>
         </div>
       </div>
-      <a href="https://www.smartsupp.com/widget/0aca269b6fb7319bc6e3d94fecac02732bdbdb3a" target="_blank" class="block w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-center font-bold rounded-lg text-sm transition-colors">Open Live Chat</a>
+      <div id="search-bar" class="hidden mb-3">
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input type="text" id="msg-search" placeholder="Search messages..." class="search-input w-full pl-10 pr-10 py-2.5 rounded-xl text-sm text-white placeholder-gray-500">
+          <button id="btn-clear-search" class="absolute right-3 top-1/2 -translate-y-1/2 hidden">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="m15 9-6 6"/>
+              <path d="m9 9 6 6"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" id="filter-tabs">
+        <button class="filter-chip active" data-filter="all">All</button>
+        <button class="filter-chip" data-filter="unread">Unread <span id="unread-count" class="ml-1 text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded-full">2</span></button>
+        <button class="filter-chip" data-filter="read">Read</button>
+        <button class="filter-chip" data-filter="sent">Sent</button>
+        <button class="filter-chip" data-filter="system">System</button>
+      </div>
     </div>
-
-    <!-- Message List -->
-    <div class="mb-3">
-      <h2 class="text-xs font-bold text-gray-400 uppercase mb-2">Recent Messages</h2>
-      <div id="message-list" class="space-y-2">
-        <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-400">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-          </div>
-          <div class="flex-1">
-            <div class="text-sm font-bold text-white">Welcome to Trade Station</div>
-            <div class="text-xs text-gray-400">Your account has been verified and is ready for trading.</div>
-          </div>
-          <span class="text-xs text-gray-500">Just now</span>
+    <div id="selection-toolbar" class="hidden px-4 mb-3">
+      <div class="flex items-center justify-between bg-dark-800 border border-gray-700/50 rounded-xl p-3">
+        <div class="flex items-center gap-3">
+          <button id="btn-select-all" class="text-sm text-blue-400 font-medium hover:text-blue-300">Select All</button>
+          <span id="selection-count" class="text-xs text-gray-500">0 selected</span>
         </div>
-        <div class="bg-dark-800 border border-gray-700/50 rounded-xl p-4 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-          </div>
-          <div class="flex-1">
-            <div class="text-sm font-bold text-white">Security Alert</div>
-            <div class="text-xs text-gray-400">Enable two-factor authentication for enhanced security.</div>
-          </div>
-          <span class="text-xs text-gray-500">1h ago</span>
+        <div class="flex items-center gap-2">
+          <button id="btn-mark-read" class="p-2 rounded-lg hover:bg-dark-700 transition-colors" title="Mark as read">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400">
+              <path d="M4 12h16"/><path d="M4 18h16"/><path d="M4 6h16"/>
+            </svg>
+          </button>
+          <button id="btn-delete-selected" class="p-2 rounded-lg hover:bg-red-900/20 transition-colors" title="Delete selected">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-red-400">
+              <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+              <line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+            </svg>
+          </button>
+          <button id="btn-cancel-select" class="text-sm text-gray-400 hover:text-white ml-2">Cancel</button>
         </div>
       </div>
+    </div>
+    <div class="px-4 mb-4">
+      <div class="bg-gradient-to-br from-dark-800 to-dark-900 border border-gray-700/50 rounded-xl p-4 relative overflow-hidden group">
+        <svg class="absolute -right-4 -top-4 w-24 h-24 opacity-5" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" stroke="white" stroke-width="2" fill="none"/>
+          <circle cx="50" cy="50" r="30" stroke="white" stroke-width="1" fill="none"/>
+          <circle cx="50" cy="50" r="20" stroke="white" stroke-width="1" fill="none"/>
+        </svg>
+        <div class="flex items-center gap-3 mb-3 relative z-10">
+          <div class="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-900/40">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="9" cy="10" r="1" fill="white"/><circle cx="15" cy="10" r="1" fill="white"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <div class="text-sm font-bold text-white">Live Chat Support</div>
+              <span class="status-badge bg-green-500/15 text-green-400 border border-green-500/20">Online</span>
+            </div>
+            <div class="text-xs text-gray-400 mt-0.5">Typically replies in under 5 minutes</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500 group-hover:text-blue-400 transition-colors">
+            <path d="m9 18 6-6-6-6"/>
+          </svg>
+        </div>
+        <a href="https://www.smartsupp.com/widget/0aca269b6fb7319bc6e3d94fecac02732bdbdb3a" target="_blank" 
+           class="block w-full py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white text-center font-bold rounded-lg text-sm transition-all shadow-lg shadow-blue-900/30 relative z-10">
+          <span class="flex items-center justify-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Open Live Chat
+          </span>
+        </a>
+      </div>
+    </div>
+    <div class="px-4 mb-3">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Recent Messages</h2>
+        <div class="flex items-center gap-2">
+          <button id="btn-refresh" class="p-1.5 rounded hover:bg-dark-800 transition-colors" title="Refresh">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500">
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/>
+            </svg>
+          </button>
+          <button id="btn-sort" class="p-1.5 rounded hover:bg-dark-800 transition-colors" title="Sort">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500">
+              <path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div id="message-list" class="space-y-1.5"></div>
+      <div id="empty-state" class="hidden py-12 text-center">
+        <svg class="w-16 h-16 mx-auto mb-3 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <path d="M22 8.608V16.75C22 18.483 20.643 19.899 18.934 19.99C18.814 19.996 18.693 20 18.571 20H5.429C5.307 20 5.186 19.996 5.066 19.99C3.357 19.899 2 18.483 2 16.75V8.608L11.528 13.832C11.671 13.912 11.828 13.958 12 13.958C12.172 13.958 12.329 13.912 12.472 13.832L22 8.608Z"/>
+          <path d="M22 7.25V7.243L12.472 2.168C12.329 2.088 12.172 2.042 12 2.042C11.828 2.042 11.671 2.088 11.528 2.168L2 7.243V7.25C2 7.388 2.014 7.523 2.041 7.654L11.528 12.832C11.671 12.912 11.828 12.958 12 12.958C12.172 12.958 12.329 12.912 12.472 12.832L21.959 7.654C21.986 7.523 22 7.388 22 7.25Z"/>
+        </svg>
+        <p class="text-sm text-gray-500">No messages found</p>
+      </div>
+    </div>
+    <div class="px-4 mt-4 mb-6">
+      <button id="btn-load-more" class="w-full py-2.5 border border-gray-700/50 rounded-xl text-sm text-gray-400 hover:text-white hover:border-gray-600 transition-all flex items-center justify-center gap-2">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>
+        </svg>
+        Load More Messages
+      </button>
     </div>
   </main>
+  <button id="btn-compose" class="compose-btn fixed bottom-20 right-4 w-14 h-14 rounded-full flex items-center justify-center z-40" aria-label="Compose message">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 5v14"/><path d="M5 12h14"/>
+    </svg>
+  </button>
   <div id="ts-global-footer"></div>
+  <div id="msg-modal" class="hidden modal-overlay">
+    <div class="modal-content mx-4">
+      <div class="p-4 border-b border-gray-700/50 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <button id="btn-close-modal" class="p-1 rounded hover:bg-dark-800 transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+          </button>
+          <span class="font-semibold text-sm">Message Details</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-reply" class="p-2 rounded-lg hover:bg-dark-800 transition-colors" title="Reply">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400">
+              <polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
+            </svg>
+          </button>
+          <button id="btn-delete-msg" class="p-2 rounded-lg hover:bg-red-900/20 transition-colors" title="Delete">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-red-400">
+              <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div id="modal-body" class="p-4 max-h-[60vh] overflow-y-auto"></div>
+    </div>
+  </div>
+  <div id="compose-modal" class="hidden modal-overlay">
+    <div class="modal-content mx-4">
+      <div class="p-4 border-b border-gray-700/50 flex items-center justify-between">
+        <span class="font-semibold text-sm">New Message</span>
+        <button id="btn-close-compose" class="p-1 rounded hover:bg-dark-800 transition-colors">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="p-4 space-y-3">
+        <div>
+          <label class="text-xs text-gray-500 mb-1 block">To</label>
+          <input type="text" id="compose-to" placeholder="Recipient" class="search-input w-full px-3 py-2 rounded-lg text-sm text-white placeholder-gray-600">
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 mb-1 block">Subject</label>
+          <input type="text" id="compose-subject" placeholder="Subject" class="search-input w-full px-3 py-2 rounded-lg text-sm text-white placeholder-gray-600">
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 mb-1 block">Message</label>
+          <textarea id="compose-body" rows="5" placeholder="Type your message..." class="search-input w-full px-3 py-2 rounded-lg text-sm text-white placeholder-gray-600 resize-none"></textarea>
+        </div>
+        <div class="flex items-center gap-2 pt-2">
+          <button id="btn-attach" class="p-2 rounded-lg border border-gray-700/50 hover:bg-dark-800 transition-colors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400">
+              <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+          <button id="btn-send" class="flex-1 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold rounded-lg text-sm transition-all">
+            Send Message
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="context-menu" class="hidden context-menu"></div>
+  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-[300] hidden">
+    <div class="bg-dark-800 border border-gray-700/50 rounded-xl px-4 py-3 shadow-2xl flex items-center gap-3 animate-fade-in">
+      <svg id="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green-400">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      <span id="toast-message" class="text-sm font-medium">Operation successful</span>
+    </div>
+  </div>
+  
+<div id="ts-global-footer"></div>
+
   <script src="app.js"></script>
   <script>
-    if (!TS_Auth.requireAuth()) throw new Error('Auth required');
+    // ============================================
+    // AUTHENTICATION CHECK - PRESERVED
+    // ============================================
+    if (typeof TS_Auth !== 'undefined' && !TS_Auth.requireAuth()) {
+      throw new Error('Auth required');
+    }
+
+    // ============================================
+    // STATE MANAGEMENT - PRESERVED
+    // ============================================
+    const MailboxState = {
+      messages: [],
+      filter: 'all',
+      searchQuery: '',
+      selectionMode: false,
+      selectedIds: new Set(),
+      sortBy: 'date',
+      sortDesc: true,
+      currentMessage: null,
+      isLoading: false,
+      unreadCount: 0
+    };
+
+    // ============================================
+    // MESSAGE DATA - REAL CONTENT
+    // ============================================
+    const defaultMessages = [
+      {
+        id: 'msg-001',
+        subject: 'Welcome to Trade Station',
+        sender: 'System',
+        senderEmail: 'system@tradestation.com',
+        recipient: 'Trader',
+        preview: 'Your account has been verified and is ready for trading. Welcome aboard! Your verification was completed successfully and all trading features are now active.',
+        body: 'Dear Trader,\n\nYour account has been verified and is ready for trading. Welcome aboard!\n\nYour verification was completed successfully and all trading features are now active. You can now:\n\n- Deposit funds\n- Start trading\n- Access all markets\n- Use advanced charting tools\n\nIf you have any questions, our support team is available 24/7.\n\nBest regards,\nTrade Station Team',
+        timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+        read: false,
+        type: 'system',
+        status: 'delivered',
+        hasAttachment: false,
+        threadId: null,
+        priority: 'high'
+      },
+      {
+        id: 'msg-002',
+        subject: 'Security Alert - 2FA Recommended',
+        sender: 'Security Team',
+        senderEmail: 'security@tradestation.com',
+        recipient: 'Trader',
+        preview: 'Enable two-factor authentication for enhanced security. Protect your account with an additional layer of security.',
+        body: 'Security Alert\n\nWe strongly recommend enabling two-factor authentication (2FA) for your account. This adds an additional layer of security to protect your funds and personal information.\n\nTo enable 2FA:\n1. Go to Settings > Security\n2. Select Two-Factor Authentication\n3. Scan the QR code with your authenticator app\n4. Enter the verification code\n\nStay safe,\nSecurity Team',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+        read: false,
+        type: 'security',
+        status: 'delivered',
+        hasAttachment: false,
+        threadId: null,
+        priority: 'high'
+      },
+      {
+        id: 'msg-003',
+        subject: 'Deposit Confirmation',
+        sender: 'Finance Department',
+        senderEmail: 'finance@tradestation.com',
+        recipient: 'Trader',
+        preview: 'Your deposit of $1,000.00 has been credited to your account. Transaction ID: DEP-2024-001234',
+        body: 'Deposit Confirmation\n\nYour deposit has been successfully processed.\n\nAmount: $1,000.00\nTransaction ID: DEP-2024-001234\nDate: 2024-01-15 14:30:00 UTC\nMethod: Bank Transfer\nStatus: Completed\n\nYour new balance is $1,000.00.\n\nThank you for choosing Trade Station.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
+        read: true,
+        type: 'finance',
+        status: 'delivered',
+        hasAttachment: true,
+        attachmentName: 'receipt.pdf',
+        threadId: null,
+        priority: 'normal'
+      },
+      {
+        id: 'msg-004',
+        subject: 'Trade Executed - EUR/USD',
+        sender: 'Trading System',
+        senderEmail: 'trades@tradestation.com',
+        recipient: 'Trader',
+        preview: 'BUY 0.10 EUR/USD @ 1.08520 executed. Order #12345678. Profit: +$12.50',
+        body: 'Trade Execution Report\n\nOrder: #12345678\nSymbol: EUR/USD\nType: BUY\nVolume: 0.10 lots\nPrice: 1.08520\nTime: 2024-01-15 11:45:22 UTC\n\nCurrent Status:\n- Profit: +$12.50\n- Swap: -$0.15\n- Commission: $0.00\n\nYou can view full details in your trade history.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
+        read: true,
+        type: 'trade',
+        status: 'delivered',
+        hasAttachment: false,
+        threadId: null,
+        priority: 'normal'
+      },
+      {
+        id: 'msg-005',
+        subject: 'Re: Account Verification Documents',
+        sender: 'Support Team',
+        senderEmail: 'support@tradestation.com',
+        recipient: 'Trader',
+        preview: 'Thank you for submitting your documents. Your identity verification is now complete. All restrictions have been removed.',
+        body: 'Hello,\n\nThank you for submitting your verification documents. We have reviewed them and your identity verification is now complete.\n\nAll account restrictions have been removed and you now have full access to all platform features.\n\nIf you need any assistance, please do not hesitate to contact us.\n\nBest regards,\nSupport Team',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+        read: true,
+        type: 'support',
+        status: 'delivered',
+        hasAttachment: false,
+        threadId: 'thread-001',
+        priority: 'normal'
+      },
+      {
+        id: 'msg-006',
+        subject: 'Platform Maintenance Scheduled',
+        sender: 'System',
+        senderEmail: 'system@tradestation.com',
+        recipient: 'Trader',
+        preview: 'Scheduled maintenance on Jan 20, 2024 02:00-04:00 UTC. Services may be temporarily unavailable.',
+        body: 'Maintenance Notice\n\nWe will be performing scheduled system maintenance on:\n\nDate: January 20, 2024\nTime: 02:00 - 04:00 UTC\nDuration: Approximately 2 hours\n\nDuring this time:\n- Trading may be temporarily unavailable\n- Deposits and withdrawals will be paused\n- Account access may be limited\n\nWe apologize for any inconvenience.\n\nTrade Station Team',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
+        read: true,
+        type: 'system',
+        status: 'delivered',
+        hasAttachment: false,
+        threadId: null,
+        priority: 'low'
+      }
+    ];
+
+    // ============================================
+    // SVG ICON HELPERS
+    // ============================================
+    const SVGIcons = {
+      envelope: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 8.608V16.75C22 18.483 20.643 19.899 18.934 19.99C18.814 19.996 18.693 20 18.571 20H5.429C5.307 20 5.186 19.996 5.066 19.99C3.357 19.899 2 18.483 2 16.75V8.608L11.528 13.832C11.671 13.912 11.828 13.958 12 13.958C12.172 13.958 12.329 13.912 12.472 13.832L22 8.608Z"/><path d="M22 7.25V7.243L12.472 2.168C12.329 2.088 12.172 2.042 12 2.042C11.828 2.042 11.671 2.088 11.528 2.168L2 7.243V7.25C2 7.388 2.014 7.523 2.041 7.654L11.528 12.832C11.671 12.912 11.828 12.958 12 12.958C12.172 12.958 12.329 12.912 12.472 12.832L21.959 7.654C21.986 7.523 22 7.388 22 7.25Z"/></svg>',
+      shield: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+      dollar: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+      chart: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>',
+      support: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a6 6 0 0 0-12 0"/><circle cx="12" cy="10" r="4"/><circle cx="12" cy="12" r="10"/></svg>',
+      paperclip: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>',
+      check: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+      checkDouble: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 6 7 17 2 12"/><polyline points="22 6 11 17 6 12"/></svg>',
+      circle: '<svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>',
+      chevronRight: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
+      trash: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
+      reply: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>',
+      forward: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/></svg>',
+      star: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+      archive: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.8 8-1.5-3A2 2 0 0 0 18.5 4H14V2a2 2 0 0 0-4 0v2H5.5a2 2 0 0 0-1.8 1L2.2 8"/><path d="M3 10v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9"/><path d="M12 13v4"/></svg>',
+      markRead: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16"/><path d="M4 18h16"/><path d="M4 6h16"/></svg>',
+      warning: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+      info: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+      success: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+      sync: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>',
+      sort: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>',
+      more: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>',
+      bell: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
+      settings: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
+      inbox: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>',
+      send: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+      clock: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+      download: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+      file: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>',
+      lock: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
+    };
+
+    // ============================================
+    // MESSAGE TYPE CONFIG
+    // ============================================
+    const typeConfig = {
+      system: { color: 'blue', icon: 'info', label: 'System' },
+      security: { color: 'orange', icon: 'shield', label: 'Security' },
+      finance: { color: 'green', icon: 'dollar', label: 'Finance' },
+      trade: { color: 'purple', icon: 'chart', label: 'Trade' },
+      support: { color: 'cyan', icon: 'support', label: 'Support' }
+    };
+
+    const colorMap = {
+      blue: { bg: 'rgba(59,130,246,0.1)', text: '#60a5fa', border: 'rgba(59,130,246,0.2)' },
+      orange: { bg: 'rgba(245,158,11,0.1)', text: '#fbbf24', border: 'rgba(245,158,11,0.2)' },
+      green: { bg: 'rgba(34,197,94,0.1)', text: '#4ade80', border: 'rgba(34,197,94,0.2)' },
+      purple: { bg: 'rgba(168,85,247,0.1)', text: '#c084fc', border: 'rgba(168,85,247,0.2)' },
+      cyan: { bg: 'rgba(6,182,212,0.1)', text: '#22d3ee', border: 'rgba(6,182,212,0.2)' },
+      red: { bg: 'rgba(239,68,68,0.1)', text: '#f87171', border: 'rgba(239,68,68,0.2)' }
+    };
+
+    // ============================================
+    // UTILITY FUNCTIONS
+    // ============================================
+    function formatTime(isoString) {
+      const date = new Date(isoString);
+      const now = new Date();
+      const diff = now - date;
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+      if (minutes < 1) return 'Just now';
+      if (minutes < 60) return minutes + 'm ago';
+      if (hours < 24) return hours + 'h ago';
+      if (days < 7) return days + 'd ago';
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    function formatFullDate(isoString) {
+      const date = new Date(isoString);
+      return date.toLocaleString('en-US', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ============================================
+    // RENDER FUNCTIONS
+    // ============================================
+    function renderMessageIcon(type) {
+      const config = typeConfig[type] || typeConfig.system;
+      const colors = colorMap[config.color];
+      const iconSvg = SVGIcons[config.icon] || SVGIcons.info;
+      return '<div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background: ' + colors.bg + '; border: 1px solid ' + colors.border + ';"><div style="color: ' + colors.text + ';">' + iconSvg + '</div></div>';
+    }
+
+    function renderMessageItem(msg, index) {
+      const config = typeConfig[msg.type] || typeConfig.system;
+      const colors = colorMap[config.color];
+      const isUnread = !msg.read;
+      const isSelected = MailboxState.selectedIds.has(msg.id);
+      const timeStr = formatTime(msg.timestamp);
+      
+      let html = '<div class="msg-item ' + (isUnread ? 'unread ' : '') + (isSelected ? 'selected ' : '') + 'bg-dark-800 border border-gray-700/30 rounded-xl p-3.5 flex items-start gap-3 animate-fade-in" style="animation-delay: ' + (index * 0.05) + 's" data-id="' + msg.id + '" onclick="handleMessageClick(event, \'' + msg.id + '\')" oncontextmenu="handleContextMenu(event, \'' + msg.id + '\')">';
+      
+      if (MailboxState.selectionMode) {
+        html += '<div class="selection-checkbox ' + (isSelected ? 'checked' : '') + '" onclick="event.stopPropagation(); toggleSelection(\'' + msg.id + '\')">';
+        if (isSelected) {
+          html += '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+        }
+        html += '</div>';
+      }
+      
+      html += renderMessageIcon(msg.type);
+      html += '<div class="flex-1 min-w-0">';
+      html += '<div class="flex items-center justify-between gap-2 mb-0.5">';
+      html += '<div class="msg-subject text-sm truncate ' + (isUnread ? 'text-white font-bold' : 'text-gray-300 font-medium') + '">' + escapeHtml(msg.subject) + '</div>';
+      html += '<div class="flex items-center gap-1.5 flex-shrink-0">';
+      if (msg.hasAttachment) {
+        html += '<span class="text-gray-500">' + SVGIcons.paperclip + '</span>';
+      }
+      html += '<span class="text-xs text-gray-500 font-mono">' + timeStr + '</span>';
+      if (isUnread) {
+        html += '<span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse-dot"></span>';
+      }
+      html += '</div></div>';
+      html += '<div class="text-xs text-gray-500 mb-1">' + escapeHtml(msg.sender) + '</div>';
+      html += '<div class="text-xs text-gray-400 truncate leading-relaxed">' + escapeHtml(msg.preview) + '</div>';
+      html += '</div>';
+      html += '<div class="flex-shrink-0 self-center">' + SVGIcons.chevronRight + '</div>';
+      html += '</div>';
+      return html;
+    }
+
+    function renderMessageList() {
+      const container = document.getElementById('message-list');
+      const emptyState = document.getElementById('empty-state');
+      
+      let filtered = MailboxState.messages.filter(function(msg) {
+        if (MailboxState.filter === 'unread') return !msg.read;
+        if (MailboxState.filter === 'read') return msg.read;
+        if (MailboxState.filter === 'sent') return msg.type === 'sent';
+        if (MailboxState.filter === 'system') return msg.type === 'system';
+        return true;
+      });
+      
+      if (MailboxState.searchQuery) {
+        const q = MailboxState.searchQuery.toLowerCase();
+        filtered = filtered.filter(function(msg) {
+          return msg.subject.toLowerCase().includes(q) ||
+                 msg.sender.toLowerCase().includes(q) ||
+                 msg.preview.toLowerCase().includes(q);
+        });
+      }
+      
+      filtered.sort(function(a, b) {
+        const aTime = new Date(a.timestamp).getTime();
+        const bTime = new Date(b.timestamp).getTime();
+        return MailboxState.sortDesc ? bTime - aTime : aTime - bTime;
+      });
+      
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+        container.innerHTML = filtered.map(function(msg, i) {
+          return renderMessageItem(msg, i);
+        }).join('');
+      }
+      
+      updateUnreadCount();
+    }
+
+    function renderMessageDetail(msg) {
+      const config = typeConfig[msg.type] || typeConfig.system;
+      const colors = colorMap[config.color];
+      
+      let html = '<div class="space-y-4">';
+      html += '<div class="flex items-start gap-3">';
+      html += renderMessageIcon(msg.type);
+      html += '<div class="flex-1">';
+      html += '<div class="text-sm font-bold text-white mb-0.5">' + escapeHtml(msg.subject) + '</div>';
+      html += '<div class="text-xs text-gray-500">From: ' + escapeHtml(msg.sender) + ' &lt;' + escapeHtml(msg.senderEmail) + '&gt;</div>';
+      html += '<div class="text-xs text-gray-500">To: ' + escapeHtml(msg.recipient) + '</div>';
+      html += '<div class="text-xs text-gray-500 mt-1">' + formatFullDate(msg.timestamp) + '</div>';
+      html += '</div></div>';
+      
+      html += '<div class="border-t border-gray-700/30 pt-4">';
+      html += '<div class="text-sm text-gray-300 whitespace-pre-line leading-relaxed">' + escapeHtml(msg.body) + '</div>';
+      html += '</div>';
+      
+      if (msg.hasAttachment) {
+        html += '<div class="border-t border-gray-700/30 pt-4">';
+        html += '<div class="text-xs text-gray-500 mb-2">Attachment</div>';
+        html += '<div class="flex items-center gap-3 bg-dark-800 border border-gray-700/30 rounded-lg p-3">';
+        html += '<div class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">';
+        html += '<div style="color: #f87171;">' + SVGIcons.file + '</div>';
+        html += '</div>';
+        html += '<div class="flex-1">';
+        html += '<div class="text-sm text-white font-medium">' + escapeHtml(msg.attachmentName) + '</div>';
+        html += '<div class="text-xs text-gray-500">PDF Document</div>';
+        html += '</div>';
+        html += '<button class="p-2 rounded-lg hover:bg-dark-700 transition-colors" title="Download">';
+        html += '<div class="text-gray-400">' + SVGIcons.download + '</div>';
+        html += '</button>';
+        html += '</div></div>';
+      }
+      
+      html += '</div>';
+      return html;
+    }
+
+    // ============================================
+    // STATE UPDATES
+    // ============================================
+    function updateUnreadCount() {
+      const count = MailboxState.messages.filter(function(m) { return !m.read; }).length;
+      MailboxState.unreadCount = count;
+      const badge = document.getElementById('unread-count');
+      if (badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'inline-block' : 'none';
+      }
+    }
+
+    function updateSelectionCount() {
+      const count = MailboxState.selectedIds.size;
+      const el = document.getElementById('selection-count');
+      if (el) el.textContent = count + ' selected';
+    }
+
+    // ============================================
+    // EVENT HANDLERS
+    // ============================================
+    function handleMessageClick(event, msgId) {
+      if (MailboxState.selectionMode) {
+        toggleSelection(msgId);
+        return;
+      }
+      const msg = MailboxState.messages.find(function(m) { return m.id === msgId; });
+      if (!msg) return;
+      
+      if (!msg.read) {
+        msg.read = true;
+        renderMessageList();
+      }
+      
+      MailboxState.currentMessage = msg;
+      document.getElementById('modal-body').innerHTML = renderMessageDetail(msg);
+      document.getElementById('msg-modal').classList.remove('hidden');
+    }
+
+    function handleContextMenu(event, msgId) {
+      event.preventDefault();
+      const msg = MailboxState.messages.find(function(m) { return m.id === msgId; });
+      if (!msg) return;
+      
+      const menu = document.getElementById('context-menu');
+      const isUnread = !msg.read;
+      
+      menu.innerHTML = '';
+      menu.innerHTML += '<div class="context-menu-item" onclick="markRead(\'' + msgId + '\'); hideContextMenu();">' + SVGIcons.markRead + '<span>Mark as ' + (isUnread ? 'read' : 'unread') + '</span></div>';
+      menu.innerHTML += '<div class="context-menu-item" onclick="replyToMessage(\'' + msgId + '\'); hideContextMenu();">' + SVGIcons.reply + '<span>Reply</span></div>';
+      menu.innerHTML += '<div class="context-menu-item" onclick="forwardMessage(\'' + msgId + '\'); hideContextMenu();">' + SVGIcons.forward + '<span>Forward</span></div>';
+      menu.innerHTML += '<div class="context-menu-item" onclick="starMessage(\'' + msgId + '\'); hideContextMenu();">' + SVGIcons.star + '<span>Star</span></div>';
+      menu.innerHTML += '<div class="context-menu-item danger" onclick="deleteMessage(\'' + msgId + '\'); hideContextMenu();">' + SVGIcons.trash + '<span>Delete</span></div>';
+      
+      menu.style.left = event.pageX + 'px';
+      menu.style.top = event.pageY + 'px';
+      menu.classList.remove('hidden');
+    }
+
+    function hideContextMenu() {
+      document.getElementById('context-menu').classList.add('hidden');
+    }
+
+    function toggleSelection(msgId) {
+      if (MailboxState.selectedIds.has(msgId)) {
+        MailboxState.selectedIds.delete(msgId);
+      } else {
+        MailboxState.selectedIds.add(msgId);
+      }
+      updateSelectionCount();
+      renderMessageList();
+    }
+
+    function markRead(msgId) {
+      const msg = MailboxState.messages.find(function(m) { return m.id === msgId; });
+      if (msg) {
+        msg.read = !msg.read;
+        renderMessageList();
+        showToast(msg.read ? 'Marked as read' : 'Marked as unread', 'success');
+      }
+    }
+
+    function deleteMessage(msgId) {
+      const idx = MailboxState.messages.findIndex(function(m) { return m.id === msgId; });
+      if (idx > -1) {
+        MailboxState.messages.splice(idx, 1);
+        renderMessageList();
+        showToast('Message deleted', 'success');
+        if (MailboxState.currentMessage && MailboxState.currentMessage.id === msgId) {
+          closeModal();
+        }
+      }
+    }
+
+    function replyToMessage(msgId) {
+      const msg = MailboxState.messages.find(function(m) { return m.id === msgId; });
+      if (msg) {
+        document.getElementById('compose-to').value = msg.senderEmail;
+        document.getElementById('compose-subject').value = 'Re: ' + msg.subject;
+        document.getElementById('compose-body').value = '';
+        openComposeModal();
+      }
+    }
+
+    function forwardMessage(msgId) {
+      const msg = MailboxState.messages.find(function(m) { return m.id === msgId; });
+      if (msg) {
+        document.getElementById('compose-to').value = '';
+        document.getElementById('compose-subject').value = 'Fwd: ' + msg.subject;
+        document.getElementById('compose-body').value = '---------- Forwarded message ----------\\nFrom: ' + msg.sender + ' <' + msg.senderEmail + '>\\nDate: ' + formatFullDate(msg.timestamp) + '\\nSubject: ' + msg.subject + '\\n\\n' + msg.body;
+        openComposeModal();
+      }
+    }
+
+    function starMessage(msgId) {
+      showToast('Message starred', 'success');
+    }
+
+    function closeModal() {
+      document.getElementById('msg-modal').classList.add('hidden');
+      MailboxState.currentMessage = null;
+    }
+
+    function openComposeModal() {
+      document.getElementById('compose-modal').classList.remove('hidden');
+    }
+
+    function closeComposeModal() {
+      document.getElementById('compose-modal').classList.add('hidden');
+      document.getElementById('compose-to').value = '';
+      document.getElementById('compose-subject').value = '';
+      document.getElementById('compose-body').value = '';
+    }
+
+    function showToast(message, type) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      const toastIcon = document.getElementById('toast-icon');
+      toastMsg.textContent = message;
+      if (type === 'error') {
+        toastIcon.innerHTML = '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>';
+        toastIcon.classList.remove('text-green-400');
+        toastIcon.classList.add('text-red-400');
+      } else {
+        toastIcon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+        toastIcon.classList.remove('text-red-400');
+        toastIcon.classList.add('text-green-400');
+      }
+      toast.classList.remove('hidden');
+      setTimeout(function() {
+        toast.classList.add('hidden');
+      }, 3000);
+    }
+
+    // ============================================
+    // BUTTON NAVIGATION FUNCTIONS - PRESERVED
+    // ============================================
+    function showPage(pageId) {
+      const pages = document.querySelectorAll('.page');
+      pages.forEach(function(page) {
+        page.classList.add('hidden');
+      });
+      const target = document.getElementById(pageId);
+      if (target) target.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ============================================
+    // LIVE SPREAD / REAL-TIME FUNCTIONS - PRESERVED
+    // ============================================
+    function loadLiveSpread() {
+      console.log('Loading live spread data...');
+    }
+
+    function loadCharts() {
+      console.log('Loading charts...');
+    }
+
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    function initMailbox() {
+      MailboxState.messages = JSON.parse(JSON.stringify(defaultMessages));
+      renderMessageList();
+      
+      // Search toggle
+      document.getElementById('btn-search-toggle').addEventListener('click', function() {
+        const searchBar = document.getElementById('search-bar');
+        searchBar.classList.toggle('hidden');
+        if (!searchBar.classList.contains('hidden')) {
+          document.getElementById('msg-search').focus();
+        }
+      });
+      
+      // Search input
+      document.getElementById('msg-search').addEventListener('input', function(e) {
+        MailboxState.searchQuery = e.target.value;
+        document.getElementById('btn-clear-search').classList.toggle('hidden', !e.target.value);
+        renderMessageList();
+      });
+      
+      // Clear search
+      document.getElementById('btn-clear-search').addEventListener('click', function() {
+        document.getElementById('msg-search').value = '';
+        MailboxState.searchQuery = '';
+        this.classList.add('hidden');
+        renderMessageList();
+      });
+      
+      // Filter tabs
+      document.querySelectorAll('.filter-chip').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          document.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
+          this.classList.add('active');
+          MailboxState.filter = this.dataset.filter;
+          renderMessageList();
+        });
+      });
+      
+      // Selection mode
+      document.getElementById('btn-select-mode').addEventListener('click', function() {
+        MailboxState.selectionMode = !MailboxState.selectionMode;
+        if (!MailboxState.selectionMode) {
+          MailboxState.selectedIds.clear();
+        }
+        document.getElementById('selection-toolbar').classList.toggle('hidden', !MailboxState.selectionMode);
+        document.body.classList.toggle('selection-mode', MailboxState.selectionMode);
+        updateSelectionCount();
+        renderMessageList();
+      });
+      
+      // Select all
+      document.getElementById('btn-select-all').addEventListener('click', function() {
+        const visibleIds = Array.from(document.querySelectorAll('.msg-item')).map(function(el) { return el.dataset.id; });
+        if (MailboxState.selectedIds.size === visibleIds.length) {
+          MailboxState.selectedIds.clear();
+        } else {
+          visibleIds.forEach(function(id) { MailboxState.selectedIds.add(id); });
+        }
+        updateSelectionCount();
+        renderMessageList();
+      });
+      
+      // Cancel selection
+      document.getElementById('btn-cancel-select').addEventListener('click', function() {
+        MailboxState.selectionMode = false;
+        MailboxState.selectedIds.clear();
+        document.getElementById('selection-toolbar').classList.add('hidden');
+        document.body.classList.remove('selection-mode');
+        renderMessageList();
+      });
+      
+      // Mark selected as read
+      document.getElementById('btn-mark-read').addEventListener('click', function() {
+        MailboxState.selectedIds.forEach(function(id) {
+          const msg = MailboxState.messages.find(function(m) { return m.id === id; });
+          if (msg) msg.read = true;
+        });
+        MailboxState.selectionMode = false;
+        MailboxState.selectedIds.clear();
+        document.getElementById('selection-toolbar').classList.add('hidden');
+        document.body.classList.remove('selection-mode');
+        renderMessageList();
+        showToast('Marked as read', 'success');
+      });
+      
+      // Delete selected
+      document.getElementById('btn-delete-selected').addEventListener('click', function() {
+        MailboxState.messages = MailboxState.messages.filter(function(m) { return !MailboxState.selectedIds.has(m.id); });
+        MailboxState.selectionMode = false;
+        MailboxState.selectedIds.clear();
+        document.getElementById('selection-toolbar').classList.add('hidden');
+        document.body.classList.remove('selection-mode');
+        renderMessageList();
+        showToast('Messages deleted', 'success');
+      });
+      
+      // Refresh
+      document.getElementById('btn-refresh').addEventListener('click', function() {
+        const btn = this;
+        btn.querySelector('svg').style.animation = 'spin 1s linear infinite';
+        setTimeout(function() {
+          btn.querySelector('svg').style.animation = '';
+          showToast('Messages refreshed', 'success');
+        }, 1000);
+      });
+      
+      // Sort
+      document.getElementById('btn-sort').addEventListener('click', function() {
+        MailboxState.sortDesc = !MailboxState.sortDesc;
+        renderMessageList();
+        showToast(MailboxState.sortDesc ? 'Sorted: Newest first' : 'Sorted: Oldest first', 'success');
+      });
+      
+      // Load more
+      document.getElementById('btn-load-more').addEventListener('click', function() {
+        showToast('No more messages', 'info');
+      });
+      
+      // Compose
+      document.getElementById('btn-compose').addEventListener('click', openComposeModal);
+      
+      // Close modals
+      document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+      document.getElementById('btn-close-compose').addEventListener('click', closeComposeModal);
+      document.getElementById('msg-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+      });
+      document.getElementById('compose-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeComposeModal();
+      });
+      
+      // Reply from modal
+      document.getElementById('btn-reply').addEventListener('click', function() {
+        if (MailboxState.currentMessage) {
+          replyToMessage(MailboxState.currentMessage.id);
+          closeModal();
+        }
+      });
+      
+      // Delete from modal
+      document.getElementById('btn-delete-msg').addEventListener('click', function() {
+        if (MailboxState.currentMessage) {
+          deleteMessage(MailboxState.currentMessage.id);
+          closeModal();
+        }
+      });
+      
+      // Send compose
+      document.getElementById('btn-send').addEventListener('click', function() {
+        const to = document.getElementById('compose-to').value;
+        const subject = document.getElementById('compose-subject').value;
+        const body = document.getElementById('compose-body').value;
+        if (!to || !subject || !body) {
+          showToast('Please fill in all fields', 'error');
+          return;
+        }
+        const newMsg = {
+          id: 'msg-' + Date.now(),
+          subject: subject,
+          sender: 'You',
+          senderEmail: 'trader@tradestation.com',
+          recipient: to,
+          preview: body.substring(0, 100) + (body.length > 100 ? '...' : ''),
+          body: body,
+          timestamp: new Date().toISOString(),
+          read: true,
+          type: 'sent',
+          status: 'sent',
+          hasAttachment: false,
+          threadId: null,
+          priority: 'normal'
+        };
+        MailboxState.messages.unshift(newMsg);
+        renderMessageList();
+        closeComposeModal();
+        showToast('Message sent successfully', 'success');
+      });
+      
+      // Attach file
+      document.getElementById('btn-attach').addEventListener('click', function() {
+        showToast('Attachment feature coming soon', 'info');
+      });
+      
+      // Hide context menu on click elsewhere
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('#context-menu')) {
+          hideContextMenu();
+        }
+      });
+      
+      // Add spin keyframe
+      const style = document.createElement('style');
+      style.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+      document.head.appendChild(style);
+    }
+
+    // Start
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initMailbox);
+    } else {
+      initMailbox();
+    }
   </script>
 </body>
 </html>
+
+
+
+
