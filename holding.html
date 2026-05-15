@@ -437,6 +437,19 @@
       return Math.max(1, Math.floor((end - start) / 86400000));
     }
 
+    function formatTimeRemaining(ms) {
+      if (ms <= 0) return { text: 'Completed', expired: true };
+      const days = Math.floor(ms / 86400000);
+      const hours = Math.floor((ms % 86400000) / 3600000);
+      const minutes = Math.floor((ms % 3600000) / 60000);
+      const seconds = Math.floor((ms % 60000) / 1000);
+      return { 
+        text: days + 'd ' + hours + 'h ' + minutes + 'm ' + seconds + 's', 
+        days: days, 
+        expired: false 
+      };
+    }
+
     function renderHoldings() {
       const holdings = TS_Invest.getHoldings();
       const active = holdings.filter(h => h.status === 'active');
@@ -477,19 +490,16 @@
         
         const selectedDuration = getDurationDays(first);
         const start = new Date(first.startDate || first.createdAt).getTime();
-        const end = first.endDate ? new Date(first.endDate).getTime() : (start + selectedDuration * 86400000);
         const now = Date.now();
-        const remainingMs = Math.max(0, end - now);
-        const remainingDays = Math.floor(remainingMs / 86400000);
-        const remHours = Math.floor((remainingMs % 86400000) / 3600000);
-        const remMinutes = Math.floor((remainingMs % 3600000) / 60000);
-        const remSeconds = Math.floor((remainingMs % 60000) / 1000);
+        const elapsedMs = now - start;
+        const remainingMs = Math.max(0, (selectedDuration * 86400000) - elapsedMs);
+        const rem = formatTimeRemaining(remainingMs);
         
         document.getElementById('currentDuration').textContent = selectedDuration + ' days';
         const remElem = document.getElementById('currentDurationRemaining');
         if (remElem) {
-          remElem.textContent = remainingDays + 'd ' + remHours + 'h ' + remMinutes + 'm ' + remSeconds + 's remaining';
-          remElem.className = remainingMs <= 0 ? 'text-xs text-mt5-danger font-semibold mt-1' : 'text-xs text-mt5-success font-semibold mt-1';
+          remElem.textContent = rem.text + ' remaining';
+          remElem.className = rem.expired ? 'text-xs text-mt5-danger font-semibold mt-1' : 'text-xs text-mt5-success font-semibold mt-1';
         }
       } else {
         document.getElementById('currentPlan').textContent = 'No active plan';
@@ -511,13 +521,18 @@
         const liveVal = TS_Invest.calculateLiveValue(h);
         const profit = liveVal - h.amount;
         const profitPct = h.amount > 0 ? (profit / h.amount) * 100 : 0;
-        const now = Date.now();
-        const end = new Date(h.endDate).getTime();
-        const remaining = Math.max(0, end - now);
-        const days = Math.floor(remaining / 86400000);
-        const hours = Math.floor((remaining % 86400000) / 3600000);
-        const minutes = Math.floor((remaining % 3600000) / 60000);
         const isProfitable = profit >= 0;
+
+        // Duration-based remaining time (selected duration)
+        const selectedDurationDays = getDurationDays(h);
+        const start = new Date(h.startDate || h.createdAt).getTime();
+        const now = Date.now();
+        const elapsedMs = now - start;
+        const durationMs = selectedDurationDays * 86400000;
+        const remainingMs = Math.max(0, durationMs - elapsedMs);
+        const rem = formatTimeRemaining(remainingMs);
+        const elapsedDays = Math.floor(elapsedMs / 86400000);
+        const progressPct = Math.min(100, Math.max(0, (elapsedMs / durationMs) * 100));
 
         return `
           <div class="holding-row px-5 py-4 border-b border-mt5-border last:border-b-0">
@@ -534,7 +549,7 @@
                   <div class="flex items-center gap-2 mt-0.5">
                     <span class="text-xs text-mt5-muted">ID: ${h.id ? h.id.substring(0, 8) : 'N/A'}</span>
                     <span class="w-1 h-1 rounded-full bg-mt5-muted"></span>
-                    <span class="text-xs ${days < 3 ? 'text-mt5-danger' : 'text-mt5-success'} font-medium">${days}d ${hours}h ${minutes}m left</span>
+                    <span class="text-xs ${rem.expired ? 'text-mt5-danger' : (rem.days < 3 ? 'text-mt5-warning' : 'text-mt5-success')} font-medium">${rem.text} left</span>
                   </div>
                 </div>
               </div>
@@ -543,6 +558,20 @@
                   ${isProfitable ? '+' : ''}${profitPct.toFixed(2)}%
                 </p>
                 <p class="text-xs text-mt5-muted mt-0.5">${isProfitable ? 'Profit' : 'Loss'}</p>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs text-mt5-muted font-medium">Duration Progress</span>
+                <span class="text-xs font-bold ${rem.expired ? 'text-mt5-danger' : 'text-mt5-accent'}">${elapsedDays} / ${selectedDurationDays} days</span>
+              </div>
+              <div class="w-full h-2 bg-mt5-bg rounded-full overflow-hidden border border-mt5-border">
+                <div class="h-full rounded-full ${rem.expired ? 'bg-mt5-danger' : 'bg-mt5-accent'}" style="width: ${progressPct.toFixed(1)}%; transition: width 0.3s ease;"></div>
+              </div>
+              <div class="flex items-center justify-between mt-1">
+                <span class="text-[10px] text-mt5-muted">${progressPct.toFixed(1)}% complete</span>
+                <span class="text-[10px] ${rem.expired ? 'text-mt5-danger' : 'text-mt5-success'}">${rem.days} days remaining</span>
               </div>
             </div>
             
@@ -572,7 +601,7 @@
                 Top Up
               </button>
               <button onclick="location.href='charts.html'" class="px-4 py-2.5 bg-mt5-bg hover:bg-mt5-border border border-mt5-border text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M18 20V10"/>
                   <path d="M12 20V4"/>
                   <path d="M6 20v-6"/>
