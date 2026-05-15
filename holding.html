@@ -253,6 +253,7 @@
           </div>
           <p class="text-xs text-mt5-muted mb-1 font-medium uppercase tracking-wider">Duration</p>
           <p class="text-lg font-bold text-white" id="currentDuration">-</p>
+          <p class="text-xs font-semibold mt-1" id="currentDurationRemaining">-</p>
           <div class="flex items-center gap-1.5 mt-2">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#787b86" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -420,6 +421,22 @@
   <script>
     if (!TS_Auth.requireAuth()) throw new Error('Auth required');
 
+    // Parse duration to days (matches holding-investment.html)
+    function parseDuration(dur) {
+      const map = { '1 week': 7, '2 weeks': 14, '1 month': 30, '2 months': 60, '3 months': 90, '6 months': 180, '9 months': 270, '1 year': 365, '18 months': 545, '2 years': 730 };
+      return map[dur] || parseInt(dur) || 30;
+    }
+
+    function getDurationDays(holding) {
+      if (holding.duration) {
+        const days = parseDuration(holding.duration);
+        if (days && days > 0) return days;
+      }
+      const start = new Date(holding.startDate || holding.createdAt).getTime();
+      const end = new Date(holding.endDate).getTime();
+      return Math.max(1, Math.floor((end - start) / 86400000));
+    }
+
     function renderHoldings() {
       const holdings = TS_Invest.getHoldings();
       const active = holdings.filter(h => h.status === 'active');
@@ -444,12 +461,7 @@
           maxAmount = h.amount;
           primaryAsset = h.symbol.toUpperCase();
         }
-        const start = new Date(h.startDate || h.createdAt).getTime();
-        const end = new Date(h.endDate).getTime();
-        // Use the user-selected duration (in days) if available; otherwise derive from the date range
-        const selectedDuration = (h.duration && !isNaN(h.duration)) 
-          ? parseInt(h.duration) 
-          : Math.floor((end - start) / 86400000);
+        const selectedDuration = getDurationDays(h);
         totalSelectedDays += selectedDuration;
       });
 
@@ -463,29 +475,27 @@
         const first = active[0];
         document.getElementById('currentPlan').textContent = first.planName || 'Standard Plan';
         
-        // Calculate remaining time based on selected duration from investment start
+        const selectedDuration = getDurationDays(first);
         const start = new Date(first.startDate || first.createdAt).getTime();
-        const selectedDuration = (first.duration && !isNaN(first.duration)) 
-          ? parseInt(first.duration) 
-          : Math.floor((new Date(first.endDate).getTime() - start) / 86400000);
-        const endTimestamp = start + (selectedDuration * 86400000);
+        const end = first.endDate ? new Date(first.endDate).getTime() : (start + selectedDuration * 86400000);
         const now = Date.now();
-        const remaining = Math.max(0, endTimestamp - now);
-        const remainingDays = Math.floor(remaining / 86400000);
-        const hours = Math.floor((remaining % 86400000) / 3600000);
-        const minutes = Math.floor((remaining % 3600000) / 60000);
-        const seconds = Math.floor((remaining % 60000) / 1000);
+        const remainingMs = Math.max(0, end - now);
+        const remainingDays = Math.floor(remainingMs / 86400000);
+        const remHours = Math.floor((remainingMs % 86400000) / 3600000);
+        const remMinutes = Math.floor((remainingMs % 3600000) / 60000);
+        const remSeconds = Math.floor((remainingMs % 60000) / 1000);
         
-        document.getElementById('currentDuration').textContent = remainingDays + ' days remaining';
-        // Update the muted text in the Duration card to show live countdown
-        const durationCard = document.getElementById('currentDuration').closest('.mt5-card');
-        if (durationCard) {
-          const mutedSpan = durationCard.querySelector('.text-xs.text-mt5-muted');
-          if (mutedSpan) mutedSpan.textContent = `${hours}h ${minutes}m ${seconds}s remaining`;
+        document.getElementById('currentDuration').textContent = selectedDuration + ' days';
+        const remElem = document.getElementById('currentDurationRemaining');
+        if (remElem) {
+          remElem.textContent = remainingDays + 'd ' + remHours + 'h ' + remMinutes + 'm ' + remSeconds + 's remaining';
+          remElem.className = remainingMs <= 0 ? 'text-xs text-mt5-danger font-semibold mt-1' : 'text-xs text-mt5-success font-semibold mt-1';
         }
       } else {
         document.getElementById('currentPlan').textContent = 'No active plan';
         document.getElementById('currentDuration').textContent = '-';
+        const remElem = document.getElementById('currentDurationRemaining');
+        if (remElem) remElem.textContent = '-';
       }
 
       countLabel.textContent = active.length + ' position' + (active.length !== 1 ? 's' : '');
@@ -502,19 +512,11 @@
         const profit = liveVal - h.amount;
         const profitPct = h.amount > 0 ? (profit / h.amount) * 100 : 0;
         const now = Date.now();
-        
-        // Calculate remaining time based on selected duration from investment start
-        const start = new Date(h.startDate || h.createdAt).getTime();
-        const selectedDuration = (h.duration && !isNaN(h.duration)) 
-          ? parseInt(h.duration) 
-          : Math.floor((new Date(h.endDate).getTime() - start) / 86400000);
-        const endTimestamp = start + (selectedDuration * 86400000);
-        const remaining = Math.max(0, endTimestamp - now);
-        
+        const end = new Date(h.endDate).getTime();
+        const remaining = Math.max(0, end - now);
         const days = Math.floor(remaining / 86400000);
         const hours = Math.floor((remaining % 86400000) / 3600000);
         const minutes = Math.floor((remaining % 3600000) / 60000);
-        const seconds = Math.floor((remaining % 60000) / 1000);
         const isProfitable = profit >= 0;
 
         return `
@@ -532,7 +534,7 @@
                   <div class="flex items-center gap-2 mt-0.5">
                     <span class="text-xs text-mt5-muted">ID: ${h.id ? h.id.substring(0, 8) : 'N/A'}</span>
                     <span class="w-1 h-1 rounded-full bg-mt5-muted"></span>
-                    <span class="text-xs ${days < 3 ? 'text-mt5-danger' : 'text-mt5-success'} font-medium">${days}d ${hours}h ${minutes}m ${seconds}s left</span>
+                    <span class="text-xs ${days < 3 ? 'text-mt5-danger' : 'text-mt5-success'} font-medium">${days}d ${hours}h ${minutes}m left</span>
                   </div>
                 </div>
               </div>
